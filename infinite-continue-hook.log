@@ -1,0 +1,59 @@
+{
+  "execution": {
+    "timestamp": "2025-07-24T01:21:56.218Z",
+    "projectRoot": "/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook",
+    "hookVersion": "1.0.0",
+    "nodeVersion": "v23.9.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "pid": 96911,
+    "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook",
+    "endTimestamp": "2025-07-24T01:21:56.219Z",
+    "durationMs": 1
+  },
+  "input": {
+    "sessionId": "04d5b7c1-a50f-4f1a-9424-ae3bac9c3074",
+    "transcriptPath": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/04d5b7c1-a50f-4f1a-9424-ae3bac9c3074.jsonl",
+    "stopHookActive": false,
+    "rawInput": {
+      "session_id": "04d5b7c1-a50f-4f1a-9424-ae3bac9c3074",
+      "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/04d5b7c1-a50f-4f1a-9424-ae3bac9c3074.jsonl",
+      "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook",
+      "hook_event_name": "Stop",
+      "stop_hook_active": false
+    }
+  },
+  "projectState": {},
+  "decisions": [],
+  "flow": [
+    {
+      "timestamp": "2025-07-24T01:21:56.219Z",
+      "message": "Received input from Claude Code"
+    },
+    {
+      "timestamp": "2025-07-24T01:21:56.219Z",
+      "message": "Received Stop event from Claude Code"
+    },
+    {
+      "timestamp": "2025-07-24T01:21:56.219Z",
+      "message": "ERROR in stop-hook-main: Cannot read properties of undefined (reading 'length')"
+    },
+    {
+      "timestamp": "2025-07-24T01:21:56.219Z",
+      "message": "Exiting with code 0: Error: Cannot read properties of undefined (reading 'length')"
+    }
+  ],
+  "output": {
+    "exitCode": 0,
+    "exitReason": "Error: Cannot read properties of undefined (reading 'length')"
+  },
+  "errors": [
+    {
+      "timestamp": "2025-07-24T01:21:56.219Z",
+      "context": "stop-hook-main",
+      "message": "Cannot read properties of undefined (reading 'length')",
+      "stack": "TypeError: Cannot read properties of undefined (reading 'length')\n    at Logger.logProjectState (/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/logger.js:43:40)\n    at Socket.<anonymous> (/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/stop-hook.js:55:16)\n    at Socket.emit (node:events:519:35)\n    at endReadableNT (node:internal/streams/readable:1696:12)\n    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)",
+      "name": "TypeError"
+    }
+  ]
+}
