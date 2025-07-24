@@ -1,7 +1,6 @@
 
 def poorly_formatted_function(x, y):
     z = x + y  # Fixed spaces around operators
-    unused_variable = 42
     return z
 
 class TestClass:

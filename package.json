@@ -1,0 +1,50 @@
+{
+  "name": "post-tool-linter-hook",
+  "version": "1.0.0",
+  "description": "Post-tool linter hook for Claude Code",
+  "main": "post-tool-linter-hook.js",
+  "scripts": {
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch", 
+    "test:ci": "jest --coverage --ci --watchAll=false",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "keywords": ["claude-code", "linter", "hook", "automation"],
+  "author": "Claude Code Hook System",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@types/jest": "^29.5.12",
+    "eslint": "^9.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "collectCoverageFrom": [
+      "*.js",
+      "!test-*.js",
+      "!jest.config.js",
+      "!eslint.config.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 90,
+        "lines": 90,
+        "statements": 90
+      },
+      "./post-tool-linter-hook.js": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    },
+    "testMatch": [
+      "**/__tests__/**/*.js",
+      "**/*.test.js",
+      "**/*.spec.js"
+    ]
+  }
+}
