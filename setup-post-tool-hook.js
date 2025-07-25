@@ -59,6 +59,8 @@ const flags = {
 };
 
 function getArgValue(flag, defaultValue = null) {
+  // Always get fresh args from process.argv for testability
+  const args = process.argv.slice(2);
   const index = args.indexOf(flag);
   if (index > -1 && index < args.length - 1) {
     return args[index + 1];
@@ -133,7 +135,7 @@ function loadSettings() {
       process.exit(1);
     }
   }
-  return {};
+  return { hooks: {} };
 }
 
 function saveSettings(settings) {
@@ -146,11 +148,12 @@ function saveSettings(settings) {
       console.log(`📁 Created backup: ${path.basename(backupPath)}`);
     }
         
-    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2), 'utf8');
     return true;
   } catch (error) {
     console.error(`❌ Error saving settings: ${error.message}`);
-    return false;
+    // Re-throw the error for tests that expect it
+    throw error;
   }
 }
 
@@ -159,6 +162,13 @@ function validateHookScript() {
   if (!fs.existsSync(hookPath)) {
     console.error(`❌ Hook script not found: ${hookPath}`);
     console.error('\nPlease ensure the post-tool-linter-hook.js file is in the same directory as this setup script.');
+    return false;
+  }
+  
+  // Check if it's a directory instead of a file
+  const stats = fs.statSync(hookPath);
+  if (!stats.isFile()) {
+    console.error(`❌ Hook script path is not a file: ${hookPath}`);
     return false;
   }
     
@@ -239,7 +249,7 @@ function installHook() {
     
   // Validate hook script exists
   if (!validateHookScript()) {
-    return false;
+    throw new Error('Hook script validation failed');
   }
     
   if (flags.local) {

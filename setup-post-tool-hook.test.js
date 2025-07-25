@@ -271,9 +271,8 @@ describe('Setup Post-Tool Hook Script', () => {
       setupScript.createLocalSettings(projectPath);
       
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-        expect.stringContaining('.claude-settings.json'),
-        expect.stringContaining('PostToolUse'),
-        'utf8'
+        expect.stringContaining('settings.local.json'),
+        expect.stringContaining('PostToolUse')
       );
     });
 
@@ -483,30 +482,23 @@ describe('Setup Post-Tool Hook Script', () => {
     test('should use correct settings path for Windows', () => {
       mockOs.platform.mockReturnValue('win32');
       
-      // Re-require to get updated platform-specific paths
-      delete require.cache[require.resolve('./setup-post-tool-hook.js')];
-      const setupScriptWin = require('./setup-post-tool-hook.js');
-      
-      expect(setupScriptWin.SETTINGS_PATH).toContain('AppData');
-      expect(setupScriptWin.SETTINGS_PATH).toContain('Roaming');
+      const settingsPath = setupScript.getSettingsPath();
+      expect(settingsPath).toContain('AppData');
+      expect(settingsPath).toContain('Roaming');
     });
 
     test('should use correct settings path for Linux', () => {
       mockOs.platform.mockReturnValue('linux');
       
-      delete require.cache[require.resolve('./setup-post-tool-hook.js')];
-      const setupScriptLinux = require('./setup-post-tool-hook.js');
-      
-      expect(setupScriptLinux.SETTINGS_PATH).toContain('.claude');
+      const settingsPath = setupScript.getSettingsPath();
+      expect(settingsPath).toContain('.claude');
     });
 
     test('should fallback to Linux path for unknown platforms', () => {
       mockOs.platform.mockReturnValue('freebsd');
       
-      delete require.cache[require.resolve('./setup-post-tool-hook.js')];
-      const setupScriptUnknown = require('./setup-post-tool-hook.js');
-      
-      expect(setupScriptUnknown.SETTINGS_PATH).toContain('.claude');
+      const settingsPath = setupScript.getSettingsPath();
+      expect(settingsPath).toContain('.claude');
     });
   });
 
