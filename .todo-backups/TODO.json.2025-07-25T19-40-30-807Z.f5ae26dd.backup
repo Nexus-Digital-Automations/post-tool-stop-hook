@@ -125,7 +125,7 @@
       "description": "Fix 0 errors and 0 warnings found in recently edited files: README.md",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "development/linter-errors.md",
         "README.md"
@@ -729,7 +729,7 @@
       "description": "Build a setup script that can configure the post-tool linter hook in any Claude Code project",
       "mode": "DEVELOPMENT",
       "priority": "medium",
-      "status": "completed",
+      "status": "in_progress",
       "important_files": [
         "setup-post-tool-hook.js",
         "README.md"
@@ -751,7 +751,7 @@
       "description": "Validate that the fixed hook correctly handles projects with both Python and JavaScript files",
       "mode": "DEVELOPMENT",
       "priority": "medium",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "post-tool-linter-hook.js",
         "tests/"
@@ -765,124 +765,7 @@
       "created_at": "2025-07-25T19:11:07.236Z",
       "requires_research": false,
       "estimate": "2 hours",
-      "subtasks": [
-        {
-          "id": "create-test-fixtures",
-          "title": "Create multi-language test project fixtures",
-          "description": "Set up test directories with mixed Python and JavaScript files to simulate real-world multi-language projects",
-          "mode": "TESTING",
-          "priority": "high",
-          "status": "pending",
-          "success_criteria": [
-            "Python project with JavaScript files created (e.g., web frontend in Django)",
-            "JavaScript project with Python files created (e.g., Node.js with Python scripts)",
-            "Test files include intentional linting violations for validation",
-            "Project structure mirrors common real-world patterns",
-            "Both valid and edge-case scenarios covered"
-          ],
-          "important_files": [
-            "tests/fixtures/python-with-js/",
-            "tests/fixtures/js-with-python/",
-            "tests/fixtures/mixed-project/"
-          ],
-          "estimate": "1 hour"
-        },
-        {
-          "id": "test-python-project-js-files",
-          "title": "Test JavaScript file linting in Python projects",
-          "description": "Validate that JavaScript files in Python-dominant projects get ESLint linting",
-          "mode": "TESTING",
-          "priority": "high",
-          "status": "pending",
-          "dependencies": [
-            "create-test-fixtures"
-          ],
-          "success_criteria": [
-            "ESLint runs on .js files in Python projects",
-            "JavaScript linting violations detected correctly",
-            "Project type detection does not prevent JS file linting",
-            "File extension priority works over project type detection",
-            "No false negatives for JavaScript violations"
-          ],
-          "important_files": [
-            "post-tool-linter-hook.js",
-            "tests/fixtures/python-with-js/"
-          ],
-          "estimate": "45 minutes"
-        },
-        {
-          "id": "test-js-project-python-files",
-          "title": "Test Python file linting in JavaScript projects",
-          "description": "Validate that Python files in JavaScript-dominant projects get Ruff linting",
-          "mode": "TESTING",
-          "priority": "high",
-          "status": "pending",
-          "dependencies": [
-            "create-test-fixtures"
-          ],
-          "success_criteria": [
-            "Ruff runs on .py files in JavaScript projects",
-            "Python linting violations detected correctly",
-            "Project type detection does not prevent Python file linting",
-            "File extension priority works over project type detection",
-            "No false negatives for Python violations"
-          ],
-          "important_files": [
-            "post-tool-linter-hook.js",
-            "tests/fixtures/js-with-python/"
-          ],
-          "estimate": "45 minutes"
-        },
-        {
-          "id": "test-hybrid-mode-accuracy",
-          "title": "Test hybrid mode with mixed file types",
-          "description": "Validate that hybrid linting mode correctly handles simultaneous editing of Python and JavaScript files",
-          "mode": "TESTING",
-          "priority": "high",
-          "status": "pending",
-          "dependencies": [
-            "create-test-fixtures"
-          ],
-          "success_criteria": [
-            "Both Python and JavaScript files linted when edited together",
-            "Appropriate linter used for each file type",
-            "No cross-contamination of linting rules",
-            "Hybrid mode logic selects correct approach",
-            "Combined linting report includes both file types"
-          ],
-          "important_files": [
-            "post-tool-linter-hook.js",
-            "tests/fixtures/mixed-project/"
-          ],
-          "estimate": "1 hour"
-        },
-        {
-          "id": "validate-no-false-positives",
-          "title": "Validate no false positives or missed violations",
-          "description": "Comprehensive validation that the multi-language support does not introduce false positives or miss real violations",
-          "mode": "TESTING",
-          "priority": "medium",
-          "status": "pending",
-          "dependencies": [
-            "test-python-project-js-files",
-            "test-js-project-python-files",
-            "test-hybrid-mode-accuracy"
-          ],
-          "success_criteria": [
-            "Clean files do not generate false positive violations",
-            "All intentional violations are detected",
-            "Linter selection logic works consistently",
-            "No conflicts between Python and JavaScript linting",
-            "Performance acceptable with mixed file types"
-          ],
-          "important_files": [
-            "post-tool-linter-hook.js",
-            "tests/fixtures/",
-            "development/linter-errors.md"
-          ],
-          "estimate": "30 minutes"
-        }
-      ]
+      "subtasks": []
     },
     {
       "id": "create-hook-distribution-package",
@@ -981,7 +864,7 @@
   "review_strikes": 0,
   "strikes_completed_last_run": false,
   "current_task_index": 4,
-  "last_mode": "TASK_CREATION",
-  "execution_count": 52,
-  "last_hook_activation": 1753472457912
+  "last_mode": "DEVELOPMENT",
+  "execution_count": 51,
+  "last_hook_activation": 1753472423637
 }

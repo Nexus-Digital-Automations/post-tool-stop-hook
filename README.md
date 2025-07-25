@@ -46,12 +46,50 @@ The hook automatically detects project types by looking for configuration files.
 ### Quick Setup
 
 1. Clone or download this repository
-2. Run the setup script:
+2. Run the comprehensive setup script:
    ```bash
-   node setup-linter-hook.js
+   node setup-post-tool-hook.js
    ```
 
 This will automatically configure the hook in your `~/.claude/settings.json`.
+
+### Setup Options
+
+The setup script supports multiple installation modes:
+
+```bash
+# Install globally (default)
+node setup-post-tool-hook.js --global
+
+# Install for current project only
+node setup-post-tool-hook.js --local
+
+# Install for specific project
+node setup-post-tool-hook.js --local --project /path/to/project
+
+# Customize timeout (default: 15000ms)
+node setup-post-tool-hook.js --timeout 30000
+
+# Force overwrite existing configuration
+node setup-post-tool-hook.js --force
+
+# Validate existing installation
+node setup-post-tool-hook.js --validate
+
+# Uninstall hook
+node setup-post-tool-hook.js --uninstall
+
+# Show help
+node setup-post-tool-hook.js --help
+```
+
+### Cross-Platform Support
+
+The setup script automatically detects your operating system and configures the appropriate Claude Code settings path:
+
+- **Windows**: `%APPDATA%\claude\settings.json`
+- **macOS**: `~/.claude/settings.json`
+- **Linux**: `~/.claude/settings.json`
 
 ### Manual Setup
 
