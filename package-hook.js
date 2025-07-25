@@ -55,22 +55,27 @@ const CONFIG = {
 
 class HookPackager {
   constructor(options = {}) {
+    // Set up basic options first
     this.options = {
       output: options.output || CONFIG.defaultOutput,
-      version: options.version || this.detectVersion(),
       format: options.format || 'zip',
       clean: options.clean || false,
       validate: options.validate || true,
       verbose: options.verbose || false
     };
         
+    // Now we can safely call detectVersion which may use this.log
+    this.options.version = options.version || this.detectVersion();
+        
     this.packageDir = path.join(this.options.output, `${CONFIG.packageName}-v${this.options.version}`);
     this.startTime = Date.now();
         
-    this.log('Initializing Claude Code Linter Hook Packager');
-    this.log(`Version: ${this.options.version}`);
-    this.log(`Output: ${this.options.output}`);
-    this.log(`Format: ${this.options.format}`);
+    if (this.options.verbose) {
+      this.log('Initializing Claude Code Linter Hook Packager');
+      this.log(`Version: ${this.options.version}`);
+      this.log(`Output: ${this.options.output}`);
+      this.log(`Format: ${this.options.format}`);
+    }
   }
     
   /**
@@ -320,16 +325,24 @@ class HookPackager {
         execSync(`cd "${this.options.output}" && zip -r "${archiveName}.zip" "${path.basename(this.packageDir)}"`, 
           { stdio: 'pipe' });
         this.log(`✓ Created: ${archiveName}.zip`);
-      } catch {
+      } catch (error) {
         this.log('⚠️  ZIP creation failed, trying alternative method...');
         // Alternative ZIP creation using Node.js (if available)
-        await this.createZipAlternative(`${outputPath}.zip`);
+        try {
+          await this.createZipAlternative(`${outputPath}.zip`);
+        } catch {
+          throw new Error(`Archive creation failed: ${error.message}`);
+        }
       }
     } else if (this.options.format === 'tar.gz') {
       // Create TAR.GZ archive
-      execSync(`cd "${this.options.output}" && tar -czf "${archiveName}.tar.gz" "${path.basename(this.packageDir)}"`,
-        { stdio: 'pipe' });
-      this.log(`✓ Created: ${archiveName}.tar.gz`);
+      try {
+        execSync(`cd "${this.options.output}" && tar -czf "${archiveName}.tar.gz" "${path.basename(this.packageDir)}"`,
+          { stdio: 'pipe' });
+        this.log(`✓ Created: ${archiveName}.tar.gz`);
+      } catch (error) {
+        throw new Error(`Archive creation failed: ${error.message}`);
+      }
     }
   }
     
@@ -382,21 +395,26 @@ class HookPackager {
   async generateChecksums() {
     this.log('\n🔐 Generating checksums...');
         
-    const checksums = {};
-    const files = this.getAllFiles(this.packageDir);
-        
-    for (const file of files) {
-      const content = fs.readFileSync(file);
-      const hash = crypto.createHash('sha256').update(content).digest('hex');
-      const relativePath = path.relative(this.packageDir, file);
-      checksums[relativePath] = hash;
+    try {
+      const checksums = {};
+      const files = this.getAllFiles(this.packageDir);
+          
+      for (const file of files) {
+        const content = fs.readFileSync(file);
+        const hash = crypto.createHash('sha256').update(content).digest('hex');
+        const relativePath = path.relative(this.packageDir, file);
+        checksums[relativePath] = hash;
+      }
+          
+      fs.writeFileSync(
+        path.join(this.packageDir, 'CHECKSUMS.json'),
+        JSON.stringify(checksums, null, 2)
+      );
+      this.log(`✓ Generated checksums for ${Object.keys(checksums).length} files`);
+    } catch (error) {
+      this.log(`⚠️ Failed to generate checksums: ${error.message}`);
+      // Handle errors gracefully - don't throw, just log and continue
     }
-        
-    fs.writeFileSync(
-      path.join(this.packageDir, 'CHECKSUMS.json'),
-      JSON.stringify(checksums, null, 2)
-    );
-    this.log(`✓ Generated checksums for ${Object.keys(checksums).length} files`);
   }
     
   // Helper methods
@@ -729,12 +747,15 @@ SOFTWARE.
     this.log('Using alternative ZIP creation method...');
     // This would require a ZIP library like 'archiver' but keeping simple for now
     this.log('⚠️  ZIP creation requires system zip command or additional dependencies');
+    throw new Error('Alternative ZIP creation not implemented');
   }
     
   log(message) {
-    if (this.options.verbose || !message.startsWith('ℹ️')) {
+    // If options not set yet or verbose is true, always log
+    if (!this.options || this.options.verbose) {
       console.log(message);
     }
+    // If verbose is false, don't log anything
   }
 }
 

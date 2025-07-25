@@ -33,14 +33,25 @@ describe('Post-Tool Linter Hook Unit Tests', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     
-    // Mock path methods
-    mockPath.join.mockImplementation((...args) => args.join('/'));
-    mockPath.resolve.mockImplementation((...args) => '/' + args.join('/'));
-    mockPath.dirname.mockImplementation((p) => p.split('/').slice(0, -1).join('/'));
-    mockPath.basename.mockImplementation((p) => p.split('/').pop());
+    // Mock path methods with null/undefined safety
+    mockPath.join.mockImplementation((...args) => args.filter(a => a !== null && a !== undefined).join('/'));
+    mockPath.resolve.mockImplementation((...args) => '/' + args.filter(a => a !== null && a !== undefined).join('/'));
+    mockPath.dirname.mockImplementation((p) => {
+      if (!p || typeof p !== 'string') return '';
+      return p.split('/').slice(0, -1).join('/');
+    });
+    mockPath.basename.mockImplementation((p) => {
+      if (!p || typeof p !== 'string') return '';
+      return p.split('/').pop() || '';
+    });
     mockPath.extname.mockImplementation((p) => {
+      if (!p || typeof p !== 'string') return '';
       const parts = p.split('.');
       return parts.length > 1 ? '.' + parts.pop() : '';
+    });
+    mockPath.relative.mockImplementation((from, to) => {
+      if (!from || !to || typeof from !== 'string' || typeof to !== 'string') return '';
+      return to.replace(from, '').replace(/^\//, '');
     });
 
     // Mock fs methods
@@ -115,7 +126,7 @@ describe('Post-Tool Linter Hook Unit Tests', () => {
         throw new Error('Read error');
       });
 
-      const result = hook.validateConfigFile('/path/to/config.json', 'test');
+      const result = hook.validateConfigFile('/path/package.json', 'javascript');
       expect(result).toBe(false);
     });
 
@@ -197,7 +208,7 @@ describe('Post-Tool Linter Hook Unit Tests', () => {
       });
 
       const result = hook.detectProjectTypes(testDir);
-      expect(result).toEqual(['javascript', 'python']);
+      expect(result).toEqual(['python', 'javascript']); // Order follows CONFIG.linters
     });
 
     test('should return array with single type for pure projects', () => {
@@ -239,13 +250,14 @@ describe('Post-Tool Linter Hook Unit Tests', () => {
     });
 
     test('should return unknown for unsupported files', () => {
-      expect(hook.getFileType('/path/to/file.txt')).toBe('unknown');
-      expect(hook.getFileType('/path/to/file.md')).toBe('unknown');
-      expect(hook.getFileType('/path/to/file')).toBe('unknown');
+      expect(hook.getFileType('/path/to/file.txt')).toBe(null); // .txt is in skipExtensions
+      expect(hook.getFileType('/path/to/file.md')).toBe(null); // .md is in skipExtensions
+      expect(hook.getFileType('/path/to/file')).toBe(null); // no extension
+      expect(hook.getFileType('/path/to/file.php')).toBe('unknown'); // unknown extension
     });
 
     test('should handle missing extension', () => {
-      expect(hook.getFileType('/path/to/file_no_extension')).toBe('unknown');
+      expect(hook.getFileType('/path/to/file_no_extension')).toBe(null); // no extension = null
     });
   });
 

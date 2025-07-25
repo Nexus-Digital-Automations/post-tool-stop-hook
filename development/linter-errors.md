@@ -1,15 +1,15 @@
 # Linter Errors Report
 
-**Generated:** 2025-07-25T20:59:42.762Z
+**Generated:** 2025-07-25T21:17:46.615Z
 **Total Issues:** 1 (1 errors, 0 warnings)
 **Files:** 1
 
-## post-tool-linter-hook.js (eslint)
+## package-hook.js (eslint)
 
-**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/post-tool-linter-hook.js`
+**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/package-hook.js`
 **Issues:** 1
 
-❌ **Line 228:10** - 'generateIgnoreFileSuggestions' is defined but never used. `[no-unused-vars]`
+❌ **Line 331:18** - 'altError' is defined but never used. `[no-unused-vars]`
 
 ---
 

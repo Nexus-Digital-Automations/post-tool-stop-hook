@@ -63,7 +63,7 @@ const CONFIG = {
     python: {
       command: 'ruff check --output-format json',
       projectCommand: 'ruff check . --output-format json',
-      fileExtensions: ['.py', '.pyi'],
+      fileExtensions: ['.py', '.pyi', '.pyx'],
       configFiles: ['pyproject.toml', 'setup.py', 'requirements.txt', '.python-version', 'Pipfile'],
       ignoreFiles: ['.ruffignore', '.gitignore']
     },
@@ -348,44 +348,49 @@ function validateConfigFile(configPath, type) {
 function detectProjectType(projectPath) {
   log(`Detecting project type for: ${projectPath}`);
   
-  const foundTypes = [];
-  
-  // Check each linter type and validate config files
-  for (const [type, config] of Object.entries(CONFIG.linters)) {
-    log(`Checking for ${type} project indicators...`);
-    let typeScore = 0;
+  try {
+    const foundTypes = [];
     
-    for (const configFile of config.configFiles) {
-      const configPath = path.join(projectPath, configFile);
-      const exists = fs.existsSync(configPath);
-      log(`  ${configFile}: ${exists ? 'FOUND' : 'not found'}`);
+    // Check each linter type and validate config files
+    for (const [type, config] of Object.entries(CONFIG.linters)) {
+      log(`Checking for ${type} project indicators...`);
+      let typeScore = 0;
       
-      if (exists && validateConfigFile(configPath, type)) {
-        typeScore++;
-        log(`    -> Valid ${type} indicator (score: ${typeScore})`);
+      for (const configFile of config.configFiles) {
+        const configPath = path.join(projectPath, configFile);
+        const exists = fs.existsSync(configPath);
+        log(`  ${configFile}: ${exists ? 'FOUND' : 'not found'}`);
+        
+        if (exists && validateConfigFile(configPath, type)) {
+          typeScore++;
+          log(`    -> Valid ${type} indicator (score: ${typeScore})`);
+        }
+      }
+      
+      if (typeScore > 0) {
+        foundTypes.push({ type, score: typeScore });
       }
     }
     
-    if (typeScore > 0) {
-      foundTypes.push({ type, score: typeScore });
-    }
-  }
-  
-  // Return the type with highest score, or null if no valid types found
-  if (foundTypes.length > 0) {
-    foundTypes.sort((a, b) => b.score - a.score);
-    const selectedType = foundTypes[0].type;
-    log(`Project type detected: ${selectedType} (score: ${foundTypes[0].score})`);
-    
-    if (foundTypes.length > 1) {
-      log(`Other detected types: ${foundTypes.slice(1).map(t => `${t.type}(${t.score})`).join(', ')}`);
+    // Return the type with highest score, or null if no valid types found
+    if (foundTypes.length > 0) {
+      foundTypes.sort((a, b) => b.score - a.score);
+      const selectedType = foundTypes[0].type;
+      log(`Project type detected: ${selectedType} (score: ${foundTypes[0].score})`);
+      
+      if (foundTypes.length > 1) {
+        log(`Other detected types: ${foundTypes.slice(1).map(t => `${t.type}(${t.score})`).join(', ')}`);
+      }
+      
+      return selectedType;
     }
     
-    return selectedType;
+    log('No valid project type detected');
+    return null;
+  } catch (error) {
+    log(`Error detecting project type: ${error.message}`);
+    return null;
   }
-  
-  log('No valid project type detected');
-  return null;
 }
 
 function detectProjectTypes(projectPath) {
@@ -734,9 +739,9 @@ function getFileType(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   log(`Getting file type for extension: ${ext}`);
   
-  // Check if extension should be skipped
-  if (CONFIG.skipExtensions.includes(ext)) {
-    log(`Extension ${ext} is in skip list - no linting needed`);
+  // Check if extension should be skipped or if there's no extension
+  if (CONFIG.skipExtensions.includes(ext) || ext === '') {
+    log(`Extension ${ext} is in skip list or empty - no linting needed`);
     return null;
   }
   
@@ -748,7 +753,7 @@ function getFileType(filePath) {
   }
   
   log(`No linter configured for extension: ${ext}`);
-  return null;
+  return 'unknown';
 }
 
 function extractFilePaths(hookData) {

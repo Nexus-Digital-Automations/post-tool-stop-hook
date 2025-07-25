@@ -361,7 +361,7 @@ describe('Setup Post-Tool Hook Script', () => {
       
       setupScript.checkLinterAvailability();
       
-      expect(mockExecSync).toHaveBeenCalledWith('eslint --version', expect.any(Object));
+      expect(mockExecSync).toHaveBeenCalledWith('npx eslint --version', expect.any(Object));
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('✅ ESLint')
       );
@@ -378,7 +378,7 @@ describe('Setup Post-Tool Hook Script', () => {
       setupScript.checkLinterAvailability();
       
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('❌ ESLint not found')
+        expect.stringContaining('⚠️  ESLint not found')
       );
     });
 

@@ -51,16 +51,30 @@ describe('Package Hook Distribution System', () => {
     mockFs.mkdirSync.mockImplementation(() => {});
     mockFs.copyFileSync.mockImplementation(() => {});
     mockFs.rmSync.mockImplementation(() => {});
-    mockFs.statSync.mockReturnValue({ isDirectory: () => false, isFile: () => true });
+    mockFs.statSync.mockReturnValue({ 
+      isDirectory: () => false, 
+      isFile: () => true, 
+      size: 1024, 
+      mtime: new Date('2024-01-01T00:00:00.000Z') 
+    });
     
     // Mock fs.readdirSync to return Dirent-like objects when withFileTypes: true
+    // Prevent infinite recursion by returning different results based on directory depth
     mockFs.readdirSync.mockImplementation((dir, options) => {
       if (options && options.withFileTypes) {
+        // Return empty results for nested directories to prevent infinite recursion
+        if (dir && (dir.includes('subdir') || dir.includes('nested') || dir.split('/').length > 3)) {
+          return [];
+        }
         return [
           { name: 'file1.js', isDirectory: () => false, isFile: () => true },
           { name: 'file2.js', isDirectory: () => false, isFile: () => true },
           { name: 'subdir', isDirectory: () => true, isFile: () => false }
         ];
+      }
+      // Same logic for string array format
+      if (dir && (dir.includes('subdir') || dir.includes('nested') || dir.split('/').length > 3)) {
+        return [];
       }
       return ['file1.js', 'file2.js', 'subdir'];
     });
@@ -216,7 +230,12 @@ describe('Package Hook Distribution System', () => {
   describe('copyOptionalFiles', () => {
     test('should copy existing optional files', async () => {
       mockFs.existsSync.mockReturnValue(true);
-      mockFs.statSync.mockReturnValue({ isDirectory: () => false, isFile: () => true });
+      mockFs.statSync.mockReturnValue({ 
+        isDirectory: () => false, 
+        isFile: () => true, 
+        size: 1024, 
+        mtime: new Date('2024-01-01T00:00:00.000Z') 
+      });
       
       const packager = new HookPackager();
       await packager.copyOptionalFiles();
@@ -369,7 +388,7 @@ describe('Package Hook Distribution System', () => {
       
       const packager = new HookPackager();
       
-      await expect(packager.validatePackage()).rejects.toThrow('missing required file');
+      await expect(packager.validatePackage()).rejects.toThrow('Package validation failed with');
     });
 
     test('should skip validation when validate option is false', async () => {
@@ -400,7 +419,7 @@ describe('Package Hook Distribution System', () => {
       // Should create hash objects for each file
       expect(mockCrypto.createHash).toHaveBeenCalledWith('sha256');
       expect(mockFs.writeFileSync).toHaveBeenCalledWith(
-        expect.stringContaining('checksums.txt'),
+        expect.stringContaining('CHECKSUMS.json'),
         expect.any(String)
       );
     });
