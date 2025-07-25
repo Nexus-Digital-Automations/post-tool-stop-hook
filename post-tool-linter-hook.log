@@ -1,13 +1,13 @@
-[2025-07-25T20:53:48.556Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-25T20:53:48.556Z] Date: 2025-07-25T20:53:48.556Z
-[2025-07-25T20:53:48.556Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-25T20:53:48.556Z] Node Version: v23.9.0
-[2025-07-25T20:53:48.556Z] Platform: darwin
-[2025-07-25T20:53:48.556Z] 
-[2025-07-25T20:53:48.556Z] === HOOK EXECUTION START ===
-[2025-07-25T20:53:48.556Z] Tool: Bash
-[2025-07-25T20:53:48.556Z] Session ID: 9780348b-2cc8-4986-a8df-1683a71ef4d2
-[2025-07-25T20:53:48.556Z] Hook input:
+[2025-07-25T21:03:44.130Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-25T21:03:44.131Z] Date: 2025-07-25T21:03:44.131Z
+[2025-07-25T21:03:44.131Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-25T21:03:44.131Z] Node Version: v23.9.0
+[2025-07-25T21:03:44.131Z] Platform: darwin
+[2025-07-25T21:03:44.131Z] 
+[2025-07-25T21:03:44.131Z] === HOOK EXECUTION START ===
+[2025-07-25T21:03:44.131Z] Tool: Bash
+[2025-07-25T21:03:44.131Z] Session ID: 9780348b-2cc8-4986-a8df-1683a71ef4d2
+[2025-07-25T21:03:44.131Z] Hook input:
   Data: {
   "session_id": "9780348b-2cc8-4986-a8df-1683a71ef4d2",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/9780348b-2cc8-4986-a8df-1683a71ef4d2.jsonl",
@@ -15,14 +15,14 @@
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
   "tool_input": {
-    "command": "node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('linter_task_active', 'completed').then(() => console.log('✅ Task linter_task_active marked as completed'));\"",
-    "description": "Mark the linter task as completed"
+    "command": "npm run test:coverage 2>&1 | tail -20",
+    "description": "Test coverage with new thresholds"
   },
   "tool_response": {
-    "stdout": "✅ Task linter_task_active marked as completed",
+    "stdout": "      462 |   });\n\n      at Object.toHaveBeenCalled (package-hook.test.js:459:30)\n\nPASS ./post-tool-linter-hook.integration.test.js\n--------------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\nFile                      | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s                                                                                                                                                                                                                                                                                                            \n--------------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\nAll files                 |   53.82 |    45.22 |   54.12 |   54.62 |                                                                                                                                                                                                                                                                                                                              \n package-hook.js          |   59.34 |    71.64 |      70 |   59.43 | 85,112-131,141,270-305,357,366,388-399,406,425-430,452,592-703,743-825,831                                                                                                                                                                                                                                                   \n post-tool-linter-hook.js |    42.9 |    35.05 |   44.62 |   43.51 | 39-47,87-88,99,104,110-111,117,127-128,133-134,144-151,161-162,175-176,181-182,201-202,218,233-291,416-730,808,831,848-849,863-864,878,905,929,954-965,973-974,988-989,1003,1039-1040,1051-1052,1063-1071,1076-1081,1098-1120,1126-1158,1167-1212,1222-1263,1284-1286,1292-1412,1451-1452,1564-1565,1591-1592,1616-1780,1787 \n setup-linter-hook.js     |   97.18 |    96.42 |     100 |   97.18 | 148-149                                                                                                                                                                                                                                                                                                                      \n setup-post-tool-hook.js  |   72.69 |    58.33 |   61.76 |   72.69 | 72,179-180,202-203,217-218,242-243,257-264,286,291-299,323,346,353-360,376,381-382,390,401,441,446-450,468,473-475,481,486,496,504,509,539-563,569-571,577                                                                                                                                                                   \n--------------------------|---------|----------|---------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------\n\nTest Suites: 3 failed, 3 passed, 6 total\nTests:       52 failed, 147 passed, 199 total\nSnapshots:   0 total\nTime:        4.308 s, estimated 5 s\nRan all test suites.",
     "stderr": "",
     "interrupted": false,
     "isImage": false
   }
 }
-[2025-07-25T20:53:48.556Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-25T21:03:44.131Z] Tool Bash is not in enabled tools list, skipping

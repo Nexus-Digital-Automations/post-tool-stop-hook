@@ -225,6 +225,82 @@ function filterFilesWithIgnoreRules(filePaths, projectPath) {
   return filteredFiles;
 }
 
+function generateIgnoreFileSuggestions(resultsWithViolations, projectPath) {
+  const suggestedPatterns = [];
+  const problematicFiles = new Set();
+  
+  for (const result of resultsWithViolations) {
+    const filePath = result.file;
+    const relativePath = path.relative(projectPath, filePath);
+    const fileName = path.basename(filePath);
+    
+    // Detect common problematic file types that likely shouldn't be linted
+    const problematicPatterns = [
+      // Temporary and build files
+      { pattern: /\.tmp$|\.temp$/, suggestion: '*.tmp\n*.temp' },
+      { pattern: /\.log$/, suggestion: '*.log' },
+      { pattern: /\.cache$/, suggestion: '*.cache' },
+      { pattern: /\.backup$|\.bak$/, suggestion: '*.backup\n*.bak' },
+      
+      // Python specific
+      { pattern: /\.pyc$|\.pyo$/, suggestion: '*.pyc\n*.pyo' },
+      { pattern: /__pycache__/, suggestion: '__pycache__/' },
+      { pattern: /\.egg-info/, suggestion: '*.egg-info/' },
+      { pattern: /build\//, suggestion: 'build/' },
+      { pattern: /dist\//, suggestion: 'dist/' },
+      { pattern: /\.venv\/|venv\/|env\//, suggestion: '.venv/\nvenv/\nenv/' },
+      
+      // JavaScript/Node specific
+      { pattern: /node_modules/, suggestion: 'node_modules/' },
+      { pattern: /\.min\.js$/, suggestion: '*.min.js' },
+      { pattern: /\.bundle\.js$/, suggestion: '*.bundle.js' },
+      { pattern: /coverage\//, suggestion: 'coverage/' },
+      
+      // Development and testing
+      { pattern: /development\//, suggestion: 'development/' },
+      { pattern: /test-output\/|test_output\//, suggestion: 'test-output/\ntest_output/' },
+      { pattern: /\.git\//, suggestion: '.git/' },
+      
+      // Documentation and config that might be auto-generated
+      { pattern: /\.md\.backup$/, suggestion: '*.md.backup' },
+      { pattern: /\.json\.backup$/, suggestion: '*.json.backup' }
+    ];
+    
+    // Check if this file matches any problematic patterns
+    for (const { pattern, suggestion } of problematicPatterns) {
+      if (pattern.test(relativePath) || pattern.test(fileName)) {
+        problematicFiles.add(filePath);
+        // Add suggestion if not already present
+        const patterns = suggestion.split('\n');
+        for (const p of patterns) {
+          if (!suggestedPatterns.includes(p)) {
+            suggestedPatterns.push(p);
+          }
+        }
+        break;
+      }
+    }
+    
+    // Special case: if file is in a directory that commonly contains non-source files
+    const commonIgnoreDirs = ['tmp', 'temp', 'cache', 'logs', 'artifacts', '.pytest_cache', '.coverage'];
+    const pathParts = relativePath.split(path.sep);
+    for (const dir of commonIgnoreDirs) {
+      if (pathParts.includes(dir)) {
+        problematicFiles.add(filePath);
+        if (!suggestedPatterns.includes(`${dir}/`)) {
+          suggestedPatterns.push(`${dir}/`);
+        }
+      }
+    }
+  }
+  
+  return {
+    suggestedPatterns: suggestedPatterns,
+    problematicFileCount: problematicFiles.size,
+    problematicFiles: Array.from(problematicFiles)
+  };
+}
+
 // Utility functions
 function validateConfigFile(configPath, type) {
   log(`Validating ${type} config file: ${configPath}`);
@@ -1044,6 +1120,44 @@ function writeLinterErrorsFile(resultsWithViolations, projectPath) {
     content += `---\n\n`;
   }
   
+  // Add ignore file guidance section
+  const ignoreGuidance = generateIgnoreFileSuggestions(resultsWithViolations, projectPath);
+  if (ignoreGuidance.suggestedPatterns.length > 0) {
+    content += `## 💡 Ignore File Configuration\n\n`;
+    content += `Some linting issues may be in files that shouldn't be linted. Consider updating your ignore files:\n\n`;
+    
+    if (ignoreGuidance.suggestedPatterns.some(p => p.includes('.py') || p.includes('__pycache__'))) {
+      content += `**For Python (create/update \`.ruffignore\`):**\n`;
+      content += `\`\`\`\n`;
+      ignoreGuidance.suggestedPatterns
+        .filter(p => p.includes('.py') || p.includes('__pycache__') || p.includes('.pyc'))
+        .forEach(pattern => content += `${pattern}\n`);
+      content += `\`\`\`\n\n`;
+    }
+    
+    if (ignoreGuidance.suggestedPatterns.some(p => p.includes('.js') || p.includes('.ts') || p.includes('node_modules'))) {
+      content += `**For JavaScript/TypeScript (create/update \`.eslintignore\`):**\n`;
+      content += `\`\`\`\n`;
+      ignoreGuidance.suggestedPatterns
+        .filter(p => p.includes('.js') || p.includes('.ts') || p.includes('node_modules') || p.includes('dist/'))
+        .forEach(pattern => content += `${pattern}\n`);
+      content += `\`\`\`\n\n`;
+    }
+    
+    // Generic patterns
+    const genericPatterns = ignoreGuidance.suggestedPatterns
+      .filter(p => !p.includes('.py') && !p.includes('.js') && !p.includes('.ts') && 
+                   !p.includes('__pycache__') && !p.includes('node_modules'));
+    if (genericPatterns.length > 0) {
+      content += `**General patterns (both \`.ruffignore\` and \`.eslintignore\`):**\n`;
+      content += `\`\`\`\n`;
+      genericPatterns.forEach(pattern => content += `${pattern}\n`);
+      content += `\`\`\`\n\n`;
+    }
+    
+    content += `---\n\n`;
+  }
+  
   return writeLinterErrorsToPath(resultsWithViolations, errorsFilePath, content);
 }
 
@@ -1241,6 +1355,44 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], _taskCreated
     prompt += `**Full project errors available in**: \`${relativeErrorsPath}\`\n\n`;
   }
   
+  // Add ignore file guidance if applicable
+  const ignoreGuidance = generateIgnoreFileSuggestions(resultsWithViolations, projectPath);
+  if (ignoreGuidance.suggestedPatterns.length > 0) {
+    prompt += `## 💡 Ignore File Configuration\n\n`;
+    prompt += `Some linting issues may be in files that shouldn't be linted. Consider updating your ignore files:\n\n`;
+    
+    if (ignoreGuidance.suggestedPatterns.some(p => p.includes('.py') || p.includes('__pycache__'))) {
+      prompt += `**For Python (create/update \`.ruffignore\`):**\n`;
+      prompt += `\`\`\`\n`;
+      ignoreGuidance.suggestedPatterns
+        .filter(p => p.includes('.py') || p.includes('__pycache__') || p.includes('.pyc'))
+        .forEach(pattern => prompt += `${pattern}\n`);
+      prompt += `\`\`\`\n\n`;
+    }
+    
+    if (ignoreGuidance.suggestedPatterns.some(p => p.includes('.js') || p.includes('.ts') || p.includes('node_modules'))) {
+      prompt += `**For JavaScript/TypeScript (create/update \`.eslintignore\`):**\n`;
+      prompt += `\`\`\`\n`;
+      ignoreGuidance.suggestedPatterns
+        .filter(p => p.includes('.js') || p.includes('.ts') || p.includes('node_modules') || p.includes('dist/'))
+        .forEach(pattern => prompt += `${pattern}\n`);
+      prompt += `\`\`\`\n\n`;
+    }
+    
+    // Generic patterns
+    const genericPatterns = ignoreGuidance.suggestedPatterns
+      .filter(p => !p.includes('.py') && !p.includes('.js') && !p.includes('.ts') && 
+                   !p.includes('__pycache__') && !p.includes('node_modules'));
+    if (genericPatterns.length > 0) {
+      prompt += `**General patterns (both \`.ruffignore\` and \`.eslintignore\`):**\n`;
+      prompt += `\`\`\`\n`;
+      genericPatterns.forEach(pattern => prompt += `${pattern}\n`);
+      prompt += `\`\`\`\n\n`;
+    }
+    
+    prompt += `---\n\n`;
+  }
+
   prompt += `
 ## 🚨🚨 **MANDATORY IMMEDIATE ACTIONS - NO EXCEPTIONS** 🚨🚨
 

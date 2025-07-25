@@ -52,7 +52,18 @@ describe('Package Hook Distribution System', () => {
     mockFs.copyFileSync.mockImplementation(() => {});
     mockFs.rmSync.mockImplementation(() => {});
     mockFs.statSync.mockReturnValue({ isDirectory: () => false, isFile: () => true });
-    mockFs.readdirSync.mockReturnValue(['file1.js', 'file2.js']);
+    
+    // Mock fs.readdirSync to return Dirent-like objects when withFileTypes: true
+    mockFs.readdirSync.mockImplementation((dir, options) => {
+      if (options && options.withFileTypes) {
+        return [
+          { name: 'file1.js', isDirectory: () => false, isFile: () => true },
+          { name: 'file2.js', isDirectory: () => false, isFile: () => true },
+          { name: 'subdir', isDirectory: () => true, isFile: () => false }
+        ];
+      }
+      return ['file1.js', 'file2.js', 'subdir'];
+    });
 
     // Mock crypto
     mockCrypto.createHash.mockReturnValue({
@@ -214,9 +225,29 @@ describe('Package Hook Distribution System', () => {
     });
 
     test('should copy directories recursively', async () => {
-      mockFs.existsSync.mockReturnValue(true);
+      // Mock that 'docs/' optional directory exists and is a directory
+      mockFs.existsSync.mockImplementation((filePath) => {
+        return filePath === 'docs/' || filePath.includes('docs');
+      });
       mockFs.statSync.mockReturnValue({ isDirectory: () => true, isFile: () => false });
-      mockFs.readdirSync.mockReturnValue(['subfile.js']);
+      
+      // Mock readdirSync to prevent infinite recursion by returning different results based on path depth
+      mockFs.readdirSync.mockImplementation((dir, options) => {
+        if (options && options.withFileTypes) {
+          // Return empty array for nested directories to prevent infinite recursion
+          if (dir.includes('nested-dir') || dir.includes('subdir')) {
+            return [
+              { name: 'deep-file.js', isDirectory: () => false, isFile: () => true }
+            ];
+          }
+          // First level directory
+          return [
+            { name: 'subfile.js', isDirectory: () => false, isFile: () => true },
+            { name: 'nested-dir', isDirectory: () => true, isFile: () => false }
+          ];
+        }
+        return dir.includes('nested') ? ['deep-file.js'] : ['subfile.js', 'nested-dir'];
+      });
       
       const packager = new HookPackager();
       await packager.copyOptionalFiles();
@@ -351,7 +382,15 @@ describe('Package Hook Distribution System', () => {
 
   describe('generateChecksums', () => {
     test('should generate checksums for all files', async () => {
-      mockFs.readdirSync.mockReturnValue(['file1.js', 'file2.js']);
+      mockFs.readdirSync.mockImplementation((dir, options) => {
+        if (options && options.withFileTypes) {
+          return [
+            { name: 'file1.js', isDirectory: () => false, isFile: () => true },
+            { name: 'file2.js', isDirectory: () => false, isFile: () => true }
+          ];
+        }
+        return ['file1.js', 'file2.js'];
+      });
       mockFs.statSync.mockReturnValue({ isFile: () => true });
       mockFs.readFileSync.mockReturnValue('file content');
       
