@@ -1,6 +1,6 @@
 # Linter Errors Report
 
-**Generated:** 2025-07-25T21:17:46.615Z
+**Generated:** 2025-07-25T21:48:57.531Z
 **Total Issues:** 1 (1 errors, 0 warnings)
 **Files:** 1
 
@@ -9,7 +9,7 @@
 **File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/package-hook.js`
 **Issues:** 1
 
-❌ **Line 331:18** - 'altError' is defined but never used. `[no-unused-vars]`
+❌ **Line 328:16** - 'error' is defined but never used. `[no-unused-vars]`
 
 ---
 

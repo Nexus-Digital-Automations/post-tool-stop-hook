@@ -791,6 +791,18 @@ function extractFilePaths(hookData) {
 async function runPythonLinter(filePath, projectPath) {
   log(`Running Python linter (ruff) on: ${filePath}`);
   
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    log(`ERROR: File does not exist: ${filePath}`);
+    return {
+      success: false,
+      linter: 'ruff',
+      file: filePath,
+      violations: [],
+      error: 'File does not exist'
+    };
+  }
+  
   try {
     const command = `ruff check "${filePath}" --output-format json --respect-gitignore`;
     log(`Executing command: ${command}`);
@@ -803,22 +815,33 @@ async function runPythonLinter(filePath, projectPath) {
     });
     
     log(`Ruff executed successfully, parsing output...`);
-    const violations = JSON.parse(result || '[]');
-    log(`Found ${violations.length} violations`);
-    
-    return {
-      success: violations.length === 0,
-      linter: 'ruff',
-      file: filePath,
-      violations: violations.map(v => ({
-        line: v.location?.row || v.location?.start?.row || 0,
-        column: v.location?.column || v.location?.start?.column || 0,
-        code: v.code,
-        message: v.message,
-        severity: 'error',
-        fixable: v.fix !== null && v.fix !== undefined
-      }))
-    };
+    try {
+      const violations = JSON.parse(result || '[]');
+      log(`Found ${violations.length} violations`);
+      
+      return {
+        success: true,
+        linter: 'ruff',
+        file: filePath,
+        violations: violations.map(v => ({
+          line: v.location?.row || v.location?.start?.row || 0,
+          column: v.location?.column || v.location?.start?.column || 0,
+          code: v.code,
+          message: v.message,
+          severity: 'error',
+          fixable: v.fix !== null && v.fix !== undefined
+        }))
+      };
+    } catch (parseError) {
+      log(`Failed to parse ruff output: ${parseError.message}`);
+      return {
+        success: false,
+        linter: 'ruff',
+        file: filePath,
+        violations: [],
+        error: 'Failed to parse ruff output'
+      };
+    }
   } catch (error) {
     log(`Ruff execution failed with status: ${error.status}`);
     
@@ -830,7 +853,7 @@ async function runPythonLinter(filePath, projectPath) {
         log(`Found ${violations.length} violations from error output`);
         
         return {
-          success: false,
+          success: true,
           linter: 'ruff',
           file: filePath,
           violations: violations.map(v => ({
@@ -898,6 +921,18 @@ async function runPythonLinter(filePath, projectPath) {
 }
 
 async function runJavaScriptLinter(filePath, projectPath) {
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    log(`ERROR: File does not exist: ${filePath}`);
+    return {
+      success: false,
+      linter: 'eslint',
+      file: filePath,
+      violations: [],
+      error: 'File does not exist'
+    };
+  }
+  
   try {
     // Try to find eslint in multiple locations
     let eslintCommand = 'eslint';
@@ -924,22 +959,33 @@ async function runJavaScriptLinter(filePath, projectPath) {
       stdio: ['pipe', 'pipe', 'pipe']
     });
     
-    const reports = JSON.parse(result || '[]');
-    const fileReport = reports[0] || { messages: [] };
-    
-    return {
-      success: fileReport.errorCount === 0 && fileReport.warningCount === 0,
-      linter: 'eslint',
-      file: filePath,
-      violations: fileReport.messages.map(m => ({
-        line: m.line,
-        column: m.column,
-        severity: m.severity === 2 ? 'error' : 'warning',
-        message: m.message,
-        code: m.ruleId,
-        fixable: m.fix !== undefined
-      }))
-    };
+    try {
+      const reports = JSON.parse(result || '[]');
+      const fileReport = reports[0] || { messages: [] };
+      
+      return {
+        success: true,
+        linter: 'eslint',
+        file: filePath,
+        violations: fileReport.messages.map(m => ({
+          line: m.line,
+          column: m.column,
+          severity: m.severity === 2 ? 'error' : 'warning',
+          message: m.message,
+          code: m.ruleId,
+          fixable: m.fix !== undefined
+        }))
+      };
+    } catch (parseError) {
+      log(`Failed to parse ESLint output: ${parseError.message}`);
+      return {
+        success: false,
+        linter: 'eslint',
+        file: filePath,
+        violations: [],
+        error: 'Failed to parse ESLint output'
+      };
+    }
   } catch (error) {
     log(`ESLint execution failed: ${error.message}`);
     
@@ -953,7 +999,7 @@ async function runJavaScriptLinter(filePath, projectPath) {
         log(`Found ${fileReport.messages.length} ESLint violations`);
         
         return {
-          success: fileReport.errorCount === 0,
+          success: true,
           linter: 'eslint',
           file: filePath,
           violations: fileReport.messages.map(m => ({
@@ -1031,7 +1077,18 @@ async function lintFile(filePath, projectPath) {
   const allProjectTypes = detectProjectTypes(projectPath);
   
   // Prefer file type over project type, but consider all available types
-  let linterType = fileType || projectType;
+  // However, if fileType is null due to skip extensions, don't use projectType
+  let linterType;
+  if (fileType === null) {
+    // File explicitly marked as skip (in skipExtensions)
+    linterType = null;
+  } else if (fileType) {
+    // File type detected from extension
+    linterType = fileType;
+  } else {
+    // No file type detected, fall back to project type
+    linterType = projectType;
+  }
   
   log(`File extension: ${fileExtension}`);
   log(`File type detected: ${fileType || 'none'}`);
@@ -1042,7 +1099,7 @@ async function lintFile(filePath, projectPath) {
   
   if (!linterType) {
     log('No linter configured for this file/project type');
-    return { success: true, file: filePath, reason: 'No linter configured for this file type' };
+    return { success: false, file: filePath, error: 'Unsupported file type' };
   }
   
   switch (linterType) {
@@ -1054,7 +1111,7 @@ async function lintFile(filePath, projectPath) {
       return await runJavaScriptLinter(filePath, projectPath);
     default:
       log(`Unsupported linter type: ${linterType}`);
-      return { success: true, file: filePath, reason: 'Unsupported file type' };
+      return { success: false, file: filePath, error: 'Unsupported file type' };
   }
 }
 
@@ -1470,6 +1527,17 @@ async function analyzeTodoState(projectPath) {
   log('Analyzing TODO.json state for smart task placement...');
   const todoPath = path.join(projectPath, 'TODO.json');
   
+  // Check if file exists first
+  if (!fs.existsSync(todoPath)) {
+    log('TODO.json does not exist');
+    return {
+      exists: false,
+      valid: false,
+      taskCount: 0,
+      currentTaskIndex: null
+    };
+  }
+  
   try {
     const todoData = JSON.parse(fs.readFileSync(todoPath, 'utf8'));
     log(`Found ${todoData.tasks?.length || 0} existing tasks`);
@@ -1487,16 +1555,25 @@ async function analyzeTodoState(projectPath) {
     log(`Pending tasks: ${pendingTasks.length}, High priority: ${highPriorityTasks.length}`);
     
     return {
+      exists: true,
+      valid: true,
+      taskCount: tasks.length,
+      currentTaskIndex: currentTaskIndex,
+      // Include additional data for backward compatibility with existing usage
       todoData,
       currentTask,
-      currentTaskIndex,
       pendingTasks,
       highPriorityTasks,
       totalTasks: tasks.length
     };
   } catch (error) {
     log(`Failed to analyze TODO.json: ${error.message}`);
-    return null;
+    return {
+      exists: true,
+      valid: false,
+      taskCount: 0,
+      currentTaskIndex: null
+    };
   }
 }
 
@@ -1506,11 +1583,17 @@ function determineInsertionPoint(analysis) {
     return -1; // Append to end
   }
   
-  const { currentTaskIndex } = analysis;
+  const { currentTaskIndex, taskCount } = analysis;
   
   // Strategy: Insert linter task as the immediate next task
   // This makes it the highest priority without disrupting current work
-  const insertionIndex = currentTaskIndex + 1;
+  let insertionIndex;
+  if (currentTaskIndex !== undefined && currentTaskIndex !== null) {
+    insertionIndex = currentTaskIndex + 1;
+  } else {
+    // If no current task index, append to end
+    insertionIndex = taskCount || 0;
+  }
   
   log(`Determined insertion point: index ${insertionIndex} (after current task)`);
   return insertionIndex;

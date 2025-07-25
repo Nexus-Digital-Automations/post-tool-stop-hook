@@ -158,30 +158,35 @@ function saveSettings(settings) {
 }
 
 function validateHookScript() {
-  const hookPath = getHookPath();
-  if (!fs.existsSync(hookPath)) {
-    console.error(`❌ Hook script not found: ${hookPath}`);
-    console.error('\nPlease ensure the post-tool-linter-hook.js file is in the same directory as this setup script.');
-    return false;
-  }
-  
-  // Check if it's a directory instead of a file
-  const stats = fs.statSync(hookPath);
-  if (!stats.isFile()) {
-    console.error(`❌ Hook script path is not a file: ${hookPath}`);
-    return false;
-  }
-    
-  // Verify the hook script is executable
   try {
-    fs.accessSync(hookPath, fs.constants.R_OK);
+    const hookPath = getHookPath();
+    if (!fs.existsSync(hookPath)) {
+      console.error(`❌ Hook script not found: ${hookPath}`);
+      console.error('\nPlease ensure the post-tool-linter-hook.js file is in the same directory as this setup script.');
+      return false;
+    }
+    
+    // Check if it's a directory instead of a file
+    const stats = fs.statSync(hookPath);
+    if (!stats.isFile()) {
+      console.error(`❌ Hook script path is not a file: ${hookPath}`);
+      return false;
+    }
+      
+    // Verify the hook script is executable
+    try {
+      fs.accessSync(hookPath, fs.constants.R_OK);
+    } catch (error) {
+      console.error(`❌ Hook script is not readable: ${error.message}`);
+      return false;
+    }
+      
+    console.log(`✓ Hook script found: ${hookPath}`);
+    return true;
   } catch (error) {
-    console.error(`❌ Hook script is not readable: ${error.message}`);
+    console.error(`❌ Error validating hook script: ${error.message}`);
     return false;
   }
-    
-  console.log(`✓ Hook script found: ${hookPath}`);
-  return true;
 }
 
 function createLocalSettings(projectPath) {

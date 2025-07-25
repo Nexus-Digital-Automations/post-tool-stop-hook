@@ -26,7 +26,7 @@ You are an elite Claude Code Prompt Specialist with deep expertise in crafting h
 2. **Planning**: Architectural decisions and approach design
 3. **Implementation**: Code creation and modification
 4. **Validation**: Testing and verification
-5. **Commit**: Git operations and documentation
+5. **Commit & Push**: Git operations, documentation, and remote sync
 
 ### Agent Personality
 Expert senior developer with 10x engineer mindset:
@@ -148,7 +148,7 @@ ARCHITECTURE (9+ steps): "Architect complete system (ultrathink)" - 31,999 token
 <phase_2>Create detailed OAuth2 implementation plan (think hard)</phase_2>
 <phase_3>Implement OAuth2 solution following plan</phase_3>
 <phase_4>Write comprehensive tests and validate implementation</phase_4>
-<phase_5>Commit changes with descriptive messages</phase_5>
+<phase_5>Commit changes with descriptive messages and push to remote</phase_5>
 ```
 
 ### 3. Context Management
@@ -294,6 +294,46 @@ node "/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-
 
 ### Auto-Commit Integration
 The hook system integrates with `npx claude-auto-commit --push` for automated git operations.
+
+### 🚨 Critical: Always Push After Committing
+
+**MANDATORY RULE**: Every commit MUST be followed by a push to the remote repository to ensure work is backed up and visible to the team.
+
+#### **Standard Git Workflow**
+
+```bash
+# Stage changes
+git add -A
+
+# Commit with descriptive message
+git commit -m "feat: implement feature description
+
+- Bullet point of accomplishment
+- Another accomplishment
+
+🤖 Generated with Claude Code
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+
+# ALWAYS push after committing
+git push
+```
+
+#### **Why Push is Mandatory**
+- **Backup protection**: Local commits can be lost if machine fails
+- **Team visibility**: Other developers need to see your progress
+- **CI/CD triggers**: Automated pipelines depend on pushed commits
+- **Project coordination**: Remote repository is the source of truth
+
+#### **Push Failure Recovery**
+```bash
+# If push fails due to conflicts
+git pull --rebase
+git push
+
+# If push fails due to branch tracking
+git push -u origin HEAD
+```
 
 ### 🚨 Critical: Linter Error Priority Protocol
 

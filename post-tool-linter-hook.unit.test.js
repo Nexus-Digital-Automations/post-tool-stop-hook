@@ -210,7 +210,7 @@ describe('Post-Tool Linter Hook - Unit Tests', () => {
 
     test('should handle undefined currentTaskIndex', () => {
       const analysis = {};
-      expect(hook.determineInsertionPoint(analysis)).toBe(NaN);
+      expect(hook.determineInsertionPoint(analysis)).toBe(0); // Should return 0 when no taskCount
     });
   });
 
@@ -244,12 +244,15 @@ describe('Post-Tool Linter Hook - Unit Tests', () => {
 
   describe('async functions', () => {
     test('analyzeTodoState should handle missing TODO.json', async () => {
-      mockFs.readFileSync.mockImplementation(() => {
-        throw new Error('File not found');
-      });
+      mockFs.existsSync.mockReturnValue(false);
 
       const result = await hook.analyzeTodoState('/test/project');
-      expect(result).toBe(null);
+      expect(result).toEqual({
+        exists: false,
+        valid: false,
+        taskCount: 0,
+        currentTaskIndex: null
+      });
     });
 
     test('analyzeTodoState should parse valid TODO.json', async () => {

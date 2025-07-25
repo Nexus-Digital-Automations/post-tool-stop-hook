@@ -1,13 +1,13 @@
-[2025-07-25T21:28:44.934Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-25T21:28:44.934Z] Date: 2025-07-25T21:28:44.934Z
-[2025-07-25T21:28:44.934Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-25T21:28:44.934Z] Node Version: v23.9.0
-[2025-07-25T21:28:44.934Z] Platform: darwin
-[2025-07-25T21:28:44.934Z] 
-[2025-07-25T21:28:44.934Z] === HOOK EXECUTION START ===
-[2025-07-25T21:28:44.934Z] Tool: Bash
-[2025-07-25T21:28:44.934Z] Session ID: f697460d-0be4-4b4c-ade0-b05364c58f82
-[2025-07-25T21:28:44.934Z] Hook input:
+[2025-07-25T21:49:24.763Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-25T21:49:24.764Z] Date: 2025-07-25T21:49:24.764Z
+[2025-07-25T21:49:24.764Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-25T21:49:24.764Z] Node Version: v23.9.0
+[2025-07-25T21:49:24.764Z] Platform: darwin
+[2025-07-25T21:49:24.764Z] 
+[2025-07-25T21:49:24.764Z] === HOOK EXECUTION START ===
+[2025-07-25T21:49:24.764Z] Tool: Bash
+[2025-07-25T21:49:24.764Z] Session ID: f697460d-0be4-4b4c-ade0-b05364c58f82
+[2025-07-25T21:49:24.764Z] Hook input:
   Data: {
   "session_id": "f697460d-0be4-4b4c-ade0-b05364c58f82",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/f697460d-0be4-4b4c-ade0-b05364c58f82.jsonl",
@@ -15,14 +15,14 @@
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
   "tool_input": {
-    "command": "node -e \"\nconst TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager');\n(async () => {\n  const taskManager = new TaskManager('./TODO.json');\n  await taskManager.updateTaskStatus('fix-recursive-getallfiles-error-1753477696141', 'completed');\n  console.log('✅ Task fix-recursive-getallfiles-error-1753477696141 marked as completed');\n})();\n\"",
-    "description": "Mark the task-creation task as completed"
+    "command": "cd \"/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook\" && node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('fix-test-expectations-alignment-1753477696141', 'completed').then(() => console.log('✅ Task fix-test-expectations-alignment-1753477696141 marked as completed'));\"",
+    "description": "Mark current task as completed"
   },
   "tool_response": {
-    "stdout": "✅ Task fix-recursive-getallfiles-error-1753477696141 marked as completed",
+    "stdout": "✅ Task fix-test-expectations-alignment-1753477696141 marked as completed",
     "stderr": "",
     "interrupted": false,
     "isImage": false
   }
 }
-[2025-07-25T21:28:44.934Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-25T21:49:24.764Z] Tool Bash is not in enabled tools list, skipping

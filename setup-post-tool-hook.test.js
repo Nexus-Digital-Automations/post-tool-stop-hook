@@ -330,7 +330,15 @@ describe('Setup Post-Tool Hook Script', () => {
       mockFs.existsSync.mockReturnValue(true);
       mockFs.readFileSync.mockReturnValue(JSON.stringify({
         hooks: {
-          PostToolUse: [expect.stringContaining('post-tool-linter-hook.js')]
+          PostToolUse: [
+            {
+              hooks: [
+                {
+                  command: '/path/to/post-tool-linter-hook.js'
+                }
+              ]
+            }
+          ]
         }
       }));
       
@@ -426,7 +434,7 @@ describe('Setup Post-Tool Hook Script', () => {
       setupScript.uninstallHook();
       
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Hook is not currently installed')
+        expect.stringContaining('No hooks were removed')
       );
     });
 
@@ -459,17 +467,28 @@ describe('Setup Post-Tool Hook Script', () => {
     test('should display current configuration', () => {
       const settings = {
         hooks: {
-          PostToolUse: ['hook1.js', 'hook2.js']
+          PostToolUse: [
+            {
+              hooks: [
+                {
+                  command: 'hook1.js'
+                },
+                {
+                  command: 'post-tool-linter-hook.js'
+                }
+              ]
+            }
+          ]
         }
       };
       
       setupScript.showCurrentConfig(settings);
       
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Current Configuration')
+        expect.stringContaining('Current Hook Configuration')
       );
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('hook1.js')
+        expect.stringContaining('post-tool-linter-hook.js')
       );
     });
 
@@ -479,7 +498,7 @@ describe('Setup Post-Tool Hook Script', () => {
       setupScript.showCurrentConfig(settings);
       
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('No PostToolUse hooks')
+        expect.stringContaining('No hooks configured')
       );
     });
   });
@@ -489,10 +508,10 @@ describe('Setup Post-Tool Hook Script', () => {
       setupScript.showHookInfo();
       
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Post-Tool Linter Hook')
+        expect.stringContaining('Hook Configuration Details')
       );
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Features')
+        expect.stringContaining('Next Steps')
       );
     });
   });

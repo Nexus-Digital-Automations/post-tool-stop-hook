@@ -142,7 +142,7 @@ describe('Package Hook Distribution System', () => {
     test('should set package directory correctly', () => {
       const packager = new HookPackager({ version: '1.5.0' });
       
-      expect(packager.packageDir).toContain('post-tool-linter-hook-v1.5.0');
+      expect(packager.packageDir).toContain('claude-code-linter-hook-v1.5.0');
     });
   });
 
@@ -246,7 +246,11 @@ describe('Package Hook Distribution System', () => {
     test('should copy directories recursively', async () => {
       // Mock that 'docs/' optional directory exists and is a directory
       mockFs.existsSync.mockImplementation((filePath) => {
-        return filePath === 'docs/' || filePath.includes('docs');
+        // Source 'docs/' directory exists
+        if (filePath === 'docs/') return true;
+        // Destination directories in package dir don't exist (so mkdirSync will be called)
+        if (filePath.includes('claude-code-linter-hook')) return false;
+        return false;
       });
       mockFs.statSync.mockReturnValue({ isDirectory: () => true, isFile: () => false });
       
@@ -377,7 +381,7 @@ describe('Package Hook Distribution System', () => {
       
       // Should check existence of all required files
       expect(mockFs.existsSync).toHaveBeenCalledTimes(
-        CONFIG.requiredFiles.length + 3 + 1 // +3 for installers, +1 for metadata
+        CONFIG.requiredFiles.length + 3 + 3 // +3 for installers, +3 for metadata files
       );
     });
 
@@ -438,6 +442,11 @@ describe('Package Hook Distribution System', () => {
 
   describe('createPackage integration', () => {
     test('should complete full packaging workflow', async () => {
+      // Mock Date.now to simulate time passing
+      const mockNow = jest.spyOn(Date, 'now');
+      let currentTime = 1000;
+      mockNow.mockImplementation(() => currentTime++);
+      
       const packager = new HookPackager();
       
       const result = await packager.createPackage();
@@ -445,9 +454,13 @@ describe('Package Hook Distribution System', () => {
       expect(result).toBeDefined();
       expect(result.packagePath).toBeDefined();
       expect(result.duration).toBeGreaterThan(0);
+      
+      mockNow.mockRestore();
     });
 
     test('should handle workflow errors gracefully', async () => {
+      // Make sure existsSync returns false so mkdirSync will be called
+      mockFs.existsSync.mockReturnValue(false);
       mockFs.mkdirSync.mockImplementation(() => {
         throw new Error('Directory creation failed');
       });

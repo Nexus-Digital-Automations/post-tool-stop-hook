@@ -61,7 +61,7 @@ class HookPackager {
       format: options.format || 'zip',
       clean: options.clean || false,
       validate: options.validate || true,
-      verbose: options.verbose || false
+      verbose: options.verbose !== undefined ? options.verbose : true
     };
         
     // Now we can safely call detectVersion which may use this.log
@@ -325,13 +325,13 @@ class HookPackager {
         execSync(`cd "${this.options.output}" && zip -r "${archiveName}.zip" "${path.basename(this.packageDir)}"`, 
           { stdio: 'pipe' });
         this.log(`✓ Created: ${archiveName}.zip`);
-      } catch (error) {
+      } catch {
         this.log('⚠️  ZIP creation failed, trying alternative method...');
         // Alternative ZIP creation using Node.js (if available)
         try {
           await this.createZipAlternative(`${outputPath}.zip`);
         } catch {
-          throw new Error(`Archive creation failed: ${error.message}`);
+          throw new Error('Archive creation failed: alternative method also failed');
         }
       }
     } else if (this.options.format === 'tar.gz') {

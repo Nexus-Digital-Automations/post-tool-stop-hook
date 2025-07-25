@@ -255,7 +255,7 @@
       "description": "Fix 1 error and 0 warnings found in recently edited files: package-hook.js",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "development/linter-errors.md",
         "package-hook.js"
@@ -265,7 +265,7 @@
         "development/linter-errors.md shows no issues for edited files",
         "Code passes linting without warnings or errors"
       ],
-      "created_at": "2025-07-25T21:17:46.614Z",
+      "created_at": "2025-07-25T21:48:57.529Z",
       "is_linter_task": true,
       "linter_summary": {
         "total_violations": 1,
@@ -1358,7 +1358,7 @@
       "description": "Update test expectations to match current function implementations, especially for detectProjectTypes ordering and validateConfigFile behaviors",
       "mode": "DEVELOPMENT",
       "priority": "medium",
-      "status": "pending",
+      "status": "completed",
       "important_files": [
         "post-tool-linter-hook.test.js",
         "setup-post-tool-hook.test.js"
@@ -1684,11 +1684,11 @@
   "review_strikes": 0,
   "strikes_completed_last_run": false,
   "current_task_index": 4,
-  "last_mode": "TASK_CREATION",
-  "execution_count": 132,
-  "last_hook_activation": 1753478826178,
+  "last_mode": "DEVELOPMENT",
+  "execution_count": 138,
+  "last_hook_activation": 1753480137530,
   "__removedLinterTasks": {
     "removedCount": 1,
-    "finalTaskCount": 44
+    "finalTaskCount": 48
   }
 }
