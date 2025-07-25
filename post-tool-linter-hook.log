@@ -1,13 +1,13 @@
-[2025-07-25T21:55:10.372Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-25T21:55:10.372Z] Date: 2025-07-25T21:55:10.372Z
-[2025-07-25T21:55:10.372Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-25T21:55:10.372Z] Node Version: v23.9.0
-[2025-07-25T21:55:10.372Z] Platform: darwin
-[2025-07-25T21:55:10.372Z] 
-[2025-07-25T21:55:10.372Z] === HOOK EXECUTION START ===
-[2025-07-25T21:55:10.372Z] Tool: Bash
-[2025-07-25T21:55:10.372Z] Session ID: f697460d-0be4-4b4c-ade0-b05364c58f82
-[2025-07-25T21:55:10.372Z] Hook input:
+[2025-07-25T21:56:06.178Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-25T21:56:06.179Z] Date: 2025-07-25T21:56:06.179Z
+[2025-07-25T21:56:06.179Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-25T21:56:06.179Z] Node Version: v23.9.0
+[2025-07-25T21:56:06.179Z] Platform: darwin
+[2025-07-25T21:56:06.179Z] 
+[2025-07-25T21:56:06.179Z] === HOOK EXECUTION START ===
+[2025-07-25T21:56:06.179Z] Tool: Bash
+[2025-07-25T21:56:06.179Z] Session ID: f697460d-0be4-4b4c-ade0-b05364c58f82
+[2025-07-25T21:56:06.179Z] Hook input:
   Data: {
   "session_id": "f697460d-0be4-4b4c-ade0-b05364c58f82",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/f697460d-0be4-4b4c-ade0-b05364c58f82.jsonl",
@@ -16,7 +16,7 @@
   "tool_name": "Bash",
   "tool_input": {
     "command": "npm run lint",
-    "description": "Final linter check to confirm everything is clean"
+    "description": "Final verification that linting is clean"
   },
   "tool_response": {
     "stdout": "> post-tool-linter-hook@1.0.0 lint\n> eslint .",
@@ -25,4 +25,4 @@
     "isImage": false
   }
 }
-[2025-07-25T21:55:10.372Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-25T21:56:06.179Z] Tool Bash is not in enabled tools list, skipping
