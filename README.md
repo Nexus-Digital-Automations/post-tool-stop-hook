@@ -9,6 +9,9 @@ A Claude Code hook that automatically runs linters (ruff for Python, ESLint for 
 - 📜 **JavaScript/TypeScript Support**: Uses `ESLint` for JavaScript/TypeScript files
 - 🎯 **Smart Detection**: Automatically detects project type and chooses the right linter
 - 🚨 **Immediate Feedback**: Prompts Claude to fix linting errors before proceeding
+- 🧠 **Smart Task Placement**: Automatically creates linter tasks in your project's TODO.json
+- 📋 **Workflow Integration**: Intelligently positions tasks in your development workflow
+- 💾 **Atomic Operations**: Safe TODO.json updates with automatic backup creation
 - ⚡ **Performance Optimized**: Timeouts and graceful error handling
 - 🔧 **Easy Setup**: Simple installation script
 
@@ -80,8 +83,22 @@ Add the following to your `~/.claude/settings.json`:
 3. **Linter Execution**: Runs the linter with JSON output for easy parsing
 4. **Error Collection**: Collects all linting violations (errors and warnings)
 5. **Report Generation**: Creates detailed report in `development/linter-errors.md`
-6. **Claude Prompt**: If violations exist, shows summary and directs Claude to read the detailed report
-7. **Priority Enforcement**: Claude is instructed to fix linting errors before continuing
+6. **Smart Task Creation**: Automatically creates a high-priority linter task in TODO.json
+7. **Intelligent Positioning**: Places the task strategically in your workflow (after current task)
+8. **Claude Prompt**: Shows summary and directs Claude to the detailed report and new task
+9. **Priority Enforcement**: Claude is instructed to fix linting errors before continuing
+
+### Smart Task Placement System
+
+The hook includes an intelligent task management system that:
+
+- **Analyzes your TODO.json** to understand current project state and task priorities
+- **Creates comprehensive linter tasks** with proper metadata, file references, and success criteria
+- **Positions tasks strategically** as the next highest priority without disrupting ongoing work
+- **Maintains atomic operations** with automatic backup creation for data safety
+- **Integrates seamlessly** with existing project management workflows
+
+See [`docs/smart-task-placement.md`](docs/smart-task-placement.md) for detailed documentation of the task placement system.
 
 ## Supported File Types
 
@@ -129,16 +146,21 @@ const CONFIG = {
 When linting errors are detected, Claude receives a concise prompt like:
 
 ```
-# 🚨 LINTING ERRORS DETECTED - FIX REQUIRED
+# 🚨 LINTING ERRORS DETECTED - FIX IMMEDIATELY
 
 Found 3 linting issues (2 errors, 1 warning) across 2 files.
 
 📄 **Complete details:** `development/linter-errors.md`
 
-**REQUIRED:** Fix all errors before proceeding. Use the Read tool to view the detailed report file.
+🎯 **NEXT TASK CREATED**: A high-priority task to fix these linter errors has been created and set as your NEXT task in TODO.json. All linter errors must be addressed immediately before proceeding with other work.
 ```
 
-The detailed error information is saved to `development/linter-errors.md` with complete file paths, line numbers, error descriptions, and fix suggestions. Claude can read this file to understand exactly what needs to be fixed.
+The detailed error information is saved to `development/linter-errors.md` with complete file paths, line numbers, error descriptions, and fix suggestions. Additionally, a comprehensive task is automatically created in your project's TODO.json with:
+
+- **Strategic positioning** as the next highest priority task
+- **Complete file references** including both the error report and source files
+- **Clear success criteria** for task completion validation
+- **Proper metadata** for task management and tracking
 
 ## Troubleshooting
 
@@ -184,15 +206,18 @@ If linting is slow:
 
 ```
 post-tool-stop-hook/
-├── post-tool-linter-hook.js    # Main hook script
+├── post-tool-linter-hook.js    # Main hook script with smart task placement
 ├── setup-linter-hook.js        # Installation script
 ├── test-linter-hook.js         # Test suite
 ├── README.md                   # This file
-└── development/                # Development guidelines & linter reports
-    ├── linter-errors.md        # Detailed linting report (auto-generated)
-    ├── general.md
-    └── tasks/
-        └── task-1-hook-research.md
+├── docs/                       # Documentation
+│   └── smart-task-placement.md # Smart task placement system docs
+├── development/                # Development guidelines & linter reports
+│   ├── linter-errors.md        # Detailed linting report (auto-generated)
+│   ├── general.md
+│   └── tasks/
+│       └── task-1-hook-research.md
+└── TODO.json                   # Project task management (managed by hook)
 ```
 
 ## Contributing
