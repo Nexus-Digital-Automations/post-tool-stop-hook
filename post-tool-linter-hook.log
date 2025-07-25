@@ -1,82 +1,28 @@
-[2025-07-25T07:23:48.297Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-25T07:23:48.297Z] Date: 2025-07-25T07:23:48.297Z
-[2025-07-25T07:23:48.297Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-25T07:23:48.297Z] Node Version: v23.9.0
-[2025-07-25T07:23:48.297Z] Platform: darwin
-[2025-07-25T07:23:48.297Z] 
-[2025-07-25T07:23:48.297Z] === HOOK EXECUTION START ===
-[2025-07-25T07:23:48.297Z] Tool: TodoWrite
-[2025-07-25T07:23:48.297Z] Session ID: 30827b02-e885-4bf8-9bd0-54c6fd1f42d3
-[2025-07-25T07:23:48.297Z] Hook input:
+[2025-07-25T07:40:29.527Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-25T07:40:29.528Z] Date: 2025-07-25T07:40:29.528Z
+[2025-07-25T07:40:29.528Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-25T07:40:29.528Z] Node Version: v23.9.0
+[2025-07-25T07:40:29.528Z] Platform: darwin
+[2025-07-25T07:40:29.528Z] 
+[2025-07-25T07:40:29.528Z] === HOOK EXECUTION START ===
+[2025-07-25T07:40:29.528Z] Tool: Bash
+[2025-07-25T07:40:29.528Z] Session ID: 30827b02-e885-4bf8-9bd0-54c6fd1f42d3
+[2025-07-25T07:40:29.528Z] Hook input:
   Data: {
   "session_id": "30827b02-e885-4bf8-9bd0-54c6fd1f42d3",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/30827b02-e885-4bf8-9bd0-54c6fd1f42d3.jsonl",
   "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook",
   "hook_event_name": "PostToolUse",
-  "tool_name": "TodoWrite",
+  "tool_name": "Bash",
   "tool_input": {
-    "todos": [
-      {
-        "content": "Mark test task as completed in TODO.json",
-        "status": "completed",
-        "priority": "high",
-        "id": "task_1"
-      },
-      {
-        "content": "Verify linter error file references work correctly",
-        "status": "completed",
-        "priority": "medium",
-        "id": "task_2"
-      },
-      {
-        "content": "Commit cleanup changes",
-        "status": "in_progress",
-        "priority": "low",
-        "id": "task_3"
-      }
-    ]
+    "command": "cd \"/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook\" && node -e \"\nconst fs = require('fs');\nconst path = require('path');\n\n// Read current TODO.json\nconst todoPath = path.join(process.cwd(), 'TODO.json');\nconst todoData = JSON.parse(fs.readFileSync(todoPath, 'utf8'));\n\n// Find the current linter task and mark it as completed\nconst currentTaskId = 'linter_fix_1753429156755';\nconst task = todoData.tasks.find(t => t.id === currentTaskId);\n\nif (task) {\n  task.status = 'completed';\n  \n  // Write back to TODO.json\n  fs.writeFileSync(todoPath, JSON.stringify(todoData, null, 2));\n  console.log('✅ Task ' + currentTaskId + ' marked as completed');\n} else {\n  console.log('❌ Task ' + currentTaskId + ' not found');\n}\n\"",
+    "description": "Mark current linter task as completed"
   },
   "tool_response": {
-    "oldTodos": [
-      {
-        "content": "Mark test task as completed in TODO.json",
-        "status": "completed",
-        "priority": "high",
-        "id": "task_1"
-      },
-      {
-        "content": "Verify linter error file references work correctly",
-        "status": "in_progress",
-        "priority": "medium",
-        "id": "task_2"
-      },
-      {
-        "content": "Commit cleanup changes",
-        "status": "pending",
-        "priority": "low",
-        "id": "task_3"
-      }
-    ],
-    "newTodos": [
-      {
-        "content": "Mark test task as completed in TODO.json",
-        "status": "completed",
-        "priority": "high",
-        "id": "task_1"
-      },
-      {
-        "content": "Verify linter error file references work correctly",
-        "status": "completed",
-        "priority": "medium",
-        "id": "task_2"
-      },
-      {
-        "content": "Commit cleanup changes",
-        "status": "in_progress",
-        "priority": "low",
-        "id": "task_3"
-      }
-    ]
+    "stdout": "✅ Task linter_fix_1753429156755 marked as completed",
+    "stderr": "",
+    "interrupted": false,
+    "isImage": false
   }
 }
-[2025-07-25T07:23:48.297Z] Tool TodoWrite is not in enabled tools list, skipping
+[2025-07-25T07:40:29.528Z] Tool Bash is not in enabled tools list, skipping

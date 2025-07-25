@@ -1062,6 +1062,139 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], taskCreated 
   return prompt;
 }
 
+// Smart Task Management Functions
+
+async function analyzeTodoState(projectPath) {
+  log('Analyzing TODO.json state for smart task placement...');
+  const todoPath = path.join(projectPath, 'TODO.json');
+  
+  try {
+    const todoData = JSON.parse(fs.readFileSync(todoPath, 'utf8'));
+    log(`Found ${todoData.tasks?.length || 0} existing tasks`);
+    
+    // Find current active task (pending or in_progress)
+    const currentTaskIndex = todoData.current_task_index || 0;
+    const tasks = todoData.tasks || [];
+    const currentTask = tasks[currentTaskIndex];
+    
+    // Analyze task priorities and types
+    const pendingTasks = tasks.filter(t => t.status === 'pending');
+    const highPriorityTasks = tasks.filter(t => t.priority === 'high' && t.status === 'pending');
+    
+    log(`Current task index: ${currentTaskIndex}, Current task: ${currentTask?.title || 'None'}`);
+    log(`Pending tasks: ${pendingTasks.length}, High priority: ${highPriorityTasks.length}`);
+    
+    return {
+      todoData,
+      currentTask,
+      currentTaskIndex,
+      pendingTasks,
+      highPriorityTasks,
+      totalTasks: tasks.length
+    };
+  } catch (error) {
+    log(`Failed to analyze TODO.json: ${error.message}`);
+    return null;
+  }
+}
+
+function determineInsertionPoint(analysis) {
+  if (!analysis) {
+    log('No TODO analysis available, will append task');
+    return -1; // Append to end
+  }
+  
+  const { currentTaskIndex } = analysis;
+  
+  // Strategy: Insert linter task as the immediate next task
+  // This makes it the highest priority without disrupting current work
+  const insertionIndex = currentTaskIndex + 1;
+  
+  log(`Determined insertion point: index ${insertionIndex} (after current task)`);
+  return insertionIndex;
+}
+
+async function createSmartLinterTask(results, projectPath, filePaths, _analysis) {
+  log('Creating smart linter task...');
+  
+  const resultsWithViolations = results.filter(r => r.violations && r.violations.length > 0);
+  const totalViolations = resultsWithViolations.reduce((sum, r) => sum + r.violations.length, 0);
+  const errors = resultsWithViolations.flatMap(r => 
+    r.violations.filter(v => v.severity === 'error')
+  );
+  const warnings = resultsWithViolations.flatMap(r => 
+    r.violations.filter(v => v.severity === 'warning')
+  );
+  
+  const taskId = `linter_fix_${Date.now()}`;
+  const fileList = filePaths.map(fp => path.basename(fp)).join(', ');
+  
+  const linterTask = {
+    id: taskId,
+    title: 'Fix Linter Errors - IMMEDIATE',
+    description: `Fix ${errors.length} errors and ${warnings.length} warnings found in recently edited files: ${fileList}`,
+    mode: 'DEVELOPMENT',
+    priority: 'high',
+    status: 'pending',
+    important_files: [
+      'development/linter-errors.md', // Always include the linter errors file
+      ...filePaths.map(fp => path.relative(projectPath, fp))
+    ],
+    success_criteria: [
+      'All linter errors in edited files resolved',
+      'development/linter-errors.md shows no issues for edited files',
+      'Code passes linting without warnings or errors'
+    ],
+    created_at: new Date().toISOString(),
+    is_linter_task: true
+  };
+  
+  log(`Created linter task: ${taskId} with ${totalViolations} issues`);
+  return linterTask;
+}
+
+async function insertLinterTaskSmart(linterTask, analysis, projectPath) {
+  if (!analysis) {
+    log('No TODO analysis, skipping task insertion');
+    return false;
+  }
+  
+  const todoPath = path.join(projectPath, 'TODO.json');
+  const insertionIndex = determineInsertionPoint(analysis);
+  
+  try {
+    // Create a backup before modifying
+    const backupPath = `${todoPath}.backup.${Date.now()}`;
+    fs.copyFileSync(todoPath, backupPath);
+    log(`Created backup: ${backupPath}`);
+    
+    const todoData = { ...analysis.todoData };
+    
+    if (insertionIndex === -1) {
+      // Append to end
+      todoData.tasks.push(linterTask);
+      log('Appended linter task to end of task list');
+    } else {
+      // Insert at specific position
+      todoData.tasks.splice(insertionIndex, 0, linterTask);
+      log(`Inserted linter task at index ${insertionIndex}`);
+    }
+    
+    // Update metadata
+    todoData.execution_count = (todoData.execution_count || 0) + 1;
+    todoData.last_hook_activation = Date.now();
+    
+    // Write updated TODO.json
+    fs.writeFileSync(todoPath, JSON.stringify(todoData, null, 2));
+    log('Successfully updated TODO.json with smart linter task placement');
+    
+    return true;
+  } catch (error) {
+    log(`Failed to insert linter task: ${error.message}`);
+    return false;
+  }
+}
+
 // Main execution
 async function main() {
   let inputData = '';
@@ -1164,8 +1297,22 @@ async function main() {
       
       // Handle violations if no execution failures
       if (hasViolations) {
+        // Analyze TODO.json state for smart task placement
+        log('\nAttempting to create smart linter task...');
+        const analysis = await analyzeTodoState(projectPath);
+        let taskCreated = false;
+        
+        if (analysis) {
+          // Create smart linter task with proper placement
+          const linterTask = await createSmartLinterTask(results, projectPath, filePaths, analysis);
+          taskCreated = await insertLinterTaskSmart(linterTask, analysis, projectPath);
+          log(`Smart task creation result: ${taskCreated}`);
+        } else {
+          log('No TODO.json analysis available, skipping task creation');
+        }
+        
         // Format and output prompt for Claude
-        const prompt = formatLinterPrompt(results, projectPath, filePaths);
+        const prompt = formatLinterPrompt(results, projectPath, filePaths, taskCreated);
         if (prompt) {
           log('\nGenerating violations prompt for Claude...');
           log(`Prompt length: ${prompt.length} characters`);
