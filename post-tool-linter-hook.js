@@ -1014,12 +1014,34 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], taskCreated 
   const errorsFilePath = writeLinterErrorsFile(resultsWithViolations, projectPath);
   const relativeErrorsPath = path.relative(projectPath, errorsFilePath);
   
-  // Generate enhanced prompt with edited file details
-  let prompt = `# 🚨 LINTING ERRORS DETECTED - FIX IMMEDIATELY\n\n`;
-  prompt += `Found ${totalViolations} linting issue${totalViolations !== 1 ? 's' : ''} `;
+  // Generate ultra-prominent impossible-to-ignore prompt
+  let prompt = `
+██████ ████████  ██████  ██████     ██
+██        ██    ██    ██ ██   ██    ██
+███████   ██    ██    ██ ██████     ██
+     ██   ██    ██    ██ ██         ██
+███████   ██     ██████  ██         ██
+
+🛑🛑🛑 STOP ALL WORK IMMEDIATELY 🛑🛑🛑
+🚨🚨🚨 LINTER ERRORS MUST BE FIXED FIRST 🚨🚨🚨
+🚫🚫🚫 DO NOT CONTINUE WITH OTHER TASKS 🚫🚫🚫
+
+**STOP:** Drop everything you're doing right now
+**PRIORITY OVERRIDE:** Linter errors are now your highest priority  
+**MANDATORY:** You CANNOT continue with other work until these are fixed
+
+## 🚨 CRITICAL CODE QUALITY FAILURE 🚨
+
+Found ${totalViolations} linting issue${totalViolations !== 1 ? 's' : ''} `;
   prompt += `(${errors.length} error${errors.length !== 1 ? 's' : ''}, `;
   prompt += `${warnings.length} warning${warnings.length !== 1 ? 's' : ''}) `;
-  prompt += `across ${resultsWithViolations.length} file${resultsWithViolations.length !== 1 ? 's' : ''}.\n\n`;
+  prompt += `across ${resultsWithViolations.length} file${resultsWithViolations.length !== 1 ? 's' : ''}.
+
+**THIS IS NOT OPTIONAL - CODE QUALITY FAILURES BLOCK DEPLOYMENT**
+**LINTER ERRORS INDICATE SERIOUS ISSUES THAT MUST BE RESOLVED**
+**YOU MUST FIX LINTER ERRORS FIRST - THIS IS A HARD REQUIREMENT**
+
+`;
   
   // Show specific errors for edited files
   if (editedFilesWithViolations.length > 0) {
@@ -1051,22 +1073,44 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], taskCreated 
     }
   }
   
-  prompt += `## 🔧 REQUIRED ACTIONS\n\n`;
-  prompt += `📄 **REQUIRED ACTION**: Read \`${relativeErrorsPath}\` using the Read tool and fix EVERY error listed in that file.\n\n`;
-  
-  if (taskCreated) {
-    prompt += `🎯 **NEXT TASK CREATED**: A high-priority task to fix these linter errors has been created and set as your NEXT task in TODO.json.\n\n`;
-    prompt += `**IMMEDIATE STEPS REQUIRED:**\n`;
-    prompt += `1. Read \`${relativeErrorsPath}\` using the Read tool\n`;
-    prompt += `2. Fix EVERY linter error listed in that file\n`;
-    prompt += `3. Verify all fixes by running the linters again\n\n`;
-  } else {
-    prompt += `**IMMEDIATE STEPS REQUIRED:**\n`;
-    prompt += `1. Use the Read tool to read \`${relativeErrorsPath}\`\n`;
-    prompt += `2. Fix EVERY linter error listed in that file\n`;
-    prompt += `3. Verify all fixes by running the linters again\n`;
-    prompt += `4. Do not proceed with other work until ALL errors are resolved\n\n`;
-  }
+🛑🛑🛑 STOP EVERYTHING NOW 🛑🛑🛑
+
+## 🚨 MANDATORY IMMEDIATE ACTIONS (DO NOT SKIP) 🚨
+
+**COMMAND 1:** STOP whatever you are currently working on RIGHT NOW
+**COMMAND 2:** READ the linter errors file IMMEDIATELY using the Read tool
+**COMMAND 3:** FIX every single error and warning listed - NO EXCEPTIONS
+**COMMAND 4:** DO NOT proceed with ANY other task until ALL issues are resolved
+
+🔥 **CRITICAL PATH - NO DEVIATION ALLOWED:**
+
+**STEP 1 - IMMEDIATE:** Read \`${relativeErrorsPath}\` using the Read tool NOW
+**STEP 2 - MANDATORY:** Fix EVERY SINGLE error listed in that file - DO NOT SKIP ANY
+**STEP 3 - REQUIRED:** Fix EVERY SINGLE warning listed in that file - DO NOT SKIP ANY  
+**STEP 4 - ESSENTIAL:** Run the linters again to verify ALL issues are resolved
+**STEP 5 - FINAL:** Confirm ZERO linter errors before proceeding with other work
+
+⚠️ **WARNING:** Do not attempt to continue with other tasks while linter errors exist
+⚠️ **WARNING:** Do not ignore warnings - they must be fixed too
+⚠️ **WARNING:** This is a blocking issue that prevents deployment
+
+## 🔥 WHY LINTER ERRORS MUST BE FIXED IMMEDIATELY 🔥
+
+**CODE QUALITY CRISIS:** Linter errors indicate serious code quality issues that compromise:
+- **Deployment Safety:** Code with linter errors cannot be safely deployed
+- **Team Standards:** Linter violations break established coding standards
+- **System Reliability:** Poor code quality leads to runtime failures
+- **Developer Productivity:** Technical debt accumulates with ignored warnings
+
+**CONSEQUENCES OF IGNORING THIS:**
+- 🚫 **Deployment Blocked:** Your code cannot be released with linter errors
+- 🚫 **Code Review Failure:** Pull requests will be rejected with linter violations
+- 🚫 **Technical Debt:** Ignored warnings compound into major issues
+- 🚫 **Team Disruption:** Other developers blocked by your code quality issues
+
+🛑🛑🛑 FINAL REMINDER: STOP ALL OTHER WORK AND FIX LINTER ERRORS NOW 🛑🛑🛑
+
+`;
   
   return prompt;
 }

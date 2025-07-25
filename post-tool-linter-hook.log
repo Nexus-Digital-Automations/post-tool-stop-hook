@@ -1,28 +1,136 @@
-[2025-07-25T18:20:08.603Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-25T18:20:08.603Z] Date: 2025-07-25T18:20:08.603Z
-[2025-07-25T18:20:08.603Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-25T18:20:08.603Z] Node Version: v23.9.0
-[2025-07-25T18:20:08.603Z] Platform: darwin
-[2025-07-25T18:20:08.603Z] 
-[2025-07-25T18:20:08.603Z] === HOOK EXECUTION START ===
-[2025-07-25T18:20:08.603Z] Tool: Bash
-[2025-07-25T18:20:08.603Z] Session ID: ccb0d69b-4d81-4a1a-a1e1-bf3e1dcf0506
-[2025-07-25T18:20:08.603Z] Hook input:
+[2025-07-25T18:27:42.832Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-25T18:27:42.832Z] Date: 2025-07-25T18:27:42.832Z
+[2025-07-25T18:27:42.832Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-25T18:27:42.832Z] Node Version: v23.9.0
+[2025-07-25T18:27:42.832Z] Platform: darwin
+[2025-07-25T18:27:42.832Z] 
+[2025-07-25T18:27:42.832Z] === HOOK EXECUTION START ===
+[2025-07-25T18:27:42.832Z] Tool: TodoWrite
+[2025-07-25T18:27:42.832Z] Session ID: ccb0d69b-4d81-4a1a-a1e1-bf3e1dcf0506
+[2025-07-25T18:27:42.832Z] Hook input:
   Data: {
   "session_id": "ccb0d69b-4d81-4a1a-a1e1-bf3e1dcf0506",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/ccb0d69b-4d81-4a1a-a1e1-bf3e1dcf0506.jsonl",
   "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook",
   "hook_event_name": "PostToolUse",
-  "tool_name": "Bash",
+  "tool_name": "TodoWrite",
   "tool_input": {
-    "command": "git status",
-    "description": "Check what changes are staged"
+    "todos": [
+      {
+        "content": "Add massive visual alert header with ASCII art",
+        "status": "completed",
+        "priority": "high",
+        "id": "enhance_header"
+      },
+      {
+        "content": "Add ultra-bold STOP commands at top",
+        "status": "completed",
+        "priority": "high",
+        "id": "add_stop_commands"
+      },
+      {
+        "content": "Add repetitive command structure",
+        "status": "completed",
+        "priority": "high",
+        "id": "repetitive_structure"
+      },
+      {
+        "content": "Make action steps more authoritative",
+        "status": "in_progress",
+        "priority": "high",
+        "id": "enhanced_actions"
+      },
+      {
+        "content": "Add consequences/context for linter errors",
+        "status": "pending",
+        "priority": "medium",
+        "id": "add_consequences"
+      },
+      {
+        "content": "Add STOP commands at multiple points",
+        "status": "pending",
+        "priority": "medium",
+        "id": "multiple_exit_points"
+      }
+    ]
   },
   "tool_response": {
-    "stdout": "On branch main\nYour branch is ahead of 'origin/main' by 15 commits.\n  (use \"git push\" to publish your local commits)\n\nChanges to be committed:\n  (use \"git restore --staged <file>...\" to unstage)\n\tnew file:   .todo-backups/TODO.json.2025-07-25T18-19-42-131Z.b4a031c4.backup\n\tnew file:   .todo-backups/TODO.json.2025-07-25T18-20-01-628Z.5e763054.backup\n\tmodified:   CLAUDE.md\n\tmodified:   TODO.json\n\tnew file:   TODO.json.backup.1753465680678\n\tnew file:   TODO.json.backup.1753467474208\n\tnew file:   TODO.json.backup.1753467546598\n\tmodified:   development/linter-errors.md\n\tmodified:   infinite-continue-hook.log\n\tmodified:   post-tool-linter-hook.js\n\tmodified:   post-tool-linter-hook.log\n\tnew file:   test-enhanced-feedback.js\n\nChanges not staged for commit:\n  (use \"git add <file>...\" to update what will be committed)\n  (use \"git restore <file>...\" to discard changes in working directory)\n\tmodified:   post-tool-linter-hook.log",
-    "stderr": "",
-    "interrupted": false,
-    "isImage": false
+    "oldTodos": [
+      {
+        "content": "Add massive visual alert header with ASCII art",
+        "status": "in_progress",
+        "priority": "high",
+        "id": "enhance_header"
+      },
+      {
+        "content": "Add ultra-bold STOP commands at top",
+        "status": "pending",
+        "priority": "high",
+        "id": "add_stop_commands"
+      },
+      {
+        "content": "Add repetitive command structure",
+        "status": "pending",
+        "priority": "high",
+        "id": "repetitive_structure"
+      },
+      {
+        "content": "Make action steps more authoritative",
+        "status": "pending",
+        "priority": "high",
+        "id": "enhanced_actions"
+      },
+      {
+        "content": "Add consequences/context for linter errors",
+        "status": "pending",
+        "priority": "medium",
+        "id": "add_consequences"
+      },
+      {
+        "content": "Add STOP commands at multiple points",
+        "status": "pending",
+        "priority": "medium",
+        "id": "multiple_exit_points"
+      }
+    ],
+    "newTodos": [
+      {
+        "content": "Add massive visual alert header with ASCII art",
+        "status": "completed",
+        "priority": "high",
+        "id": "enhance_header"
+      },
+      {
+        "content": "Add ultra-bold STOP commands at top",
+        "status": "completed",
+        "priority": "high",
+        "id": "add_stop_commands"
+      },
+      {
+        "content": "Add repetitive command structure",
+        "status": "completed",
+        "priority": "high",
+        "id": "repetitive_structure"
+      },
+      {
+        "content": "Make action steps more authoritative",
+        "status": "in_progress",
+        "priority": "high",
+        "id": "enhanced_actions"
+      },
+      {
+        "content": "Add consequences/context for linter errors",
+        "status": "pending",
+        "priority": "medium",
+        "id": "add_consequences"
+      },
+      {
+        "content": "Add STOP commands at multiple points",
+        "status": "pending",
+        "priority": "medium",
+        "id": "multiple_exit_points"
+      }
+    ]
   }
 }
-[2025-07-25T18:20:08.603Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-25T18:27:42.832Z] Tool TodoWrite is not in enabled tools list, skipping
