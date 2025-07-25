@@ -235,7 +235,7 @@
       "description": "Mark obsolete linter tasks as completed since their referenced errors have been resolved",
       "mode": "DEVELOPMENT",
       "priority": "medium",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "TODO.json",
         "development/linter-errors.md"
@@ -247,13 +247,7 @@
       ],
       "created_at": "2025-07-25T07:41:59.316Z",
       "requires_research": false,
-      "subtasks": [],
-      "completed_at": "2025-07-25T07:49:14.298Z",
-      "completion_notes": [
-        "Updated development/linter-errors.md to reflect current clean state",
-        "Verified all linter tasks are properly marked as completed",
-        "All linting issues have been resolved across the codebase"
-      ]
+      "subtasks": []
     },
     {
       "id": "create-smart-placement-tests",
@@ -400,7 +394,7 @@
   "review_strikes": 0,
   "strikes_completed_last_run": false,
   "current_task_index": 4,
-  "last_mode": "DEVELOPMENT",
-  "execution_count": 22,
-  "last_hook_activation": 1753429694013
+  "last_mode": "REVIEWER",
+  "execution_count": 21,
+  "last_hook_activation": 1753429425665
 }
