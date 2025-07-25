@@ -253,7 +253,7 @@ describe('Post-Tool Linter Hook', () => {
       
       if (result.code === 2) {
         // Linting issues found - should contain prompt
-        expect(result.stderr).toContain('LINTING ERRORS DETECTED');
+        expect(result.stderr).toContain('**LINTER ERRORS DETECTED**');
       } else {
         // Ruff might not be configured or available
         expect(result.code).toBe(0);

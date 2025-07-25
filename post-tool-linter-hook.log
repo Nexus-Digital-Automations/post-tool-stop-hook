@@ -1,13 +1,13 @@
-[2025-07-25T20:05:49.746Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-25T20:05:49.746Z] Date: 2025-07-25T20:05:49.746Z
-[2025-07-25T20:05:49.746Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-25T20:05:49.746Z] Node Version: v23.9.0
-[2025-07-25T20:05:49.746Z] Platform: darwin
-[2025-07-25T20:05:49.746Z] 
-[2025-07-25T20:05:49.746Z] === HOOK EXECUTION START ===
-[2025-07-25T20:05:49.746Z] Tool: Bash
-[2025-07-25T20:05:49.746Z] Session ID: 9780348b-2cc8-4986-a8df-1683a71ef4d2
-[2025-07-25T20:05:49.746Z] Hook input:
+[2025-07-25T20:07:31.059Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-25T20:07:31.060Z] Date: 2025-07-25T20:07:31.060Z
+[2025-07-25T20:07:31.060Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-25T20:07:31.060Z] Node Version: v23.9.0
+[2025-07-25T20:07:31.060Z] Platform: darwin
+[2025-07-25T20:07:31.060Z] 
+[2025-07-25T20:07:31.060Z] === HOOK EXECUTION START ===
+[2025-07-25T20:07:31.060Z] Tool: Bash
+[2025-07-25T20:07:31.060Z] Session ID: 9780348b-2cc8-4986-a8df-1683a71ef4d2
+[2025-07-25T20:07:31.060Z] Hook input:
   Data: {
   "session_id": "9780348b-2cc8-4986-a8df-1683a71ef4d2",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/9780348b-2cc8-4986-a8df-1683a71ef4d2.jsonl",
@@ -25,4 +25,4 @@
     "isImage": false
   }
 }
-[2025-07-25T20:05:49.746Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-25T20:07:31.060Z] Tool Bash is not in enabled tools list, skipping
