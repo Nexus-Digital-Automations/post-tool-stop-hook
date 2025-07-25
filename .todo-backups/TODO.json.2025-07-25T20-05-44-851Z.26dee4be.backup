@@ -255,7 +255,7 @@
       "description": "Fix 0 errors and 0 warnings found in recently edited files: package.json",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "development/linter-errors.md",
         "package.json"
@@ -864,7 +864,7 @@
       "description": "Create build script to bundle and validate the hook system for distribution",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "package.json",
         "package-hook.js"

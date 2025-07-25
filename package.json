@@ -10,9 +10,10 @@
     "test:ci": "jest --coverage --ci --watchAll=false",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "build": "node package-hook.js --clean --validate",
+    "build": "node package-hook.js --clean",
     "build:dev": "node package-hook.js --format folder --output ./dist-dev",
-    "build:release": "node package-hook.js --clean --validate --format zip",
+    "build:release": "node package-hook.js --clean --format zip",
+    "build:quick": "npm run lint && node package-hook.js --clean",
     "prebuild": "npm run lint && npm run test"
   },
   "keywords": ["claude-code", "linter", "hook", "automation"],

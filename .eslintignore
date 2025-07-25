@@ -1,7 +1,0 @@
-node_modules/
-coverage/
-dist/
-dist-dev/
-*.min.js
-.nyc_output/
-build/
