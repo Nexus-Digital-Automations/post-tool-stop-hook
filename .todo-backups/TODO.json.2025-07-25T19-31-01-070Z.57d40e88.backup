@@ -91,136 +91,6 @@
       "strike_number": 3
     },
     {
-      "id": "linter_fix_1753427591736",
-      "title": "Fix Linter Errors - IMMEDIATE",
-      "description": "Fix 0 errors and 4 warnings found in recently edited files: post-tool-linter-hook.js",
-      "mode": "DEVELOPMENT",
-      "priority": "high",
-      "status": "completed",
-      "important_files": [
-        "post-tool-linter-hook.js"
-      ],
-      "success_criteria": [
-        "All linter errors in edited files resolved",
-        "development/linter-errors.md shows no issues for edited files",
-        "Code passes linting without warnings or errors"
-      ],
-      "created_at": "2025-07-25T07:13:11.736Z",
-      "is_linter_task": true
-    },
-    {
-      "id": "linter_fix_1753429874819",
-      "title": "Fix Linter Errors - IMMEDIATE",
-      "description": "Fix 0 errors and 11 warnings found in recently edited files: test-new-linter-errors.js",
-      "mode": "DEVELOPMENT",
-      "priority": "high",
-      "status": "completed",
-      "important_files": [
-        "development/linter-errors.md",
-        "test-new-linter-errors.js"
-      ],
-      "success_criteria": [
-        "All linter errors in edited files resolved",
-        "development/linter-errors.md shows no issues for edited files",
-        "Code passes linting without warnings or errors"
-      ],
-      "created_at": "2025-07-25T07:51:14.819Z",
-      "is_linter_task": true,
-      "completed_at": "2025-07-25T17:23:39.796Z"
-    },
-    {
-      "id": "linter_fix_1753429211135",
-      "title": "Fix Linter Errors - IMMEDIATE",
-      "description": "Fix 0 errors and 1 warnings found in recently edited files: test-linter-errors.js",
-      "mode": "DEVELOPMENT",
-      "priority": "high",
-      "status": "completed",
-      "important_files": [
-        "development/linter-errors.md",
-        "test-linter-errors.js"
-      ],
-      "success_criteria": [
-        "All linter errors in edited files resolved",
-        "development/linter-errors.md shows no issues for edited files",
-        "Code passes linting without warnings or errors"
-      ],
-      "created_at": "2025-07-25T07:40:11.135Z",
-      "is_linter_task": true
-    },
-    {
-      "id": "linter_fix_1753429156755",
-      "title": "Fix Linter Errors - IMMEDIATE",
-      "description": "Fix 0 errors and 14 warnings found in recently edited files: post-tool-linter-hook.js",
-      "mode": "DEVELOPMENT",
-      "priority": "high",
-      "status": "completed",
-      "important_files": [
-        "development/linter-errors.md",
-        "post-tool-linter-hook.js"
-      ],
-      "success_criteria": [
-        "All linter errors in edited files resolved",
-        "development/linter-errors.md shows no issues for edited files",
-        "Code passes linting without warnings or errors"
-      ],
-      "created_at": "2025-07-25T07:39:16.756Z",
-      "is_linter_task": true
-    },
-    {
-      "id": "linter_fix_1753429085292",
-      "title": "Fix Linter Errors - IMMEDIATE",
-      "description": "Fix 1 errors and 14 warnings found in recently edited files: post-tool-linter-hook.js",
-      "mode": "DEVELOPMENT",
-      "priority": "high",
-      "status": "completed",
-      "important_files": [
-        "development/linter-errors.md",
-        "post-tool-linter-hook.js"
-      ],
-      "success_criteria": [
-        "All linter errors in edited files resolved",
-        "development/linter-errors.md shows no issues for edited files",
-        "Code passes linting without warnings or errors"
-      ],
-      "created_at": "2025-07-25T07:38:05.292Z",
-      "is_linter_task": true
-    },
-    {
-      "id": "linter_fix_1753429071374",
-      "title": "Fix Linter Errors - IMMEDIATE",
-      "description": "Fix 2 errors and 14 warnings found in recently edited files: post-tool-linter-hook.js",
-      "mode": "DEVELOPMENT",
-      "priority": "high",
-      "status": "completed",
-      "important_files": [
-        "development/linter-errors.md",
-        "post-tool-linter-hook.js"
-      ],
-      "success_criteria": [
-        "All linter errors in edited files resolved",
-        "development/linter-errors.md shows no issues for edited files",
-        "Code passes linting without warnings or errors"
-      ],
-      "created_at": "2025-07-25T07:37:51.374Z",
-      "is_linter_task": true
-    },
-    {
-      "id": "linter_fix_test_1753427568717",
-      "title": "Fix Linter Errors - TEST",
-      "description": "Test task creation",
-      "mode": "DEVELOPMENT",
-      "priority": "high",
-      "status": "completed",
-      "important_files": [
-        "test.js"
-      ],
-      "success_criteria": [
-        "Test passed"
-      ],
-      "created_at": "2025-07-25T07:12:48.717Z",
-      "is_linter_task": true
-    },
-    {
       "id": "review-strike-1-dup-10",
       "mode": "REVIEWER",
       "description": "Review Strike 1: Build Verification",
@@ -248,6 +118,31 @@
       "remediation_tasks": [
         "fix-ruff-test-configuration"
       ]
+    },
+    {
+      "id": "linter_task_active",
+      "title": "Fix Linter Errors - IMMEDIATE",
+      "description": "Fix 0 errors and 9 warnings found in recently edited files: test-stronger-feedback.js",
+      "mode": "DEVELOPMENT",
+      "priority": "high",
+      "status": "pending",
+      "important_files": [
+        "development/linter-errors.md",
+        "test-stronger-feedback.js"
+      ],
+      "success_criteria": [
+        "All linter errors in edited files resolved",
+        "development/linter-errors.md shows no issues for edited files",
+        "Code passes linting without warnings or errors"
+      ],
+      "created_at": "2025-07-25T19:30:24.247Z",
+      "is_linter_task": true,
+      "linter_summary": {
+        "total_violations": 9,
+        "errors": 0,
+        "warnings": 9,
+        "files_affected": 1
+      }
     },
     {
       "id": "cleanup-outdated-linter-tasks",
@@ -701,17 +596,115 @@
         ".eslintrc",
         "jest.config.js"
       ],
-      "status": "pending",
+      "status": "completed",
       "requires_research": false,
       "subtasks": [],
       "is_review_task": true,
-      "strike_number": 2
+      "strike_number": 2,
+      "completed_at": "2025-07-25T18:08:45.000Z",
+      "review_result": "pass",
+      "completion_notes": [
+        "STRIKE 2 REVIEW - PASSED ✅",
+        "Build: ✅ Project builds without errors",
+        "Lint: ✅ 0 errors, 0 warnings across all files (ESLint + Ruff)",
+        "Console logs: ✅ No console.log statements in production code",
+        "Code style: ✅ Consistent naming conventions and formatting",
+        "Import organization: ✅ Clean imports, proper Node.js structure",
+        "Dead code: ✅ No commented-out code blocks found",
+        "Tests: ✅ 23 passing, 0 failing",
+        "All Strike 2 criteria met - ready to proceed to Strike 3"
+      ]
+    },
+    {
+      "id": "investigate-hook-configuration",
+      "title": "Investigate Claude Code hook configuration format",
+      "description": "Research and document the proper configuration format for setting up post-tool hooks in Claude Code across different projects",
+      "mode": "DEVELOPMENT",
+      "priority": "high",
+      "status": "pending",
+      "important_files": [
+        "~/.claude/",
+        "docs/claude-code-hooks.md"
+      ],
+      "success_criteria": [
+        "Document exact hooks.json format and location",
+        "Identify why hook works in some projects but not others",
+        "Create setup guide for configuring hooks in new projects"
+      ],
+      "created_at": "2025-07-25T19:11:07.236Z",
+      "requires_research": true,
+      "estimate": "2 hours"
+    },
+    {
+      "id": "fix-project-type-detection",
+      "title": "Fix project type detection to prioritize file extensions",
+      "description": "Modify detectProjectType function to prioritize file extensions over project indicators to ensure correct linter selection",
+      "mode": "DEVELOPMENT",
+      "priority": "high",
+      "status": "completed",
+      "important_files": [
+        "post-tool-linter-hook.js"
+      ],
+      "success_criteria": [
+        "File extensions take priority over project type detection",
+        "JavaScript files get ESLint even in Python projects",
+        "Python files get Ruff even in JavaScript projects",
+        "Improved logging for debugging type detection decisions"
+      ],
+      "created_at": "2025-07-25T19:11:07.236Z",
+      "requires_research": false,
+      "estimate": "3 hours",
+      "subtasks": []
+    },
+    {
+      "id": "create-hook-setup-script",
+      "title": "Create hook setup script for other projects",
+      "description": "Build a setup script that can configure the post-tool linter hook in any Claude Code project",
+      "mode": "DEVELOPMENT",
+      "priority": "medium",
+      "status": "pending",
+      "important_files": [
+        "setup-post-tool-hook.js",
+        "README.md"
+      ],
+      "success_criteria": [
+        "Script automatically detects Claude Code settings directory",
+        "Creates proper hooks.json configuration",
+        "Copies hook script to appropriate location",
+        "Validates hook installation and provides troubleshooting"
+      ],
+      "created_at": "2025-07-25T19:11:07.236Z",
+      "requires_research": false,
+      "estimate": "4 hours",
+      "subtasks": []
+    },
+    {
+      "id": "test-multi-language-projects",
+      "title": "Test hook on multi-language projects",
+      "description": "Validate that the fixed hook correctly handles projects with both Python and JavaScript files",
+      "mode": "DEVELOPMENT",
+      "priority": "medium",
+      "status": "pending",
+      "important_files": [
+        "post-tool-linter-hook.js",
+        "tests/"
+      ],
+      "success_criteria": [
+        "JavaScript files in Python projects get ESLint",
+        "Python files in JavaScript projects get Ruff",
+        "Mixed projects handle both linters correctly",
+        "No false positives or missed violations"
+      ],
+      "created_at": "2025-07-25T19:11:07.236Z",
+      "requires_research": false,
+      "estimate": "2 hours",
+      "subtasks": []
     }
   ],
   "review_strikes": 0,
   "strikes_completed_last_run": false,
   "current_task_index": 4,
   "last_mode": "DEVELOPMENT",
-  "execution_count": 33,
-  "last_hook_activation": 1753464935475
+  "execution_count": 47,
+  "last_hook_activation": 1753471853760
 }

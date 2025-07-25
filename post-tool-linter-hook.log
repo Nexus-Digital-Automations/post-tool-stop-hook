@@ -1,13 +1,13 @@
-[2025-07-25T19:13:41.527Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-25T19:13:41.528Z] Date: 2025-07-25T19:13:41.528Z
-[2025-07-25T19:13:41.528Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-25T19:13:41.528Z] Node Version: v23.9.0
-[2025-07-25T19:13:41.528Z] Platform: darwin
-[2025-07-25T19:13:41.528Z] 
-[2025-07-25T19:13:41.528Z] === HOOK EXECUTION START ===
-[2025-07-25T19:13:41.528Z] Tool: Bash
-[2025-07-25T19:13:41.528Z] Session ID: 9780348b-2cc8-4986-a8df-1683a71ef4d2
-[2025-07-25T19:13:41.528Z] Hook input:
+[2025-07-25T19:31:01.183Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-25T19:31:01.183Z] Date: 2025-07-25T19:31:01.183Z
+[2025-07-25T19:31:01.183Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-25T19:31:01.183Z] Node Version: v23.9.0
+[2025-07-25T19:31:01.183Z] Platform: darwin
+[2025-07-25T19:31:01.183Z] 
+[2025-07-25T19:31:01.183Z] === HOOK EXECUTION START ===
+[2025-07-25T19:31:01.183Z] Tool: Bash
+[2025-07-25T19:31:01.183Z] Session ID: 9780348b-2cc8-4986-a8df-1683a71ef4d2
+[2025-07-25T19:31:01.183Z] Hook input:
   Data: {
   "session_id": "9780348b-2cc8-4986-a8df-1683a71ef4d2",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/9780348b-2cc8-4986-a8df-1683a71ef4d2.jsonl",
@@ -15,14 +15,14 @@
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
   "tool_input": {
-    "command": "node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('fix-project-type-detection', 'completed').then(() => console.log('✅ Task fix-project-type-detection marked as completed')).catch(err => console.error('❌ Error:', err.message));\"",
-    "description": "Mark the project type detection fix task as completed"
+    "command": "node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('linter_task_active', 'completed').then(() => console.log('✅ Task linter_task_active marked as completed')).catch(err => console.error('❌ Error:', err.message));\"",
+    "description": "Mark the linter task as completed"
   },
   "tool_response": {
-    "stdout": "✅ Task fix-project-type-detection marked as completed",
+    "stdout": "✅ Task linter_task_active marked as completed",
     "stderr": "",
     "interrupted": false,
     "isImage": false
   }
 }
-[2025-07-25T19:13:41.528Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-25T19:31:01.183Z] Tool Bash is not in enabled tools list, skipping
