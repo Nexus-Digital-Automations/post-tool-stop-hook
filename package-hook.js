@@ -457,9 +457,26 @@ class HookPackager {
   getAllFiles(dir, currentDepth = 0, maxDepth = 10, visitedPaths = new Set()) {
     const files = [];
     
+    // Input validation
+    if (!dir || typeof dir !== 'string') {
+      this.log(`❌ Invalid directory path provided: ${dir}`);
+      return files;
+    }
+    
     // Check depth limit to prevent stack overflow
     if (currentDepth >= maxDepth) {
       this.log(`⚠️ Maximum recursion depth (${maxDepth}) reached for directory: ${dir}`);
+      return files;
+    }
+    
+    // Check if path exists before processing
+    try {
+      if (!fs.existsSync(dir)) {
+        this.log(`⚠️ Directory does not exist: ${dir}`);
+        return files;
+      }
+    } catch (error) {
+      this.log(`❌ Error checking directory existence: ${dir} - ${error.message}`);
       return files;
     }
     
@@ -468,8 +485,7 @@ class HookPackager {
     try {
       realPath = fs.realpathSync(dir);
     } catch (error) {
-      // If we can't resolve the real path, skip this directory
-      this.log(`⚠️ Cannot resolve path: ${dir} - ${error.message}`);
+      this.log(`⚠️ Cannot resolve real path for: ${dir} - ${this.categorizeFileSystemError(error)}`);
       return files;
     }
     
@@ -483,22 +499,210 @@ class HookPackager {
     visitedPaths.add(realPath);
     
     try {
-      const entries = fs.readdirSync(dir, { withFileTypes: true });
-          
+      // Attempt to read directory with comprehensive error handling
+      let entries;
+      try {
+        entries = fs.readdirSync(dir, { withFileTypes: true });
+      } catch (error) {
+        this.handleDirectoryReadError(error, dir);
+        return files;
+      }
+      
+      // Process each entry with individual error handling
       for (const entry of entries) {
-        const fullPath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          files.push(...this.getAllFiles(fullPath, currentDepth + 1, maxDepth, visitedPaths));
-        } else {
-          files.push(fullPath);
+        try {
+          const fullPath = path.join(dir, entry.name);
+          
+          // Validate the entry before processing
+          if (!this.isValidFileSystemEntry(entry, fullPath)) {
+            continue;
+          }
+          
+          if (entry.isDirectory()) {
+            // Recursively process subdirectory with error isolation
+            try {
+              const subFiles = this.getAllFiles(fullPath, currentDepth + 1, maxDepth, visitedPaths);
+              files.push(...subFiles);
+            } catch (error) {
+              this.log(`⚠️ Error processing subdirectory ${fullPath}: ${error.message}`);
+              // Continue processing other directories instead of failing completely
+            }
+          } else if (entry.isFile()) {
+            // Verify file is accessible before adding
+            if (this.isFileAccessible(fullPath)) {
+              files.push(fullPath);
+            }
+          } else if (entry.isSymbolicLink()) {
+            // Handle symbolic links with special care
+            this.handleSymbolicLink(entry, fullPath, files);
+          }
+          // Skip other types (block devices, character devices, FIFOs, sockets)
+          
+        } catch (error) {
+          this.log(`⚠️ Error processing entry ${entry.name} in ${dir}: ${error.message}`);
+          // Continue with next entry
         }
       }
+      
+    } catch (error) {
+      // This catch block handles any unexpected errors in the main processing loop
+      this.log(`❌ Unexpected error processing directory ${dir}: ${error.message}`);
     } finally {
-      // Remove current path from visited set when backtracking
+      // Always clean up the visited path, even if errors occurred
       visitedPaths.delete(realPath);
     }
         
     return files;
+  }
+  
+  /**
+   * Categorize filesystem errors for better user understanding
+   * @param {Error} error - The filesystem error
+   * @returns {string} - Human-readable error description
+   */
+  categorizeFileSystemError(error) {
+    switch (error.code) {
+      case 'ENOENT':
+        return 'File or directory not found';
+      case 'EACCES':
+        return 'Permission denied - insufficient access rights';
+      case 'EPERM':
+        return 'Operation not permitted - administrative privileges required';
+      case 'EMFILE':
+        return 'Too many open files - system limit reached';
+      case 'ENFILE':
+        return 'File table overflow - system-wide limit exceeded';
+      case 'ENOTDIR':
+        return 'Not a directory - path component is not a directory';
+      case 'EISDIR':
+        return 'Is a directory - expected file but found directory';
+      case 'ELOOP':
+        return 'Too many symbolic links - possible circular reference';
+      case 'ENAMETOOLONG':
+        return 'Filename too long - exceeds system limits';
+      case 'ENOSPC':
+        return 'No space left on device';
+      case 'EIO':
+        return 'Input/output error - hardware or network issue';
+      case 'EROFS':
+        return 'Read-only file system';
+      case 'EBUSY':
+        return 'Resource busy - file is in use';
+      case 'EEXIST':
+        return 'File already exists';
+      case 'EXDEV':
+        return 'Cross-device link - operation spans different filesystems';
+      default:
+        return `${error.code || 'Unknown error'}: ${error.message}`;
+    }
+  }
+  
+  /**
+   * Handle directory read errors with appropriate logging and recovery
+   * @param {Error} error - The directory read error
+   * @param {string} dir - The directory path that failed
+   */
+  handleDirectoryReadError(error, dir) {
+    const errorDescription = this.categorizeFileSystemError(error);
+    
+    // Log with appropriate severity based on error type
+    switch (error.code) {
+      case 'EACCES':
+      case 'EPERM':
+        this.log(`🔒 Permission denied accessing directory: ${dir} - ${errorDescription}`);
+        break;
+      case 'ENOENT':
+        this.log(`📁 Directory not found: ${dir} - ${errorDescription}`);
+        break;
+      case 'EMFILE':
+      case 'ENFILE':
+        this.log(`⚠️ System resource limit reached while reading: ${dir} - ${errorDescription}`);
+        break;
+      case 'EIO':
+        this.log(`💿 I/O error reading directory: ${dir} - ${errorDescription}`);
+        break;
+      case 'ENOTDIR':
+        this.log(`⚠️ Expected directory but found file: ${dir} - ${errorDescription}`);
+        break;
+      default:
+        this.log(`❌ Error reading directory: ${dir} - ${errorDescription}`);
+    }
+  }
+  
+  /**
+   * Validate that a filesystem entry is safe to process
+   * @param {fs.Dirent} entry - The directory entry
+   * @param {string} fullPath - The full path to the entry
+   * @returns {boolean} - True if entry is valid and safe to process
+   */
+  isValidFileSystemEntry(entry, fullPath) {
+    // Skip entries with invalid names
+    if (!entry.name || entry.name.length === 0) {
+      this.log(`⚠️ Skipping entry with invalid name in: ${fullPath}`);
+      return false;
+    }
+    
+    // Skip hidden system files that might cause issues (optional, configurable)
+    if (entry.name.startsWith('.') && (entry.name === '..' || entry.name === '.')) {
+      return false; // Skip parent and current directory references
+    }
+    
+    // Check for potentially problematic characters in filenames
+    if (entry.name.includes('\0')) {
+      this.log(`⚠️ Skipping entry with null character in name: ${fullPath}`);
+      return false;
+    }
+    
+    return true;
+  }
+  
+  /**
+   * Check if a file is accessible for reading
+   * @param {string} filePath - The file path to check
+   * @returns {boolean} - True if file is accessible
+   */
+  isFileAccessible(filePath) {
+    try {
+      fs.accessSync(filePath, fs.constants.R_OK);
+      return true;
+    } catch (error) {
+      const errorDescription = this.categorizeFileSystemError(error);
+      this.log(`⚠️ File not accessible: ${filePath} - ${errorDescription}`);
+      return false;
+    }
+  }
+  
+  /**
+   * Handle symbolic links with special processing
+   * @param {fs.Dirent} entry - The symbolic link entry
+   * @param {string} fullPath - The full path to the symbolic link
+   * @param {Array} files - The files array to potentially add to
+   */
+  handleSymbolicLink(entry, fullPath, files) {
+    try {
+      const stats = fs.lstatSync(fullPath);
+      if (stats.isSymbolicLink()) {
+        // Try to resolve the symbolic link
+        try {
+          const targetPath = fs.readlinkSync(fullPath);
+          const resolvedPath = path.resolve(path.dirname(fullPath), targetPath);
+          
+          // Check if the target exists and is a file
+          try {
+            const targetStats = fs.statSync(resolvedPath);
+            if (targetStats.isFile() && this.isFileAccessible(resolvedPath)) {
+              files.push(fullPath); // Add the symlink path, not the target
+            }
+          } catch (targetError) {
+            this.log(`⚠️ Symbolic link target not accessible: ${fullPath} → ${targetPath} - ${this.categorizeFileSystemError(targetError)}`);
+          }
+        } catch (readlinkError) {
+          this.log(`⚠️ Cannot read symbolic link: ${fullPath} - ${this.categorizeFileSystemError(readlinkError)}`);
+        }
+      }
+    } catch (lstatError) {
+      this.log(`⚠️ Cannot stat symbolic link: ${fullPath} - ${this.categorizeFileSystemError(lstatError)}`);
+    }
   }
     
   generateUnixInstaller() {
