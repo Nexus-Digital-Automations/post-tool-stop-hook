@@ -7,7 +7,6 @@
  */
 
 const fs = require('fs');
-const path = require('path');
 
 // Mock file system operations
 jest.mock('fs');

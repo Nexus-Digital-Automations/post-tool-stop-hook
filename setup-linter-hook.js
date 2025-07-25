@@ -79,10 +79,10 @@ function setupHook() {
   
   // Add the linter hook configuration
   const hookConfig = {
-    matcher: "Edit|Write|MultiEdit",
+    matcher: 'Edit|Write|MultiEdit',
     hooks: [
       {
-        type: "command",
+        type: 'command',
         command: HOOK_PATH,
         timeout: 15000
       }

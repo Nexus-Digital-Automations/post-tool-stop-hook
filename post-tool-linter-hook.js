@@ -61,8 +61,8 @@ const CONFIG = {
   respectIgnoreFiles: true,
   linters: {
     python: {
-      command: 'ruff check --format json',
-      projectCommand: 'ruff check . --format json',
+      command: 'ruff check --output-format json',
+      projectCommand: 'ruff check . --output-format json',
       fileExtensions: ['.py', '.pyi'],
       configFiles: ['pyproject.toml', 'setup.py', 'requirements.txt', '.python-version', 'Pipfile'],
       ignoreFiles: ['.ruffignore', '.gitignore']
@@ -193,7 +193,7 @@ async function runPythonProjectLinter(projectPath) {
   log(`Running Python project linter (ruff) on: ${projectPath}`);
   
   try {
-    const command = 'ruff check . --format json';
+    const command = 'ruff check . --output-format json';
     log(`Executing project command: ${command}`);
     
     const result = execSync(command, {
@@ -281,11 +281,52 @@ async function runPythonProjectLinter(projectPath) {
     // Check if ruff is installed
     if (error.message.includes('command not found') || error.message.includes('not recognized')) {
       log('ERROR: Ruff is not installed');
-      return [{ success: true, linter: 'ruff', file: projectPath, violations: [], skipped: true, reason: 'Ruff not installed', projectWide: true }];
+      return [{ 
+        success: false, 
+        linter: 'ruff', 
+        file: projectPath, 
+        violations: [], 
+        projectWide: true,
+        executionFailure: true,
+        failureType: 'missing_dependency',
+        message: 'Ruff linter is not installed',
+        suggestion: 'Install ruff: pip install ruff'
+      }];
+    }
+    
+    // Handle timeout errors
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      log('ERROR: Ruff project execution timed out');
+      return [{
+        success: false,
+        linter: 'ruff',
+        file: projectPath,
+        violations: [],
+        projectWide: true,
+        executionFailure: true,
+        failureType: 'timeout',
+        message: `Ruff project execution timed out (>${CONFIG.timeout * 3}ms)`,
+        suggestion: 'Reduce project size or increase timeout in hook configuration'
+      }];
+    }
+    
+    // Log stderr for debugging
+    if (error.stderr) {
+      log(`Ruff project stderr: ${error.stderr}`);
     }
     
     log(`Unexpected error running ruff project: ${error.message}`);
-    return [{ success: true, linter: 'ruff', file: projectPath, violations: [], projectWide: true }];
+    return [{ 
+      success: false, 
+      linter: 'ruff', 
+      file: projectPath, 
+      violations: [], 
+      projectWide: true,
+      executionFailure: true,
+      failureType: 'execution_error',
+      message: `Ruff project execution failed: ${error.message}`,
+      suggestion: 'Check the log file for detailed error information'
+    }];
   }
 }
 
@@ -304,9 +345,11 @@ async function runJavaScriptProjectLinter(projectPath) {
       eslintCommand = localEslintCmd;
     }
     
-    // Properly quote command for cross-platform compatibility
-    const quotedCommand = process.platform === 'win32' ? `"${eslintCommand}"` : eslintCommand;
-    const fullCommand = `${quotedCommand} . --format json`;
+    // Properly quote command for cross-platform compatibility - always quote paths with spaces
+    const quotedCommand = `"${eslintCommand}"`;
+    // Add ignore patterns for skipExtensions
+    const ignorePatterns = CONFIG.skipExtensions.map(ext => `--ignore-pattern "**/*${ext}"`).join(' ');
+    const fullCommand = `${quotedCommand} . --format json ${ignorePatterns}`;
     
     log(`Executing ESLint project command: ${fullCommand}`);
     
@@ -388,12 +431,53 @@ async function runJavaScriptProjectLinter(projectPath) {
     if (error.message.includes('command not found') || 
         error.message.includes('not recognized') ||
         error.message.includes('ENOENT')) {
-      log('ESLint not found - marking project as skipped');
-      return [{ success: true, linter: 'eslint', file: projectPath, violations: [], skipped: true, reason: 'ESLint not installed', projectWide: true }];
+      log('ESLint not found - marking project as failed');
+      return [{ 
+        success: false, 
+        linter: 'eslint', 
+        file: projectPath, 
+        violations: [], 
+        projectWide: true,
+        executionFailure: true,
+        failureType: 'missing_dependency',
+        message: 'ESLint is not installed or not found',
+        suggestion: 'Install ESLint: npm install eslint'
+      }];
+    }
+    
+    // Handle timeout errors
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      log('ERROR: ESLint project execution timed out');
+      return [{
+        success: false,
+        linter: 'eslint',
+        file: projectPath,
+        violations: [],
+        projectWide: true,
+        executionFailure: true,
+        failureType: 'timeout',
+        message: `ESLint project execution timed out (>${CONFIG.timeout * 3}ms)`,
+        suggestion: 'Reduce project size or increase timeout in hook configuration'
+      }];
+    }
+    
+    // Log stderr for debugging
+    if (error.stderr) {
+      log(`ESLint project stderr: ${error.stderr}`);
     }
     
     log(`Unexpected ESLint project error: ${error.message}`);
-    return [{ success: true, linter: 'eslint', file: projectPath, violations: [], projectWide: true }];
+    return [{ 
+      success: false, 
+      linter: 'eslint', 
+      file: projectPath, 
+      violations: [], 
+      projectWide: true,
+      executionFailure: true,
+      failureType: 'execution_error',
+      message: `ESLint project execution failed: ${error.message}`,
+      suggestion: 'Check the log file for detailed error information'
+    }];
   }
 }
 
@@ -533,11 +617,49 @@ async function runPythonLinter(filePath, projectPath) {
     // Check if ruff is installed
     if (error.message.includes('command not found') || error.message.includes('not recognized')) {
       log('ERROR: Ruff is not installed');
-      return { success: true, linter: 'ruff', file: filePath, violations: [], skipped: true, reason: 'Ruff not installed' };
+      return { 
+        success: false, 
+        linter: 'ruff', 
+        file: filePath, 
+        violations: [], 
+        executionFailure: true,
+        failureType: 'missing_dependency',
+        message: 'Ruff linter is not installed',
+        suggestion: 'Install ruff: pip install ruff'
+      };
+    }
+    
+    // Handle timeout errors
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      log('ERROR: Ruff execution timed out');
+      return {
+        success: false,
+        linter: 'ruff',
+        file: filePath,
+        violations: [],
+        executionFailure: true,
+        failureType: 'timeout',
+        message: `Ruff execution timed out (>${CONFIG.timeout}ms)`,
+        suggestion: 'Check file complexity or increase timeout in hook configuration'
+      };
+    }
+    
+    // Log stderr for debugging
+    if (error.stderr) {
+      log(`Ruff stderr: ${error.stderr}`);
     }
     
     log(`Unexpected error running ruff: ${error.message}`);
-    return { success: true, linter: 'ruff', file: filePath, violations: [] };
+    return { 
+      success: false, 
+      linter: 'ruff', 
+      file: filePath, 
+      violations: [],
+      executionFailure: true,
+      failureType: 'execution_error',
+      message: `Ruff execution failed: ${error.message}`,
+      suggestion: 'Check the log file for detailed error information'
+    };
   }
 }
 
@@ -554,8 +676,8 @@ async function runJavaScriptLinter(filePath, projectPath) {
       eslintCommand = localEslintCmd;
     }
     
-    // Properly quote command and file path for cross-platform compatibility
-    const quotedCommand = process.platform === 'win32' ? `"${eslintCommand}"` : eslintCommand;
+    // Properly quote command and file path for cross-platform compatibility - always quote paths with spaces
+    const quotedCommand = `"${eslintCommand}"`;
     const quotedFile = `"${filePath}"`;
     const fullCommand = `${quotedCommand} ${quotedFile} --format json`;
     
@@ -619,12 +741,50 @@ async function runJavaScriptLinter(filePath, projectPath) {
     if (error.message.includes('command not found') || 
         error.message.includes('not recognized') ||
         error.message.includes('ENOENT')) {
-      log('ESLint not found - marking as skipped');
-      return { success: true, linter: 'eslint', file: filePath, violations: [], skipped: true, reason: 'ESLint not installed' };
+      log('ESLint not found - marking as failed');
+      return { 
+        success: false, 
+        linter: 'eslint', 
+        file: filePath, 
+        violations: [],
+        executionFailure: true,
+        failureType: 'missing_dependency',
+        message: 'ESLint is not installed or not found',
+        suggestion: 'Install ESLint: npm install eslint'
+      };
+    }
+    
+    // Handle timeout errors
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      log('ERROR: ESLint execution timed out');
+      return {
+        success: false,
+        linter: 'eslint',
+        file: filePath,
+        violations: [],
+        executionFailure: true,
+        failureType: 'timeout',
+        message: `ESLint execution timed out (>${CONFIG.timeout}ms)`,
+        suggestion: 'Check file complexity or increase timeout in hook configuration'
+      };
+    }
+    
+    // Log stderr for debugging
+    if (error.stderr) {
+      log(`ESLint stderr: ${error.stderr}`);
     }
     
     log(`Unexpected ESLint error: ${error.message}`);
-    return { success: true, linter: 'eslint', file: filePath, violations: [] };
+    return { 
+      success: false, 
+      linter: 'eslint', 
+      file: filePath, 
+      violations: [],
+      executionFailure: true,
+      failureType: 'execution_error',
+      message: `ESLint execution failed: ${error.message}`,
+      suggestion: 'Check the log file for detailed error information'
+    };
   }
 }
 
@@ -658,7 +818,179 @@ async function lintFile(filePath, projectPath) {
   }
 }
 
-function formatLinterPrompt(results) {
+function writeLinterErrorsFile(resultsWithViolations, projectPath) {
+  const developmentDir = path.join(projectPath, 'development');
+  const errorsFilePath = path.join(developmentDir, 'linter-errors.md');
+  
+  // Ensure development directory exists
+  try {
+    if (!fs.existsSync(developmentDir)) {
+      fs.mkdirSync(developmentDir, { recursive: true });
+      log(`Created development directory: ${developmentDir}`);
+    }
+  } catch (error) {
+    log(`Failed to create development directory: ${error.message}`);
+    // Fallback to project root if development dir creation fails
+    const fallbackPath = path.join(projectPath, 'linter-errors.md');
+    log(`Using fallback path: ${fallbackPath}`);
+    return writeLinterErrorsToPath(resultsWithViolations, fallbackPath);
+  }
+  
+  // Sort files by severity (same as in prompt)
+  const sortedResults = resultsWithViolations.sort((a, b) => {
+    const aErrors = a.violations.filter(v => v.severity === 'error').length;
+    const bErrors = b.violations.filter(v => v.severity === 'error').length;
+    if (aErrors !== bErrors) {
+      return bErrors - aErrors;
+    }
+    return b.violations.length - a.violations.length;
+  });
+  
+  const totalViolations = resultsWithViolations.reduce((sum, r) => sum + r.violations.length, 0);
+  const errors = resultsWithViolations.flatMap(r => r.violations.filter(v => v.severity === 'error'));
+  const warnings = resultsWithViolations.flatMap(r => r.violations.filter(v => v.severity === 'warning'));
+  
+  let content = `# Linter Errors Report\n\n`;
+  content += `**Generated:** ${new Date().toISOString()}\n`;
+  content += `**Total Issues:** ${totalViolations} (${errors.length} errors, ${warnings.length} warnings)\n`;
+  content += `**Files:** ${resultsWithViolations.length}\n\n`;
+  
+  for (const result of sortedResults) {
+    const fileName = result.projectWide ? 
+      `${path.basename(result.file)} (${result.linter} - project scan)` :
+      `${path.basename(result.file)} (${result.linter})`;
+    
+    content += `## ${fileName}\n\n`;
+    content += `**File Path:** \`${result.file}\`\n`;
+    content += `**Issues:** ${result.violations.length}\n\n`;
+    
+    // Sort violations by severity, then line number
+    const sortedViolations = result.violations.sort((a, b) => {
+      if (a.severity !== b.severity) {
+        return a.severity === 'error' ? -1 : 1;
+      }
+      return a.line - b.line;
+    });
+    
+    for (const violation of sortedViolations) {
+      const icon = violation.severity === 'error' ? '❌' : '⚠️';
+      const fixable = violation.fixable ? ' (auto-fixable)' : '';
+      content += `${icon} **Line ${violation.line}:${violation.column}** - ${violation.message}`;
+      if (violation.code) {
+        content += ` \`[${violation.code}]\``;
+      }
+      content += `${fixable}\n\n`;
+    }
+    
+    content += `---\n\n`;
+  }
+  
+  return writeLinterErrorsToPath(resultsWithViolations, errorsFilePath, content);
+}
+
+function writeLinterErrorsToPath(resultsWithViolations, filePath, content = null) {
+  if (!content) {
+    // Generate content if not provided (for fallback case)
+    const sortedResults = resultsWithViolations.sort((a, b) => {
+      const aErrors = a.violations.filter(v => v.severity === 'error').length;
+      const bErrors = b.violations.filter(v => v.severity === 'error').length;
+      if (aErrors !== bErrors) {
+        return bErrors - aErrors;
+      }
+      return b.violations.length - a.violations.length;
+    });
+    
+    const totalViolations = resultsWithViolations.reduce((sum, r) => sum + r.violations.length, 0);
+    const errors = resultsWithViolations.flatMap(r => r.violations.filter(v => v.severity === 'error'));
+    const warnings = resultsWithViolations.flatMap(r => r.violations.filter(v => v.severity === 'warning'));
+    
+    content = `# Linter Errors Report\n\n`;
+    content += `**Generated:** ${new Date().toISOString()}\n`;
+    content += `**Total Issues:** ${totalViolations} (${errors.length} errors, ${warnings.length} warnings)\n`;
+    content += `**Files:** ${resultsWithViolations.length}\n\n`;
+    
+    for (const result of sortedResults) {
+      const fileName = result.projectWide ? 
+        `${path.basename(result.file)} (${result.linter} - project scan)` :
+        `${path.basename(result.file)} (${result.linter})`;
+      
+      content += `## ${fileName}\n\n`;
+      content += `**File Path:** \`${result.file}\`\n`;
+      content += `**Issues:** ${result.violations.length}\n\n`;
+      
+      // Sort violations by severity, then line number
+      const sortedViolations = result.violations.sort((a, b) => {
+        if (a.severity !== b.severity) {
+          return a.severity === 'error' ? -1 : 1;
+        }
+        return a.line - b.line;
+      });
+      
+      for (const violation of sortedViolations) {
+        const icon = violation.severity === 'error' ? '❌' : '⚠️';
+        const fixable = violation.fixable ? ' (auto-fixable)' : '';
+        content += `${icon} **Line ${violation.line}:${violation.column}** - ${violation.message}`;
+        if (violation.code) {
+          content += ` \`[${violation.code}]\``;
+        }
+        content += `${fixable}\n\n`;
+      }
+      
+      content += `---\n\n`;
+    }
+  }
+  
+  // Write file (overwrite any existing version)
+  try {
+    fs.writeFileSync(filePath, content, 'utf8');
+    log(`Wrote complete linting report to: ${filePath}`);
+    return filePath;
+  } catch (error) {
+    log(`Failed to write linter errors file: ${error.message}`);
+    return null;
+  }
+}
+
+
+function formatLinterFailurePrompt(failures, projectPath) {
+  if (failures.length === 0) {
+    return '';
+  }
+  
+  const logFile = path.join(projectPath, 'post-tool-linter-hook.log');
+  const relativeLogPath = path.relative(projectPath, logFile);
+  
+  let prompt = `# 🚨 LINTER EXECUTION FAILED - CHECK CONFIGURATION\n\n`;
+  prompt += `Linter execution failed for ${failures.length} linter${failures.length !== 1 ? 's' : ''}. `;
+  prompt += `This indicates setup or configuration issues that need to be resolved.\n\n`;
+  
+  // Group failures by type
+  const failuresByType = failures.reduce((acc, failure) => {
+    const type = failure.failureType || 'unknown';
+    if (!acc[type]) acc[type] = [];
+    acc[type].push(failure);
+    return acc;
+  }, {});
+  
+  for (const [failureType, typeFailures] of Object.entries(failuresByType)) {
+    prompt += `## ${failureType.charAt(0).toUpperCase() + failureType.slice(1)} Issues\n\n`;
+    
+    for (const failure of typeFailures) {
+      prompt += `**${failure.linter}**: ${failure.message}\n`;
+      if (failure.suggestion) {
+        prompt += `💡 *${failure.suggestion}*\n`;
+      }
+      prompt += `\n`;
+    }
+  }
+  
+  prompt += `📄 **Detailed logs**: \`${relativeLogPath}\`\n\n`;
+  prompt += `**REQUIRED**: Fix the linter setup issues above before proceeding. Check the log file for detailed error information.\n`;
+  
+  return prompt;
+}
+
+function formatLinterPrompt(results, projectPath, editedFiles = [], taskCreated = false) {
   const resultsWithViolations = results.filter(r => r.violations && r.violations.length > 0);
   
   if (resultsWithViolations.length === 0) {
@@ -673,67 +1005,59 @@ function formatLinterPrompt(results) {
     r.violations.filter(v => v.severity === 'warning')
   );
   
-  const isProjectWide = resultsWithViolations.some(r => r.projectWide);
-  const scopeText = isProjectWide ? 'CODEBASE-WIDE' : 'FILE-SPECIFIC';
+  // Filter results for edited files
+  const editedFilesWithViolations = resultsWithViolations.filter(r => 
+    editedFiles.some(editedFile => r.file === editedFile)
+  );
   
-  let prompt = `# 🚨 ${scopeText} LINTING ERRORS DETECTED - FIX REQUIRED\n\n`;
+  // Write all errors to a file for the Claude agent to access
+  const errorsFilePath = writeLinterErrorsFile(resultsWithViolations, projectPath);
+  const relativeErrorsPath = path.relative(projectPath, errorsFilePath);
+  
+  // Generate enhanced prompt with edited file details
+  let prompt = `# 🚨 LINTING ERRORS DETECTED - FIX IMMEDIATELY\n\n`;
   prompt += `Found ${totalViolations} linting issue${totalViolations !== 1 ? 's' : ''} `;
   prompt += `(${errors.length} error${errors.length !== 1 ? 's' : ''}, `;
   prompt += `${warnings.length} warning${warnings.length !== 1 ? 's' : ''}) `;
-  prompt += `across ${resultsWithViolations.length} file${resultsWithViolations.length !== 1 ? 's' : ''}:\n\n`;
+  prompt += `across ${resultsWithViolations.length} file${resultsWithViolations.length !== 1 ? 's' : ''}.\n\n`;
   
-  // Group by file
-  for (const result of resultsWithViolations) {
-    const fileName = result.projectWide ? 
-      `${path.basename(result.file)} (${result.linter} - project scan)` :
-      `${path.basename(result.file)} (${result.linter})`;
+  // Show specific errors for edited files
+  if (editedFilesWithViolations.length > 0) {
+    prompt += `## Errors in Files You Just Edited:\n\n`;
     
-    prompt += `## ${fileName}\n\n`;
-    
-    // Sort violations by line number
-    const sortedViolations = result.violations.sort((a, b) => a.line - b.line);
-    
-    for (const violation of sortedViolations) {
-      const icon = violation.severity === 'error' ? '❌' : '⚠️';
-      const fixable = violation.fixable ? ' (auto-fixable)' : '';
-      prompt += `${icon} Line ${violation.line}:${violation.column} - `;
-      prompt += `${violation.message}`;
-      if (violation.code) {
-        prompt += ` [${violation.code}]`;
+    for (const result of editedFilesWithViolations) {
+      const fileName = path.basename(result.file);
+      const linterName = result.linter || 'unknown';
+      prompt += `### ${fileName} (${linterName})\n`;
+      
+      // Sort violations by severity (errors first), then by line number
+      const sortedViolations = result.violations.sort((a, b) => {
+        if (a.severity !== b.severity) {
+          return a.severity === 'error' ? -1 : 1;
+        }
+        return a.line - b.line;
+      });
+      
+      for (const violation of sortedViolations) {
+        const icon = violation.severity === 'error' ? '❌' : '⚠️';
+        const fixable = violation.fixable ? ' (auto-fixable)' : '';
+        prompt += `${icon} Line ${violation.line}:${violation.column} - ${violation.message}`;
+        if (violation.code) {
+          prompt += ` [${violation.code}]`;
+        }
+        prompt += `${fixable}\n`;
       }
-      prompt += fixable;
       prompt += '\n';
     }
-    prompt += '\n';
   }
   
-  prompt += `## REQUIRED ACTIONS:\n\n`;
-  prompt += `1. **STOP all other work** - Code quality must be maintained\n`;
-  prompt += `2. **Fix all errors first** (${errors.length} error${errors.length !== 1 ? 's' : ''})
-`;
-  prompt += `3. **Then fix warnings** (${warnings.length} warning${warnings.length !== 1 ? 's' : ''})
-`;
-  prompt += `4. **Use the Edit tool** to correct each issue\n`;
-  prompt += `5. **Preserve functionality** while fixing style issues\n\n`;
+  prompt += `📄 **Complete details:** \`${relativeErrorsPath}\`\n\n`;
   
-  const hasFixable = resultsWithViolations.some(r => 
-    r.violations.some(v => v.fixable)
-  );
-  
-  if (hasFixable) {
-    prompt += `💡 **Tip**: Some issues are auto-fixable. `;
-    if (isProjectWide) {
-      prompt += `Run \`ruff check --fix .\` or \`eslint --fix .\` to auto-fix project-wide issues.\n\n`;
-    } else {
-      prompt += `Run \`ruff check --fix\` or \`eslint --fix\` on individual files.\n\n`;
-    }
+  if (taskCreated) {
+    prompt += `🎯 **NEXT TASK CREATED**: A high-priority task to fix these linter errors has been created and set as your NEXT task in TODO.json. All linter errors must be addressed immediately before proceeding with other work.\n`;
+  } else {
+    prompt += `**REQUIRED:** Fix all errors before proceeding. Use the Read tool to view the detailed report file.\n`;
   }
-  
-  if (isProjectWide) {
-    prompt += `**Note**: This was a codebase-wide scan. Issues may exist in files beyond those recently modified.\n\n`;
-  }
-  
-  prompt += `Remember: Clean code is maintainable code. Fix these issues before proceeding.\n`;
   
   return prompt;
 }
@@ -818,18 +1142,35 @@ async function main() {
         if (result.reason) log(`  Reason: ${result.reason}`);
       });
       
-      // Check if any linting issues were found
-      const hasIssues = results.some(r => !r.success && !r.skipped);
-      log(`\nHas linting issues: ${hasIssues}`);
+      // Check for execution failures vs violations
+      const executionFailures = results.filter(r => r.executionFailure);
+      const hasViolations = results.some(r => !r.success && !r.executionFailure && !r.skipped);
       
-      if (hasIssues) {
+      log(`\nExecution failures: ${executionFailures.length}`);
+      log(`Has linting violations: ${hasViolations}`);
+      
+      // Handle execution failures first (higher priority)
+      if (executionFailures.length > 0) {
+        const failurePrompt = formatLinterFailurePrompt(executionFailures, projectPath);
+        if (failurePrompt) {
+          log('\nGenerating execution failure prompt for Claude...');
+          log(`Failure prompt length: ${failurePrompt.length} characters`);
+          process.stderr.write(failurePrompt);
+          log('\nExiting with code 2 - prompting Claude to fix execution failures');
+          writeLogFile();
+          process.exit(2); // Force continuation with prompt
+        }
+      }
+      
+      // Handle violations if no execution failures
+      if (hasViolations) {
         // Format and output prompt for Claude
-        const prompt = formatLinterPrompt(results);
+        const prompt = formatLinterPrompt(results, projectPath, filePaths);
         if (prompt) {
-          log('\nGenerating prompt for Claude...');
+          log('\nGenerating violations prompt for Claude...');
           log(`Prompt length: ${prompt.length} characters`);
           process.stderr.write(prompt);
-          log('\nExiting with code 2 - prompting Claude to fix issues');
+          log('\nExiting with code 2 - prompting Claude to fix violations');
           writeLogFile();
           process.exit(2); // Force continuation with prompt
         }

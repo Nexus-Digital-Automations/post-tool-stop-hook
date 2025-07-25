@@ -219,7 +219,7 @@ async function runAllTests() {
   
   for (const result of results) {
     const status = result.code === 0 ? '✅ PASS' : 
-                   result.code === 2 ? '🔍 LINT' : '❌ FAIL';
+      result.code === 2 ? '🔍 LINT' : '❌ FAIL';
     console.log(`${status} ${result.name} (exit: ${result.code})`);
   }
   
