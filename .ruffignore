@@ -1,0 +1,10 @@
+# Test ruffignore file
+__pycache__/
+*.pyc
+.pytest_cache/
+coverage/
+development/
+*.log
+node_modules/
+.git/
+test_python_file.py

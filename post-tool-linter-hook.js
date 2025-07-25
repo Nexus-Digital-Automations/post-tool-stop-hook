@@ -78,6 +78,153 @@ const CONFIG = {
   skipExtensions: ['.json', '.md', '.txt', '.yml', '.yaml', '.xml', '.csv', '.log']
 };
 
+// Ignore file handling functions
+function readIgnoreFile(ignoreFilePath) {
+  log(`Reading ignore file: ${ignoreFilePath}`);
+  
+  try {
+    if (!fs.existsSync(ignoreFilePath)) {
+      log(`Ignore file not found: ${ignoreFilePath}`);
+      return [];
+    }
+    
+    const content = fs.readFileSync(ignoreFilePath, 'utf8');
+    const patterns = content
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line && !line.startsWith('#')) // Remove empty lines and comments
+      .map(pattern => {
+        // Convert gitignore-style patterns to glob patterns
+        if (pattern.endsWith('/')) {
+          return `${pattern}**`; // Directory patterns
+        }
+        if (!pattern.includes('/')) {
+          return `**/${pattern}`; // File patterns should match anywhere
+        }
+        return pattern;
+      });
+    
+    log(`Loaded ${patterns.length} ignore patterns from ${ignoreFilePath}`);
+    return patterns;
+  } catch (error) {
+    log(`Failed to read ignore file ${ignoreFilePath}: ${error.message}`);
+    return [];
+  }
+}
+
+function shouldIgnoreFile(filePath, ignorePatterns, projectPath) {
+  if (!ignorePatterns || ignorePatterns.length === 0) {
+    return false;
+  }
+  
+  // Convert absolute path to relative for pattern matching
+  const relativePath = path.relative(projectPath, filePath);
+  
+  // Test against each ignore pattern
+  for (const pattern of ignorePatterns) {
+    // Simple glob matching - exact match or wildcard
+    if (pattern === relativePath) {
+      log(`File ${relativePath} matches exact ignore pattern: ${pattern}`);
+      return true;
+    }
+    
+    // Check if pattern ends with wildcard and matches prefix
+    if (pattern.endsWith('**') && relativePath.startsWith(pattern.slice(0, -2))) {
+      log(`File ${relativePath} matches directory ignore pattern: ${pattern}`);
+      return true;
+    }
+    
+    // Check filename patterns (like *.log, *.tmp)
+    if (pattern.startsWith('**/') && pattern.includes('*')) {
+      const filePattern = pattern.substring(3); // Remove **/ prefix
+      const fileName = path.basename(relativePath);
+      
+      if (filePattern.includes('*')) {
+        // Simple wildcard matching
+        const regexPattern = filePattern
+          .replace(/\./g, '\\.')
+          .replace(/\*/g, '.*');
+        const regex = new RegExp(`^${regexPattern}$`);
+        
+        if (regex.test(fileName)) {
+          log(`File ${relativePath} matches filename pattern: ${pattern}`);
+          return true;
+        }
+      }
+    }
+    
+    // Check path patterns (like build/, dist/, etc.)
+    if (relativePath.includes('/')) {
+      const pathParts = relativePath.split('/');
+      for (const part of pathParts) {
+        if (pattern === part || (pattern.endsWith('**') && part.startsWith(pattern.slice(0, -2)))) {
+          log(`File ${relativePath} matches path component pattern: ${pattern}`);
+          return true;
+        }
+      }
+    }
+  }
+  
+  return false;
+}
+
+function loadIgnorePatternsForLinter(linterType, projectPath) {
+  log(`Loading ignore patterns for ${linterType} linter`);
+  
+  if (!CONFIG.respectIgnoreFiles) {
+    log('Ignore file support is disabled in configuration');
+    return [];
+  }
+  
+  const linterConfig = CONFIG.linters[linterType];
+  if (!linterConfig || !linterConfig.ignoreFiles) {
+    log(`No ignore files configured for ${linterType}`);
+    return [];
+  }
+  
+  let allPatterns = [];
+  
+  for (const ignoreFile of linterConfig.ignoreFiles) {
+    const ignoreFilePath = path.join(projectPath, ignoreFile);
+    const patterns = readIgnoreFile(ignoreFilePath);
+    allPatterns = allPatterns.concat(patterns);
+  }
+  
+  log(`Total ignore patterns loaded for ${linterType}: ${allPatterns.length}`);
+  return allPatterns;
+}
+
+function filterFilesWithIgnoreRules(filePaths, projectPath) {
+  log(`Filtering ${filePaths.length} files with ignore rules`);
+  
+  if (!CONFIG.respectIgnoreFiles) {
+    log('Ignore file support disabled, returning all files');
+    return filePaths;
+  }
+  
+  const filteredFiles = [];
+  
+  for (const filePath of filePaths) {
+    const fileType = getFileType(filePath);
+    let shouldIgnore = false;
+    
+    if (fileType) {
+      // Load ignore patterns for this file type
+      const ignorePatterns = loadIgnorePatternsForLinter(fileType, projectPath);
+      shouldIgnore = shouldIgnoreFile(filePath, ignorePatterns, projectPath);
+    }
+    
+    if (shouldIgnore) {
+      log(`Ignoring file due to ignore patterns: ${path.relative(projectPath, filePath)}`);
+    } else {
+      filteredFiles.push(filePath);
+    }
+  }
+  
+  log(`Filtered ${filePaths.length} files down to ${filteredFiles.length} files`);
+  return filteredFiles;
+}
+
 // Utility functions
 function validateConfigFile(configPath, type) {
   log(`Validating ${type} config file: ${configPath}`);
@@ -193,7 +340,7 @@ async function runPythonProjectLinter(projectPath) {
   log(`Running Python project linter (ruff) on: ${projectPath}`);
   
   try {
-    const command = 'ruff check . --output-format json';
+    const command = 'ruff check . --output-format json --respect-gitignore';
     log(`Executing project command: ${command}`);
     
     const result = execSync(command, {
@@ -550,15 +697,21 @@ function extractFilePaths(hookData) {
     return exists;
   });
   
-  log(`Total paths found: ${existingPaths.length}`);
-  return existingPaths;
+  log(`Total paths found before filtering: ${existingPaths.length}`);
+  
+  // Apply ignore file filtering
+  const projectPath = hookData.cwd || process.cwd();
+  const filteredPaths = filterFilesWithIgnoreRules(existingPaths, projectPath);
+  
+  log(`Total paths after ignore filtering: ${filteredPaths.length}`);
+  return filteredPaths;
 }
 
 async function runPythonLinter(filePath, projectPath) {
   log(`Running Python linter (ruff) on: ${filePath}`);
   
   try {
-    const command = `ruff check "${filePath}" --output-format json`;
+    const command = `ruff check "${filePath}" --output-format json --respect-gitignore`;
     log(`Executing command: ${command}`);
     
     const result = execSync(command, {
