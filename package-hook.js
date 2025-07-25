@@ -454,7 +454,7 @@ class HookPackager {
     });
   }
     
-  getAllFiles(dir, currentDepth = 0, maxDepth = 10) {
+  getAllFiles(dir, currentDepth = 0, maxDepth = 10, visitedPaths = new Set()) {
     const files = [];
     
     // Check depth limit to prevent stack overflow
@@ -463,15 +463,39 @@ class HookPackager {
       return files;
     }
     
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-        
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        files.push(...this.getAllFiles(fullPath, currentDepth + 1, maxDepth));
-      } else {
-        files.push(fullPath);
+    // Resolve real path to detect circular symlinks
+    let realPath;
+    try {
+      realPath = fs.realpathSync(dir);
+    } catch (error) {
+      // If we can't resolve the real path, skip this directory
+      this.log(`⚠️ Cannot resolve path: ${dir} - ${error.message}`);
+      return files;
+    }
+    
+    // Check for circular symlink
+    if (visitedPaths.has(realPath)) {
+      this.log(`⚠️ Circular symlink detected, skipping: ${dir} → ${realPath}`);
+      return files;
+    }
+    
+    // Add current path to visited set
+    visitedPaths.add(realPath);
+    
+    try {
+      const entries = fs.readdirSync(dir, { withFileTypes: true });
+          
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          files.push(...this.getAllFiles(fullPath, currentDepth + 1, maxDepth, visitedPaths));
+        } else {
+          files.push(fullPath);
+        }
       }
+    } finally {
+      // Remove current path from visited set when backtracking
+      visitedPaths.delete(realPath);
     }
         
     return files;
