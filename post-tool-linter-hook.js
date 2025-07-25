@@ -558,7 +558,7 @@ async function runPythonLinter(filePath, projectPath) {
   log(`Running Python linter (ruff) on: ${filePath}`);
   
   try {
-    const command = `ruff check "${filePath}" --format json`;
+    const command = `ruff check "${filePath}" --output-format json`;
     log(`Executing command: ${command}`);
     
     const result = execSync(command, {

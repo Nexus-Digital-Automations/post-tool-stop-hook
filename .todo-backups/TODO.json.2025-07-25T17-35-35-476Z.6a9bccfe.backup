@@ -517,7 +517,7 @@
           "status": "pending",
           "success_criteria": [
             "Hook activates on Edit tool execution",
-            "Hook activates on Write tool execution",
+            "Hook activates on Write tool execution", 
             "Hook activates on MultiEdit tool execution",
             "Hook respects timeout configuration (15s default)",
             "Hook handles concurrent tool executions gracefully",
@@ -533,7 +533,7 @@
           "id": "test-linter-detection-accuracy",
           "title": "Test linter error detection and reporting accuracy",
           "description": "Validate that linters (ESLint, Ruff) correctly detect violations and generate accurate reports",
-          "mode": "TESTING",
+          "mode": "TESTING", 
           "priority": "high",
           "status": "pending",
           "success_criteria": [
@@ -555,7 +555,7 @@
           "title": "Test smart task placement in realistic workflow scenarios",
           "description": "Verify intelligent task insertion works correctly across various TODO.json states and project configurations",
           "mode": "TESTING",
-          "priority": "high",
+          "priority": "high", 
           "status": "pending",
           "success_criteria": [
             "Tasks inserted at correct position after current task",
@@ -578,7 +578,7 @@
           "description": "Verify that TODO.json modifications are atomic, safe, and include proper backup mechanisms",
           "mode": "TESTING",
           "priority": "high",
-          "status": "pending",
+          "status": "pending", 
           "success_criteria": [
             "Backup files created before TODO.json modification",
             "Backup files have proper timestamped naming convention",
@@ -659,7 +659,7 @@
       "description": "Update Ruff command line arguments to be compatible with current Ruff version that does not support --format flag",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "post-tool-linter-hook.test.js",
         "post-tool-linter-hook.js"
@@ -673,17 +673,7 @@
       "requires_research": false,
       "subtasks": [],
       "is_remediation_task": true,
-      "strike_failure_source": "strike-1",
-      "completed_at": "2025-07-25T18:02:15.000Z",
-      "completion_notes": [
-        "Successfully fixed Ruff command format compatibility issue",
-        "Root cause: runPythonLinter function used --format json instead of --output-format json",
-        "Fixed line 561 in post-tool-linter-hook.js to use correct --output-format flag",
-        "Verified CONFIG section was already correct with --output-format json",
-        "All 23 tests now pass including Python linting functionality",
-        "Ruff command execution works correctly with current Ruff version",
-        "Test suite achieves 100% pass rate as required by success criteria"
-      ]
+      "strike_failure_source": "strike-1"
     },
     {
       "id": "review-strike-2-dup-18",
@@ -711,7 +701,7 @@
   "review_strikes": 0,
   "strikes_completed_last_run": false,
   "current_task_index": 4,
-  "last_mode": "DEVELOPMENT",
-  "execution_count": 33,
-  "last_hook_activation": 1753464935475
+  "last_mode": "TASK_CREATION",
+  "execution_count": 32,
+  "last_hook_activation": 1753464821851
 }
