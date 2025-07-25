@@ -1,13 +1,13 @@
-[2025-07-25T20:25:53.020Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-25T20:25:53.021Z] Date: 2025-07-25T20:25:53.021Z
-[2025-07-25T20:25:53.021Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-25T20:25:53.021Z] Node Version: v23.9.0
-[2025-07-25T20:25:53.021Z] Platform: darwin
-[2025-07-25T20:25:53.021Z] 
-[2025-07-25T20:25:53.021Z] === HOOK EXECUTION START ===
-[2025-07-25T20:25:53.021Z] Tool: Bash
-[2025-07-25T20:25:53.021Z] Session ID: 9780348b-2cc8-4986-a8df-1683a71ef4d2
-[2025-07-25T20:25:53.021Z] Hook input:
+[2025-07-25T20:26:51.594Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-25T20:26:51.595Z] Date: 2025-07-25T20:26:51.595Z
+[2025-07-25T20:26:51.595Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-25T20:26:51.595Z] Node Version: v23.9.0
+[2025-07-25T20:26:51.595Z] Platform: darwin
+[2025-07-25T20:26:51.595Z] 
+[2025-07-25T20:26:51.595Z] === HOOK EXECUTION START ===
+[2025-07-25T20:26:51.595Z] Tool: Bash
+[2025-07-25T20:26:51.595Z] Session ID: 9780348b-2cc8-4986-a8df-1683a71ef4d2
+[2025-07-25T20:26:51.595Z] Hook input:
   Data: {
   "session_id": "9780348b-2cc8-4986-a8df-1683a71ef4d2",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/9780348b-2cc8-4986-a8df-1683a71ef4d2.jsonl",
@@ -15,14 +15,14 @@
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
   "tool_input": {
-    "command": "cd /Users/jeremyparker/Desktop/Claude\\ Coding\\ Projects/post-tool-stop-hook && node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('unit-tests-setup-linter-1753474128354', 'completed').then(() => console.log('✅ Task creation task completed - no additional tasks needed')).catch(err => console.error('❌ Error:', err.message));\"",
-    "description": "Complete the task creation task"
+    "command": "cd /Users/jeremyparker/Desktop/Claude\\ Coding\\ Projects/post-tool-stop-hook && npm test -- setup-linter-hook.test.js",
+    "description": "Run setup-linter-hook tests to confirm they pass"
   },
   "tool_response": {
-    "stdout": "✅ Task creation task completed - no additional tasks needed",
+    "stdout": "> post-tool-linter-hook@1.0.0 test\n> jest setup-linter-hook.test.js\nPASS ./setup-linter-hook.test.js\n  Setup Linter Hook Script\n    Constants and Configuration\n      ✓ should have functions available for testing (1 ms)\n    ensureSettingsDirectory\n      ✓ should create settings directory if it does not exist\n      ✓ should not create directory if it already exists (1 ms)\n    loadSettings\n      ✓ should load existing settings file\n      ✓ should return empty object when file does not exist\n      ✓ should exit process when file is corrupted (1 ms)\n      ✓ should handle read errors gracefully\n    setupHook\n      ✓ should install hook successfully\n      ✓ should exit when hook script does not exist (1 ms)\n      ✓ should update existing hook configuration\n      ✓ should handle write errors gracefully\n      ✓ should create proper hook configuration structure\n      ✓ should initialize hooks structure if missing\n    showCurrentConfig\n      ✓ should display current linter hook configuration\n      ✓ should show message when no linter hook configured\n      ✓ should show message when no hooks configured\n      ✓ should handle missing PostToolUse section\n    Error handling and edge cases\n      ✓ should handle file system errors during setup (6 ms)\n      ✓ should handle complex existing hook structures\n      ✓ should preserve other hooks when updating\n\nTest Suites: 1 passed, 1 total\nTests:       20 passed, 20 total\nSnapshots:   0 total\nTime:        0.14 s, estimated 1 s\nRan all test suites matching /setup-linter-hook.test.js/i.",
     "stderr": "",
     "interrupted": false,
     "isImage": false
   }
 }
-[2025-07-25T20:25:53.021Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-25T20:26:51.595Z] Tool Bash is not in enabled tools list, skipping
