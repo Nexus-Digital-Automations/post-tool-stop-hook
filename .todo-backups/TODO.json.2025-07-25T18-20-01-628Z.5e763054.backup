@@ -125,7 +125,7 @@
       "description": "Fix 0 errors and 2 warnings found in recently edited files: test-deduplication.js",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "development/linter-errors.md",
         "test-deduplication.js"

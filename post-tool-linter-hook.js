@@ -1051,18 +1051,67 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], taskCreated 
     }
   }
   
-  prompt += `📄 **Complete details:** \`${relativeErrorsPath}\`\n\n`;
+  prompt += `## 🔧 REQUIRED ACTIONS\n\n`;
+  prompt += `📄 **REQUIRED ACTION**: Read \`${relativeErrorsPath}\` using the Read tool and fix EVERY error listed in that file.\n\n`;
   
   if (taskCreated) {
-    prompt += `🎯 **NEXT TASK CREATED**: A high-priority task to fix these linter errors has been created and set as your NEXT task in TODO.json. All linter errors must be addressed immediately before proceeding with other work.\n`;
+    prompt += `🎯 **NEXT TASK CREATED**: A high-priority task to fix these linter errors has been created and set as your NEXT task in TODO.json.\n\n`;
+    prompt += `**IMMEDIATE STEPS REQUIRED:**\n`;
+    prompt += `1. Read \`${relativeErrorsPath}\` using the Read tool\n`;
+    prompt += `2. Fix EVERY linter error listed in that file\n`;
+    prompt += `3. Verify all fixes by running the linters again\n\n`;
   } else {
-    prompt += `**REQUIRED:** Fix all errors before proceeding. Use the Read tool to view the detailed report file.\n`;
+    prompt += `**IMMEDIATE STEPS REQUIRED:**\n`;
+    prompt += `1. Use the Read tool to read \`${relativeErrorsPath}\`\n`;
+    prompt += `2. Fix EVERY linter error listed in that file\n`;
+    prompt += `3. Verify all fixes by running the linters again\n`;
+    prompt += `4. Do not proceed with other work until ALL errors are resolved\n\n`;
   }
   
   return prompt;
 }
 
 // Smart Task Management Functions
+
+function removeLinterTasks(todoData) {
+  log('Removing existing linter tasks to prevent accumulation...');
+  
+  const tasks = todoData.tasks || [];
+  const initialTaskCount = tasks.length;
+  
+  // Find all linter tasks (both pending and completed)
+  const linterTaskIndices = [];
+  tasks.forEach((task, index) => {
+    if (task.is_linter_task === true) {
+      linterTaskIndices.push(index);
+      log(`Found linter task to remove: ${task.id} (${task.status}) at index ${index}`);
+    }
+  });
+  
+  // Remove linter tasks from highest index to lowest to maintain indices
+  linterTaskIndices.sort((a, b) => b - a);
+  linterTaskIndices.forEach(index => {
+    const removedTask = tasks.splice(index, 1)[0];
+    log(`Removed linter task: ${removedTask.id} (${removedTask.status})`);
+  });
+  
+  const finalTaskCount = tasks.length;
+  const removedCount = initialTaskCount - finalTaskCount;
+  
+  log(`Removed ${removedCount} linter tasks, ${finalTaskCount} tasks remain`);
+  
+  // Update current_task_index if needed
+  if (todoData.current_task_index >= finalTaskCount && finalTaskCount > 0) {
+    todoData.current_task_index = finalTaskCount - 1;
+    log(`Adjusted current_task_index to ${todoData.current_task_index}`);
+  }
+  
+  return {
+    removedCount,
+    finalTaskCount,
+    updatedTodoData: todoData
+  };
+}
 
 async function analyzeTodoState(projectPath) {
   log('Analyzing TODO.json state for smart task placement...');
@@ -1115,7 +1164,7 @@ function determineInsertionPoint(analysis) {
 }
 
 async function createSmartLinterTask(results, projectPath, filePaths, _analysis) {
-  log('Creating smart linter task...');
+  log('Creating standardized smart linter task...');
   
   const resultsWithViolations = results.filter(r => r.violations && r.violations.length > 0);
   const totalViolations = resultsWithViolations.reduce((sum, r) => sum + r.violations.length, 0);
@@ -1126,30 +1175,38 @@ async function createSmartLinterTask(results, projectPath, filePaths, _analysis)
     r.violations.filter(v => v.severity === 'warning')
   );
   
-  const taskId = `linter_fix_${Date.now()}`;
+  // Standardized task ID - predictable format
+  const taskId = 'linter_task_active';
   const fileList = filePaths.map(fp => path.basename(fp)).join(', ');
   
+  // Standardized linter task format
   const linterTask = {
     id: taskId,
     title: 'Fix Linter Errors - IMMEDIATE',
-    description: `Fix ${errors.length} errors and ${warnings.length} warnings found in recently edited files: ${fileList}`,
+    description: `Fix ${errors.length} error${errors.length !== 1 ? 's' : ''} and ${warnings.length} warning${warnings.length !== 1 ? 's' : ''} found in recently edited files: ${fileList}`,
     mode: 'DEVELOPMENT',
     priority: 'high',
     status: 'pending',
     important_files: [
-      'development/linter-errors.md', // Always include the linter errors file
-      ...filePaths.map(fp => path.relative(projectPath, fp))
-    ],
+      'development/linter-errors.md', // Always include the linter errors file first
+      ...filePaths.map(fp => path.relative(projectPath, fp)).filter(Boolean)
+    ].filter((file, index, arr) => arr.indexOf(file) === index), // Remove duplicates
     success_criteria: [
       'All linter errors in edited files resolved',
       'development/linter-errors.md shows no issues for edited files',
       'Code passes linting without warnings or errors'
     ],
     created_at: new Date().toISOString(),
-    is_linter_task: true
+    is_linter_task: true, // Critical identifier for deduplication
+    linter_summary: {
+      total_violations: totalViolations,
+      errors: errors.length,
+      warnings: warnings.length,
+      files_affected: filePaths.length
+    }
   };
   
-  log(`Created linter task: ${taskId} with ${totalViolations} issues`);
+  log(`Created standardized linter task: ${taskId} with ${totalViolations} total issues (${errors.length} errors, ${warnings.length} warnings)`);
   return linterTask;
 }
 
@@ -1160,7 +1217,6 @@ async function insertLinterTaskSmart(linterTask, analysis, projectPath) {
   }
   
   const todoPath = path.join(projectPath, 'TODO.json');
-  const insertionIndex = determineInsertionPoint(analysis);
   
   try {
     // Create a backup before modifying
@@ -1169,6 +1225,17 @@ async function insertLinterTaskSmart(linterTask, analysis, projectPath) {
     log(`Created backup: ${backupPath}`);
     
     const todoData = { ...analysis.todoData };
+    
+    // CRITICAL: Remove all existing linter tasks first to prevent accumulation
+    const removalResult = removeLinterTasks(todoData);
+    log(`Deduplication complete: removed ${removalResult.removedCount} existing linter tasks`);
+    
+    // Recalculate insertion point after removal
+    const updatedAnalysis = {
+      ...analysis,
+      todoData: removalResult.updatedTodoData
+    };
+    const insertionIndex = determineInsertionPoint(updatedAnalysis);
     
     if (insertionIndex === -1) {
       // Append to end
@@ -1186,7 +1253,7 @@ async function insertLinterTaskSmart(linterTask, analysis, projectPath) {
     
     // Write updated TODO.json
     fs.writeFileSync(todoPath, JSON.stringify(todoData, null, 2));
-    log('Successfully updated TODO.json with smart linter task placement');
+    log('Successfully updated TODO.json with deduplicated linter task placement');
     
     return true;
   } catch (error) {

@@ -91,6 +91,136 @@
       "strike_number": 3
     },
     {
+      "id": "linter_fix_1753427591736",
+      "title": "Fix Linter Errors - IMMEDIATE",
+      "description": "Fix 0 errors and 4 warnings found in recently edited files: post-tool-linter-hook.js",
+      "mode": "DEVELOPMENT",
+      "priority": "high",
+      "status": "completed",
+      "important_files": [
+        "post-tool-linter-hook.js"
+      ],
+      "success_criteria": [
+        "All linter errors in edited files resolved",
+        "development/linter-errors.md shows no issues for edited files",
+        "Code passes linting without warnings or errors"
+      ],
+      "created_at": "2025-07-25T07:13:11.736Z",
+      "is_linter_task": true
+    },
+    {
+      "id": "linter_fix_1753429874819",
+      "title": "Fix Linter Errors - IMMEDIATE",
+      "description": "Fix 0 errors and 11 warnings found in recently edited files: test-new-linter-errors.js",
+      "mode": "DEVELOPMENT",
+      "priority": "high",
+      "status": "completed",
+      "important_files": [
+        "development/linter-errors.md",
+        "test-new-linter-errors.js"
+      ],
+      "success_criteria": [
+        "All linter errors in edited files resolved",
+        "development/linter-errors.md shows no issues for edited files",
+        "Code passes linting without warnings or errors"
+      ],
+      "created_at": "2025-07-25T07:51:14.819Z",
+      "is_linter_task": true,
+      "completed_at": "2025-07-25T17:23:39.796Z"
+    },
+    {
+      "id": "linter_fix_1753429211135",
+      "title": "Fix Linter Errors - IMMEDIATE",
+      "description": "Fix 0 errors and 1 warnings found in recently edited files: test-linter-errors.js",
+      "mode": "DEVELOPMENT",
+      "priority": "high",
+      "status": "completed",
+      "important_files": [
+        "development/linter-errors.md",
+        "test-linter-errors.js"
+      ],
+      "success_criteria": [
+        "All linter errors in edited files resolved",
+        "development/linter-errors.md shows no issues for edited files",
+        "Code passes linting without warnings or errors"
+      ],
+      "created_at": "2025-07-25T07:40:11.135Z",
+      "is_linter_task": true
+    },
+    {
+      "id": "linter_fix_1753429156755",
+      "title": "Fix Linter Errors - IMMEDIATE",
+      "description": "Fix 0 errors and 14 warnings found in recently edited files: post-tool-linter-hook.js",
+      "mode": "DEVELOPMENT",
+      "priority": "high",
+      "status": "completed",
+      "important_files": [
+        "development/linter-errors.md",
+        "post-tool-linter-hook.js"
+      ],
+      "success_criteria": [
+        "All linter errors in edited files resolved",
+        "development/linter-errors.md shows no issues for edited files",
+        "Code passes linting without warnings or errors"
+      ],
+      "created_at": "2025-07-25T07:39:16.756Z",
+      "is_linter_task": true
+    },
+    {
+      "id": "linter_fix_1753429085292",
+      "title": "Fix Linter Errors - IMMEDIATE",
+      "description": "Fix 1 errors and 14 warnings found in recently edited files: post-tool-linter-hook.js",
+      "mode": "DEVELOPMENT",
+      "priority": "high",
+      "status": "completed",
+      "important_files": [
+        "development/linter-errors.md",
+        "post-tool-linter-hook.js"
+      ],
+      "success_criteria": [
+        "All linter errors in edited files resolved",
+        "development/linter-errors.md shows no issues for edited files",
+        "Code passes linting without warnings or errors"
+      ],
+      "created_at": "2025-07-25T07:38:05.292Z",
+      "is_linter_task": true
+    },
+    {
+      "id": "linter_fix_1753429071374",
+      "title": "Fix Linter Errors - IMMEDIATE",
+      "description": "Fix 2 errors and 14 warnings found in recently edited files: post-tool-linter-hook.js",
+      "mode": "DEVELOPMENT",
+      "priority": "high",
+      "status": "completed",
+      "important_files": [
+        "development/linter-errors.md",
+        "post-tool-linter-hook.js"
+      ],
+      "success_criteria": [
+        "All linter errors in edited files resolved",
+        "development/linter-errors.md shows no issues for edited files",
+        "Code passes linting without warnings or errors"
+      ],
+      "created_at": "2025-07-25T07:37:51.374Z",
+      "is_linter_task": true
+    },
+    {
+      "id": "linter_fix_test_1753427568717",
+      "title": "Fix Linter Errors - TEST",
+      "description": "Test task creation",
+      "mode": "DEVELOPMENT",
+      "priority": "high",
+      "status": "completed",
+      "important_files": [
+        "test.js"
+      ],
+      "success_criteria": [
+        "Test passed"
+      ],
+      "created_at": "2025-07-25T07:12:48.717Z",
+      "is_linter_task": true
+    },
+    {
       "id": "review-strike-1-dup-10",
       "mode": "REVIEWER",
       "description": "Review Strike 1: Build Verification",
@@ -118,31 +248,6 @@
       "remediation_tasks": [
         "fix-ruff-test-configuration"
       ]
-    },
-    {
-      "id": "linter_task_active",
-      "title": "Fix Linter Errors - IMMEDIATE",
-      "description": "Fix 0 errors and 2 warnings found in recently edited files: test-deduplication.js",
-      "mode": "DEVELOPMENT",
-      "priority": "high",
-      "status": "completed",
-      "important_files": [
-        "development/linter-errors.md",
-        "test-deduplication.js"
-      ],
-      "success_criteria": [
-        "All linter errors in edited files resolved",
-        "development/linter-errors.md shows no issues for edited files",
-        "Code passes linting without warnings or errors"
-      ],
-      "created_at": "2025-07-25T18:19:06.598Z",
-      "is_linter_task": true,
-      "linter_summary": {
-        "total_violations": 2,
-        "errors": 0,
-        "warnings": 2,
-        "files_affected": 1
-      }
     },
     {
       "id": "cleanup-outdated-linter-tasks",
@@ -619,7 +724,7 @@
   "review_strikes": 0,
   "strikes_completed_last_run": false,
   "current_task_index": 4,
-  "last_mode": "DEVELOPMENT",
-  "execution_count": 38,
-  "last_hook_activation": 1753467582130
+  "last_mode": "REVIEWER",
+  "execution_count": 34,
+  "last_hook_activation": 1753465049054
 }

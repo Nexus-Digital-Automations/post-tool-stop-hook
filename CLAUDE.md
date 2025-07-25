@@ -377,8 +377,7 @@ The post-tool-linter-hook automatically runs after tool execution. When it repor
 ### Task Management via TODO.json
 ```json
 {
-  "project": "post-tool-stop-hook",
-  "current_mode": "development", 
+  "current_mode": "development",
   "tasks": [{
     "id": "task_1",
     "title": "Fix authentication bug", 
@@ -390,28 +389,9 @@ The post-tool-linter-hook automatically runs after tool execution. When it repor
       "Login flow works without session timeout errors",
       "All authentication tests pass"
     ]
-  }],
-  "current_task_index": 0
+  }]
 }
 ```
-
-### Smart Task Placement System
-
-This project includes an intelligent task placement system that automatically manages linter error resolution:
-
-- **`analyzeTodoState(projectPath)`** - Analyzes current TODO.json structure and task priorities
-- **`determineInsertionPoint(analysis)`** - Calculates optimal task positioning after current task
-- **`createSmartLinterTask(results, projectPath, filePaths, analysis)`** - Creates comprehensive linter tasks
-- **`insertLinterTaskSmart(linterTask, analysis, projectPath)`** - Performs atomic TODO.json updates with backup
-
-**Key Features:**
-- Automatic linter task creation when code violations are detected
-- Strategic task positioning to maintain workflow efficiency
-- Comprehensive task metadata with file references and success criteria
-- Atomic operations with backup creation for data safety
-- Integration with existing project management workflows
-
-See `docs/smart-task-placement.md` for detailed system architecture and usage.
 
 **Task Management API:**
 
