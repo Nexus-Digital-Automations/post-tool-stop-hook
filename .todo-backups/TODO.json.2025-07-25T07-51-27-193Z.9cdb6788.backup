@@ -419,7 +419,7 @@
   "review_strikes": 0,
   "strikes_completed_last_run": false,
   "current_task_index": 4,
-  "last_mode": "DEVELOPMENT",
-  "execution_count": 26,
-  "last_hook_activation": 1753429978936
+  "last_mode": "TESTING",
+  "execution_count": 24,
+  "last_hook_activation": 1753429874820
 }
