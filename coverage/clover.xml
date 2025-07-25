@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1753478620243" clover="3.2.0">
-  <project timestamp="1753478620243" name="All files">
-    <metrics statements="1341" coveredstatements="810" conditionals="716" coveredconditionals="338" methods="194" coveredmethods="111" elements="2251" coveredelements="1259" complexity="0" loc="1341" ncloc="1341" packages="1" files="4" classes="4"/>
+<coverage generated="1753478826158" clover="3.2.0">
+  <project timestamp="1753478826158" name="All files">
+    <metrics statements="1341" coveredstatements="817" conditionals="716" coveredconditionals="346" methods="194" coveredmethods="113" elements="2251" coveredelements="1276" complexity="0" loc="1341" ncloc="1341" packages="1" files="4" classes="4"/>
     <file name="package-hook.js" path="/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/package-hook.js">
       <metrics statements="221" coveredstatements="174" conditionals="69" coveredconditionals="51" methods="30" coveredmethods="27"/>
       <line num="29" count="1" type="stmt"/>
@@ -1093,16 +1093,16 @@
       <line num="152" count="1" type="stmt"/>
     </file>
     <file name="setup-post-tool-hook.js" path="/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/setup-post-tool-hook.js">
-      <metrics statements="260" coveredstatements="189" conditionals="132" coveredconditionals="77" methods="34" coveredmethods="21"/>
+      <metrics statements="260" coveredstatements="196" conditionals="132" coveredconditionals="85" methods="34" coveredmethods="23"/>
       <line num="17" count="1" type="stmt"/>
       <line num="18" count="1" type="stmt"/>
       <line num="19" count="1" type="stmt"/>
       <line num="20" count="1" type="stmt"/>
       <line num="23" count="1" type="stmt"/>
       <line num="27" count="16" type="stmt"/>
-      <line num="31" count="32" type="stmt"/>
-      <line num="39" count="30" type="stmt"/>
-      <line num="40" count="30" type="cond" truecount="2" falsecount="0"/>
+      <line num="31" count="34" type="stmt"/>
+      <line num="39" count="32" type="stmt"/>
+      <line num="40" count="32" type="cond" truecount="2" falsecount="0"/>
       <line num="44" count="1" type="stmt"/>
       <line num="45" count="1" type="stmt"/>
       <line num="46" count="1" type="stmt"/>
@@ -1132,14 +1132,14 @@
       <line num="133" count="3" type="stmt"/>
       <line num="135" count="3" type="stmt"/>
       <line num="138" count="4" type="stmt"/>
-      <line num="142" count="4" type="stmt"/>
-      <line num="143" count="4" type="stmt"/>
-      <line num="145" count="4" type="cond" truecount="1" falsecount="1"/>
-      <line num="146" count="4" type="stmt"/>
-      <line num="147" count="4" type="stmt"/>
-      <line num="148" count="4" type="stmt"/>
-      <line num="151" count="4" type="stmt"/>
-      <line num="152" count="3" type="stmt"/>
+      <line num="142" count="6" type="stmt"/>
+      <line num="143" count="6" type="stmt"/>
+      <line num="145" count="6" type="cond" truecount="1" falsecount="1"/>
+      <line num="146" count="6" type="stmt"/>
+      <line num="147" count="6" type="stmt"/>
+      <line num="148" count="6" type="stmt"/>
+      <line num="151" count="6" type="stmt"/>
+      <line num="152" count="5" type="stmt"/>
       <line num="154" count="1" type="stmt"/>
       <line num="156" count="1" type="stmt"/>
       <line num="161" count="10" type="stmt"/>
@@ -1278,14 +1278,14 @@
       <line num="437" count="3" type="cond" truecount="4" falsecount="0"/>
       <line num="438" count="2" type="stmt"/>
       <line num="439" count="2" type="stmt"/>
-      <line num="440" count="3" type="cond" truecount="1" falsecount="1"/>
-      <line num="441" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="440" count="3" type="cond" truecount="2" falsecount="0"/>
+      <line num="441" count="3" type="cond" truecount="2" falsecount="0"/>
       <line num="445" count="2" type="cond" truecount="1" falsecount="1"/>
-      <line num="446" count="0" type="cond" truecount="0" falsecount="2"/>
-      <line num="447" count="0" type="stmt"/>
-      <line num="448" count="0" type="stmt"/>
+      <line num="446" count="2" type="cond" truecount="1" falsecount="1"/>
+      <line num="447" count="2" type="stmt"/>
+      <line num="448" count="2" type="stmt"/>
       <line num="450" count="0" type="stmt"/>
-      <line num="453" count="2" type="stmt"/>
+      <line num="453" count="0" type="stmt"/>
       <line num="459" count="3" type="stmt"/>
       <line num="460" count="3" type="cond" truecount="1" falsecount="1"/>
       <line num="461" count="3" type="stmt"/>
@@ -1293,17 +1293,17 @@
       <line num="464" count="3" type="cond" truecount="4" falsecount="0"/>
       <line num="465" count="2" type="stmt"/>
       <line num="466" count="2" type="stmt"/>
-      <line num="467" count="3" type="cond" truecount="1" falsecount="1"/>
-      <line num="468" count="0" type="cond" truecount="0" falsecount="2"/>
+      <line num="467" count="3" type="cond" truecount="2" falsecount="0"/>
+      <line num="468" count="3" type="cond" truecount="2" falsecount="0"/>
       <line num="472" count="2" type="cond" truecount="1" falsecount="1"/>
-      <line num="473" count="0" type="stmt"/>
-      <line num="474" count="0" type="stmt"/>
-      <line num="475" count="0" type="stmt"/>
-      <line num="477" count="2" type="stmt"/>
+      <line num="473" count="2" type="stmt"/>
+      <line num="474" count="2" type="stmt"/>
+      <line num="475" count="2" type="stmt"/>
+      <line num="477" count="0" type="stmt"/>
       <line num="481" count="0" type="stmt"/>
-      <line num="485" count="3" type="cond" truecount="1" falsecount="1"/>
-      <line num="486" count="0" type="stmt"/>
-      <line num="488" count="3" type="stmt"/>
+      <line num="485" count="3" type="cond" truecount="2" falsecount="0"/>
+      <line num="486" count="2" type="stmt"/>
+      <line num="488" count="1" type="stmt"/>
       <line num="491" count="3" type="stmt"/>
       <line num="495" count="2" type="cond" truecount="1" falsecount="1"/>
       <line num="496" count="0" type="stmt"/>
