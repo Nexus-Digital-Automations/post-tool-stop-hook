@@ -990,7 +990,7 @@ function formatLinterFailurePrompt(failures, projectPath) {
   return prompt;
 }
 
-function formatLinterPrompt(results, projectPath, editedFiles = [], taskCreated = false) {
+function formatLinterPrompt(results, projectPath, editedFiles = [], _taskCreated = false) {
   const resultsWithViolations = results.filter(r => r.violations && r.violations.length > 0);
   
   if (resultsWithViolations.length === 0) {
@@ -1005,9 +1005,13 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], taskCreated 
     r.violations.filter(v => v.severity === 'warning')
   );
   
-  // Filter results for edited files
+  // Filter results for edited files - normalize paths for comparison
   const editedFilesWithViolations = resultsWithViolations.filter(r => 
-    editedFiles.some(editedFile => r.file === editedFile)
+    editedFiles.some(editedFile => {
+      const normalizedResultPath = path.resolve(r.file);
+      const normalizedEditedPath = path.resolve(editedFile);
+      return normalizedResultPath === normalizedEditedPath;
+    })
   );
   
   // Write all errors to a file for the Claude agent to access
@@ -1032,10 +1036,12 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], taskCreated 
 
 ## 🚨 CRITICAL CODE QUALITY FAILURE 🚨
 
-Found ${totalViolations} linting issue${totalViolations !== 1 ? 's' : ''} `;
+**PROJECT-WIDE TOTALS:** ${totalViolations} linting issue${totalViolations !== 1 ? 's' : ''} `;
   prompt += `(${errors.length} error${errors.length !== 1 ? 's' : ''}, `;
   prompt += `${warnings.length} warning${warnings.length !== 1 ? 's' : ''}) `;
-  prompt += `across ${resultsWithViolations.length} file${resultsWithViolations.length !== 1 ? 's' : ''}.
+  prompt += `across ${resultsWithViolations.length} file${resultsWithViolations.length !== 1 ? 's' : ''} in entire codebase.
+
+**EDITED FILES:** ${editedFilesWithViolations.length} of your recently edited files have linting issues.
 
 **THIS IS NOT OPTIONAL - CODE QUALITY FAILURES BLOCK DEPLOYMENT**
 **LINTER ERRORS INDICATE SERIOUS ISSUES THAT MUST BE RESOLVED**
@@ -1045,7 +1051,8 @@ Found ${totalViolations} linting issue${totalViolations !== 1 ? 's' : ''} `;
   
   // Show specific errors for edited files
   if (editedFilesWithViolations.length > 0) {
-    prompt += `## Errors in Files You Just Edited:\n\n`;
+    prompt += `## 🎯 FOCUS: Errors in Files You Just Edited\n\n`;
+    prompt += `*(Note: Full project errors available in ${relativeErrorsPath})*\n\n`;
     
     for (const result of editedFilesWithViolations) {
       const fileName = path.basename(result.file);
@@ -1071,8 +1078,14 @@ Found ${totalViolations} linting issue${totalViolations !== 1 ? 's' : ''} `;
       }
       prompt += '\n';
     }
+  } else {
+    prompt += `## 🎯 FOCUS: Your Edited Files Are Clean\n\n`;
+    prompt += `✅ **Good news:** Your recently edited files have no linting errors!\n`;
+    prompt += `⚠️ **However:** There are ${totalViolations} errors elsewhere in the project.\n\n`;
+    prompt += `**Full project errors available in**: \`${relativeErrorsPath}\`\n\n`;
   }
   
+  prompt += `
 🛑🛑🛑 STOP EVERYTHING NOW 🛑🛑🛑
 
 ## 🚨 MANDATORY IMMEDIATE ACTIONS (DO NOT SKIP) 🚨
@@ -1084,11 +1097,11 @@ Found ${totalViolations} linting issue${totalViolations !== 1 ? 's' : ''} `;
 
 🔥 **CRITICAL PATH - NO DEVIATION ALLOWED:**
 
-**STEP 1 - IMMEDIATE:** Read \`${relativeErrorsPath}\` using the Read tool NOW
-**STEP 2 - MANDATORY:** Fix EVERY SINGLE error listed in that file - DO NOT SKIP ANY
-**STEP 3 - REQUIRED:** Fix EVERY SINGLE warning listed in that file - DO NOT SKIP ANY  
-**STEP 4 - ESSENTIAL:** Run the linters again to verify ALL issues are resolved
-**STEP 5 - FINAL:** Confirm ZERO linter errors before proceeding with other work
+**STEP 1 - IMMEDIATE:** ${editedFilesWithViolations.length > 0 ? 'Fix all errors in your edited files shown above' : 'Read `' + relativeErrorsPath + '` to see project-wide errors'}
+**STEP 2 - SECONDARY:** Read \`${relativeErrorsPath}\` for complete project error context
+**STEP 3 - OPTIONAL:** Consider fixing project-wide errors if time permits
+**STEP 4 - ESSENTIAL:** Run the linters again to verify edited file issues are resolved
+**STEP 5 - FINAL:** Confirm your edited files have ZERO linter errors before proceeding
 
 ⚠️ **WARNING:** Do not attempt to continue with other tasks while linter errors exist
 ⚠️ **WARNING:** Do not ignore warnings - they must be fixed too
@@ -1361,7 +1374,6 @@ async function main() {
       
       const shouldUseProjectWide = (
         CONFIG.lintingMode === 'project-wide' ||
-        (CONFIG.lintingMode === 'hybrid' && filePaths.length > CONFIG.maxFilesForFileMode) ||
         (CONFIG.lintingMode === 'hybrid' && allProjectTypes.length > 0)
       );
       

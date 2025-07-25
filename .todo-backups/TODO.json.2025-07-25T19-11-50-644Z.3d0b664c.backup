@@ -125,7 +125,7 @@
       "description": "Fix 3 errors and 22 warnings found in recently edited files: test-linter-errors.js",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "development/linter-errors.md",
         "test-linter-errors.js"

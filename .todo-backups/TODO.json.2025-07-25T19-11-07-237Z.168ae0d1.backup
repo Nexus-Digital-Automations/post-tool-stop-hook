@@ -125,7 +125,7 @@
       "description": "Fix 3 errors and 22 warnings found in recently edited files: test-linter-errors.js",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "development/linter-errors.md",
         "test-linter-errors.js"
@@ -614,97 +614,12 @@
         "Tests: ✅ 23 passing, 0 failing",
         "All Strike 2 criteria met - ready to proceed to Strike 3"
       ]
-    },
-    {
-      "id": "investigate-hook-configuration",
-      "title": "Investigate Claude Code hook configuration format",
-      "description": "Research and document the proper configuration format for setting up post-tool hooks in Claude Code across different projects",
-      "mode": "DEVELOPMENT",
-      "priority": "high",
-      "status": "pending",
-      "important_files": [
-        "~/.claude/",
-        "docs/claude-code-hooks.md"
-      ],
-      "success_criteria": [
-        "Document exact hooks.json format and location",
-        "Identify why hook works in some projects but not others",
-        "Create setup guide for configuring hooks in new projects"
-      ],
-      "created_at": "2025-07-25T19:11:07.236Z",
-      "requires_research": true,
-      "estimate": "2 hours"
-    },
-    {
-      "id": "fix-project-type-detection",
-      "title": "Fix project type detection to prioritize file extensions",
-      "description": "Modify detectProjectType function to prioritize file extensions over project indicators to ensure correct linter selection",
-      "mode": "DEVELOPMENT",
-      "priority": "high",
-      "status": "pending",
-      "important_files": [
-        "post-tool-linter-hook.js"
-      ],
-      "success_criteria": [
-        "File extensions take priority over project type detection",
-        "JavaScript files get ESLint even in Python projects",
-        "Python files get Ruff even in JavaScript projects",
-        "Improved logging for debugging type detection decisions"
-      ],
-      "created_at": "2025-07-25T19:11:07.236Z",
-      "requires_research": false,
-      "estimate": "3 hours",
-      "subtasks": []
-    },
-    {
-      "id": "create-hook-setup-script",
-      "title": "Create hook setup script for other projects",
-      "description": "Build a setup script that can configure the post-tool linter hook in any Claude Code project",
-      "mode": "DEVELOPMENT",
-      "priority": "medium",
-      "status": "pending",
-      "important_files": [
-        "setup-post-tool-hook.js",
-        "README.md"
-      ],
-      "success_criteria": [
-        "Script automatically detects Claude Code settings directory",
-        "Creates proper hooks.json configuration",
-        "Copies hook script to appropriate location",
-        "Validates hook installation and provides troubleshooting"
-      ],
-      "created_at": "2025-07-25T19:11:07.236Z",
-      "requires_research": false,
-      "estimate": "4 hours",
-      "subtasks": []
-    },
-    {
-      "id": "test-multi-language-projects",
-      "title": "Test hook on multi-language projects",
-      "description": "Validate that the fixed hook correctly handles projects with both Python and JavaScript files",
-      "mode": "DEVELOPMENT",
-      "priority": "medium",
-      "status": "pending",
-      "important_files": [
-        "post-tool-linter-hook.js",
-        "tests/"
-      ],
-      "success_criteria": [
-        "JavaScript files in Python projects get ESLint",
-        "Python files in JavaScript projects get Ruff",
-        "Mixed projects handle both linters correctly",
-        "No false positives or missed violations"
-      ],
-      "created_at": "2025-07-25T19:11:07.236Z",
-      "requires_research": false,
-      "estimate": "2 hours",
-      "subtasks": []
     }
   ],
   "review_strikes": 0,
   "strikes_completed_last_run": false,
   "current_task_index": 4,
-  "last_mode": "DEVELOPMENT",
-  "execution_count": 42,
-  "last_hook_activation": 1753470683031
+  "last_mode": "TASK_CREATION",
+  "execution_count": 41,
+  "last_hook_activation": 1753470385675
 }
