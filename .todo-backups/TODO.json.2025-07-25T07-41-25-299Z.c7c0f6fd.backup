@@ -152,7 +152,7 @@
       "description": "Fix 1 errors and 14 warnings found in recently edited files: post-tool-linter-hook.js",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "development/linter-errors.md",
         "post-tool-linter-hook.js"
@@ -171,7 +171,7 @@
       "description": "Fix 2 errors and 14 warnings found in recently edited files: post-tool-linter-hook.js",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "development/linter-errors.md",
         "post-tool-linter-hook.js"
@@ -221,139 +221,12 @@
       "subtasks": [],
       "is_review_task": true,
       "strike_number": 1
-    },
-    {
-      "id": "cleanup-outdated-linter-tasks",
-      "title": "Clean up outdated linter tasks",
-      "description": "Mark obsolete linter tasks as completed since their referenced errors have been resolved",
-      "mode": "DEVELOPMENT",
-      "priority": "medium",
-      "status": "pending",
-      "important_files": [
-        "TODO.json",
-        "development/linter-errors.md"
-      ],
-      "success_criteria": [
-        "Outdated linter tasks marked as completed",
-        "TODO.json reflects current project state",
-        "No duplicate or obsolete tasks remain"
-      ],
-      "created_at": "2025-07-25T07:41:59.316Z",
-      "requires_research": false,
-      "subtasks": []
-    },
-    {
-      "id": "create-smart-placement-tests",
-      "title": "Create comprehensive test suite for smart task placement",
-      "description": "Build automated tests to validate smart task placement algorithms and TODO.json manipulation",
-      "mode": "TESTING",
-      "priority": "high",
-      "status": "pending",
-      "important_files": [
-        "post-tool-linter-hook.js",
-        "tests/"
-      ],
-      "success_criteria": [
-        "Test coverage >= 90% for smart placement functions",
-        "Unit tests for analyzeTodoState, createSmartLinterTask, insertLinterTaskSmart",
-        "Integration tests for complete hook workflow",
-        "Edge case handling validated"
-      ],
-      "created_at": "2025-07-25T07:41:59.316Z",
-      "requires_research": false,
-      "subtasks": [
-        {
-          "id": "test-todo-analysis",
-          "title": "Test TODO.json analysis function",
-          "status": "pending"
-        },
-        {
-          "id": "test-task-creation",
-          "title": "Test smart linter task creation",
-          "status": "pending"
-        },
-        {
-          "id": "test-insertion-logic",
-          "title": "Test intelligent task insertion",
-          "status": "pending"
-        },
-        {
-          "id": "test-error-handling",
-          "title": "Test error handling and edge cases",
-          "status": "pending"
-        }
-      ]
-    },
-    {
-      "id": "document-smart-placement-system",
-      "title": "Create comprehensive documentation for smart task placement",
-      "description": "Document the smart task placement system architecture, usage, and configuration",
-      "mode": "DEVELOPMENT",
-      "priority": "medium",
-      "status": "pending",
-      "important_files": [
-        "README.md",
-        "docs/",
-        "CLAUDE.md"
-      ],
-      "success_criteria": [
-        "API documentation for smart placement functions",
-        "Usage guide with examples",
-        "Configuration documentation",
-        "Troubleshooting guide"
-      ],
-      "created_at": "2025-07-25T07:41:59.316Z",
-      "requires_research": false,
-      "subtasks": []
-    },
-    {
-      "id": "cleanup-test-artifacts",
-      "title": "Clean up test files and backup artifacts",
-      "description": "Remove temporary test files and organize backup files created during development",
-      "mode": "DEVELOPMENT",
-      "priority": "low",
-      "status": "pending",
-      "important_files": [
-        "test-linter-errors.js",
-        ".todo-backups/"
-      ],
-      "success_criteria": [
-        "Test artifact files removed or organized",
-        "Backup files cleaned up appropriately",
-        "Repository in clean state"
-      ],
-      "created_at": "2025-07-25T07:41:59.316Z",
-      "requires_research": false,
-      "subtasks": []
-    },
-    {
-      "id": "validate-end-to-end-workflow",
-      "title": "End-to-end validation of complete hook system",
-      "description": "Comprehensive testing of the entire post-tool linter hook with smart task placement",
-      "mode": "TESTING",
-      "priority": "high",
-      "status": "pending",
-      "important_files": [
-        "post-tool-linter-hook.js",
-        "TODO.json",
-        "development/"
-      ],
-      "success_criteria": [
-        "Hook triggers correctly on tool execution",
-        "Linter errors detected and reported accurately",
-        "Smart task placement works in realistic scenarios",
-        "TODO.json updates are atomic and consistent",
-        "Error handling works for edge cases"
-      ],
-      "created_at": "2025-07-25T07:41:59.316Z",
-      "requires_research": false,
-      "subtasks": []
     }
   ],
   "review_strikes": 0,
   "strikes_completed_last_run": false,
   "current_task_index": 4,
-  "last_mode": "TASK_CREATION",
-  "execution_count": 20,
-  "last_hook_activation": 1753429285298
+  "last_mode": "DEVELOPMENT",
+  "execution_count": 19,
+  "last_hook_activation": 1753429249731
 }
