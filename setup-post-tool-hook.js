@@ -21,16 +21,29 @@ const { execSync } = require('child_process');
 
 // Configuration constants
 const HOOK_SCRIPT_NAME = 'post-tool-linter-hook.js';
-const HOOK_PATH = path.resolve(__dirname, HOOK_SCRIPT_NAME);
 
-// Claude Code settings paths for different platforms
-const CLAUDE_SETTINGS_PATHS = {
-  win32: path.join(os.homedir(), 'AppData', 'Roaming', 'claude', 'settings.json'),
-  darwin: path.join(os.homedir(), '.claude', 'settings.json'),
-  linux: path.join(os.homedir(), '.claude', 'settings.json')
-};
+// Dynamic getters for constants (for testing compatibility)
+function getHookPath() {
+  return path.resolve(__dirname, HOOK_SCRIPT_NAME);
+}
 
-const SETTINGS_PATH = CLAUDE_SETTINGS_PATHS[os.platform()] || CLAUDE_SETTINGS_PATHS.linux;
+function getClaudeSettingsPaths() {
+  return {
+    win32: path.join(os.homedir(), 'AppData', 'Roaming', 'claude', 'settings.json'),
+    darwin: path.join(os.homedir(), '.claude', 'settings.json'),
+    linux: path.join(os.homedir(), '.claude', 'settings.json')
+  };
+}
+
+function getSettingsPath() {
+  const paths = getClaudeSettingsPaths();
+  return paths[os.platform()] || paths.linux;
+}
+
+// For backward compatibility and direct access
+const HOOK_PATH = getHookPath();
+const CLAUDE_SETTINGS_PATHS = getClaudeSettingsPaths();
+const SETTINGS_PATH = getSettingsPath();
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -93,7 +106,7 @@ detecting linting errors and prompting Claude to fix them immediately.
 }
 
 function ensureSettingsDirectory() {
-  const settingsDir = path.dirname(SETTINGS_PATH);
+  const settingsDir = path.dirname(getSettingsPath());
   if (!fs.existsSync(settingsDir)) {
     fs.mkdirSync(settingsDir, { recursive: true });
     console.log(`✓ Created Claude settings directory: ${settingsDir}`);
@@ -103,9 +116,10 @@ function ensureSettingsDirectory() {
 }
 
 function loadSettings() {
-  if (fs.existsSync(SETTINGS_PATH)) {
+  const settingsPath = getSettingsPath();
+  if (fs.existsSync(settingsPath)) {
     try {
-      const content = fs.readFileSync(SETTINGS_PATH, 'utf8');
+      const content = fs.readFileSync(settingsPath, 'utf8');
       return JSON.parse(content);
     } catch (error) {
       console.error(`❌ Error parsing settings.json: ${error.message}`);
@@ -124,14 +138,15 @@ function loadSettings() {
 
 function saveSettings(settings) {
   try {
+    const settingsPath = getSettingsPath();
     // Create backup before modifying
-    if (fs.existsSync(SETTINGS_PATH)) {
-      const backupPath = `${SETTINGS_PATH}.backup.${Date.now()}`;
-      fs.copyFileSync(SETTINGS_PATH, backupPath);
+    if (fs.existsSync(settingsPath)) {
+      const backupPath = `${settingsPath}.backup.${Date.now()}`;
+      fs.copyFileSync(settingsPath, backupPath);
       console.log(`📁 Created backup: ${path.basename(backupPath)}`);
     }
         
-    fs.writeFileSync(SETTINGS_PATH, JSON.stringify(settings, null, 2));
+    fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
     return true;
   } catch (error) {
     console.error(`❌ Error saving settings: ${error.message}`);
@@ -140,21 +155,22 @@ function saveSettings(settings) {
 }
 
 function validateHookScript() {
-  if (!fs.existsSync(HOOK_PATH)) {
-    console.error(`❌ Hook script not found: ${HOOK_PATH}`);
+  const hookPath = getHookPath();
+  if (!fs.existsSync(hookPath)) {
+    console.error(`❌ Hook script not found: ${hookPath}`);
     console.error('\nPlease ensure the post-tool-linter-hook.js file is in the same directory as this setup script.');
     return false;
   }
     
   // Verify the hook script is executable
   try {
-    fs.accessSync(HOOK_PATH, fs.constants.R_OK);
+    fs.accessSync(hookPath, fs.constants.R_OK);
   } catch (error) {
     console.error(`❌ Hook script is not readable: ${error.message}`);
     return false;
   }
     
-  console.log(`✓ Hook script found: ${HOOK_PATH}`);
+  console.log(`✓ Hook script found: ${hookPath}`);
   return true;
 }
 
@@ -199,7 +215,7 @@ function createLocalSettings(projectPath) {
     hooks: [
       {
         type: 'command',
-        command: HOOK_PATH,
+        command: getHookPath(),
         timeout: parseInt(flags.timeout)
       }
     ]
@@ -279,7 +295,7 @@ function installHook() {
       hooks: [
         {
           type: 'command',
-          command: HOOK_PATH,
+          command: getHookPath(),
           timeout: parseInt(flags.timeout)
         }
       ]
@@ -290,7 +306,7 @@ function installHook() {
     // Save settings
     if (saveSettings(settings)) {
       console.log(`✅ Hook installed successfully!\n`);
-      console.log(`Settings saved to: ${SETTINGS_PATH}\n`);
+      console.log(`Settings saved to: ${getSettingsPath()}\n`);
       showHookInfo();
       return true;
     } else {
@@ -392,7 +408,8 @@ function uninstallHook() {
   let removed = false;
     
   // Remove from global settings
-  if (fs.existsSync(SETTINGS_PATH)) {
+  const settingsPath = getSettingsPath();
+  if (fs.existsSync(settingsPath)) {
     const settings = loadSettings();
         
     if (settings.hooks && settings.hooks.PostToolUse) {
@@ -553,6 +570,11 @@ if (require.main === module) {
     showCurrentConfig,
     showHookInfo,
     main,
+    // Dynamic getters for testing
+    getHookPath,
+    getClaudeSettingsPaths,
+    getSettingsPath,
+    // Static constants for backward compatibility
     CLAUDE_SETTINGS_PATHS,
     SETTINGS_PATH,
     HOOK_PATH,

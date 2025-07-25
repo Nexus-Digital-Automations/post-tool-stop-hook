@@ -1,15 +1,30 @@
 # Linter Errors Report
 
-**Generated:** 2025-07-25T20:18:33.715Z
-**Total Issues:** 1 (0 errors, 1 warnings)
-**Files:** 1
+**Generated:** 2025-07-25T20:47:20.202Z
+**Total Issues:** 5 (3 errors, 2 warnings)
+**Files:** 2
 
-## setup-post-tool-hook.test.js (eslint)
+## js_test.js (eslint)
 
-**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/setup-post-tool-hook.test.js`
-**Issues:** 1
+**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/test_temp_1753476437582/js_test.js`
+**Issues:** 3
 
-⚠️ **Line 22:7** - 'mockExit' is assigned a value but never used. `[no-unused-vars]`
+❌ **Line 1:10** - 'test' is defined but never used. `[no-unused-vars]`
+
+❌ **Line 2:7** - 'x' is assigned a value but never used. `[no-unused-vars]`
+
+⚠️ **Line 2:12** - Missing semicolon. `[semi]` (auto-fixable)
+
+---
+
+## eslint_test.js (eslint)
+
+**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/test_temp_1753476437582/eslint_test.js`
+**Issues:** 2
+
+❌ **Line 1:10** - 'test' is defined but never used. `[no-unused-vars]`
+
+⚠️ **Line 2:15** - Strings must use singlequote. `[quotes]` (auto-fixable)
 
 ---
 

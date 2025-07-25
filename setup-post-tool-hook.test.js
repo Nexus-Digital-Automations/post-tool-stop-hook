@@ -45,11 +45,23 @@ describe('Setup Post-Tool Hook Script', () => {
     consoleSpy = jest.spyOn(console, 'log').mockImplementation();
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
     
-    // Mock path methods
-    mockPath.resolve.mockImplementation((...args) => '/' + args.join('/'));
-    mockPath.join.mockImplementation((...args) => args.join('/'));
-    mockPath.dirname.mockImplementation((p) => p.split('/').slice(0, -1).join('/'));
-    mockPath.basename.mockImplementation((p) => p.split('/').pop());
+    // Mock path methods with better handling for undefined inputs
+    mockPath.resolve.mockImplementation((...args) => {
+      const filtered = args.filter(arg => arg !== null);
+      return '/' + filtered.join('/');
+    });
+    mockPath.join.mockImplementation((...args) => {
+      const filtered = args.filter(arg => arg !== null);
+      return filtered.join('/');
+    });
+    mockPath.dirname.mockImplementation((p) => {
+      if (!p || typeof p !== 'string') return '/';
+      return p.split('/').slice(0, -1).join('/') || '/';
+    });
+    mockPath.basename.mockImplementation((p) => {
+      if (!p || typeof p !== 'string') return '';
+      return p.split('/').pop() || '';
+    });
 
     // Mock os methods
     mockOs.platform.mockReturnValue('darwin');
@@ -77,21 +89,24 @@ describe('Setup Post-Tool Hook Script', () => {
 
   describe('Constants and Configuration', () => {
     test('should have correct Claude settings paths for all platforms', () => {
-      expect(setupScript.CLAUDE_SETTINGS_PATHS).toBeDefined();
-      expect(setupScript.CLAUDE_SETTINGS_PATHS.win32).toContain('AppData');
-      expect(setupScript.CLAUDE_SETTINGS_PATHS.darwin).toContain('.claude');
-      expect(setupScript.CLAUDE_SETTINGS_PATHS.linux).toContain('.claude');
+      const paths = setupScript.getClaudeSettingsPaths();
+      expect(paths).toBeDefined();
+      expect(paths.win32).toContain('AppData');
+      expect(paths.darwin).toContain('.claude');
+      expect(paths.linux).toContain('.claude');
     });
 
     test('should have valid hook path', () => {
-      expect(setupScript.HOOK_PATH).toBeDefined();
-      expect(setupScript.HOOK_PATH).toContain('post-tool-linter-hook.js');
+      const hookPath = setupScript.getHookPath();
+      expect(hookPath).toBeDefined();
+      expect(hookPath).toContain('post-tool-linter-hook.js');
     });
 
     test('should set correct settings path based on platform', () => {
-      expect(setupScript.SETTINGS_PATH).toBeDefined();
+      const settingsPath = setupScript.getSettingsPath();
+      expect(settingsPath).toBeDefined();
       // Will use darwin path due to our mock
-      expect(setupScript.SETTINGS_PATH).toContain('.claude');
+      expect(settingsPath).toContain('.claude');
     });
   });
 
