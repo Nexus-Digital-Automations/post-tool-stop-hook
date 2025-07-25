@@ -1,13 +1,13 @@
-[2025-07-25T22:06:58.281Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-25T22:06:58.282Z] Date: 2025-07-25T22:06:58.282Z
-[2025-07-25T22:06:58.282Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-25T22:06:58.282Z] Node Version: v23.9.0
-[2025-07-25T22:06:58.282Z] Platform: darwin
-[2025-07-25T22:06:58.282Z] 
-[2025-07-25T22:06:58.282Z] === HOOK EXECUTION START ===
-[2025-07-25T22:06:58.282Z] Tool: Bash
-[2025-07-25T22:06:58.282Z] Session ID: f697460d-0be4-4b4c-ade0-b05364c58f82
-[2025-07-25T22:06:58.282Z] Hook input:
+[2025-07-25T22:11:25.803Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-25T22:11:25.804Z] Date: 2025-07-25T22:11:25.804Z
+[2025-07-25T22:11:25.804Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-25T22:11:25.804Z] Node Version: v23.9.0
+[2025-07-25T22:11:25.804Z] Platform: darwin
+[2025-07-25T22:11:25.804Z] 
+[2025-07-25T22:11:25.804Z] === HOOK EXECUTION START ===
+[2025-07-25T22:11:25.804Z] Tool: Bash
+[2025-07-25T22:11:25.804Z] Session ID: f697460d-0be4-4b4c-ade0-b05364c58f82
+[2025-07-25T22:11:25.804Z] Hook input:
   Data: {
   "session_id": "f697460d-0be4-4b4c-ade0-b05364c58f82",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/f697460d-0be4-4b4c-ade0-b05364c58f82.jsonl",
@@ -15,8 +15,8 @@
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
   "tool_input": {
-    "command": "node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('add-getallfiles-error-handling', 'completed').then(() => console.log('✅ Task marked as completed')).catch(err => console.error('❌ Error:', err.message));\"",
-    "description": "Mark error handling task as completed"
+    "command": "node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('create-getallfiles-tests', 'completed').then(() => console.log('✅ Task marked as completed')).catch(err => console.error('❌ Error:', err.message));\"",
+    "description": "Mark getAllFiles test creation task as completed"
   },
   "tool_response": {
     "stdout": "✅ Task marked as completed",
@@ -25,4 +25,4 @@
     "isImage": false
   }
 }
-[2025-07-25T22:06:58.282Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-25T22:11:25.804Z] Tool Bash is not in enabled tools list, skipping
