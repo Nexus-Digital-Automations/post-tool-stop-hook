@@ -1,0 +1,85 @@
+{
+  "version": "1.0.0",
+  "files": [
+    {
+      "path": "bin/README.md",
+      "checksum": "4587c1f496e41218d918acb6a3f6fd9951d641aa6c2e78d6365debffaac20308"
+    },
+    {
+      "path": "bin/package.json",
+      "checksum": "2b99edb7eb00272f69ca6bcac0393eaffdd814b5d650a4349199b2e251b045c8"
+    },
+    {
+      "path": "bin/post-tool-linter-hook.js",
+      "checksum": "981179dbe8c6ee8043c28087c5ae1159a3870c4aefadc69bfad592d227949fa8"
+    },
+    {
+      "path": "bin/setup-linter-hook.js",
+      "checksum": "4f9a8a7e79e8843d4292dedc8a6b56f476161b2ce61c472ce15c88246e748712"
+    },
+    {
+      "path": "bin/setup-post-tool-hook.js",
+      "checksum": "b21b8d753d0a293f78094c472c0985700c908a1f0e1bccbdde3c8e25c3b0c3dc"
+    },
+    {
+      "path": "docs/docs/config.md",
+      "checksum": "ae133e00b644e4896e5ce7e6681442638b2f148402a38e61232947cc73c5fdcf"
+    },
+    {
+      "path": "docs/docs/smart-task-placement.md",
+      "checksum": "be831c8a5a99cb338955a18320d520df6edb06875fd195a11b5c45050a59708d"
+    },
+    {
+      "path": "docs/docs/user-guide.md",
+      "checksum": "c58b041a7d0147f1c1f696ac5aea9eae6cbd0dce4ef34d94e0187e71f18c9e5e"
+    },
+    {
+      "path": "docs/modes/development.md",
+      "checksum": "72174203c15191b030b8f3f0c601a813b9f7c68d16c4d4aa72e5b64676bd1699"
+    },
+    {
+      "path": "docs/modes/refactoring.md",
+      "checksum": "b3e60668ae3e31018a4cda156ab9cc5f6d83bd105f83b8c8d67bfc0bfb535b18"
+    },
+    {
+      "path": "docs/modes/research.md",
+      "checksum": "80617ea8f221f2d5593896461a7f8f580948a5977d489905f91546fd59606947"
+    },
+    {
+      "path": "docs/modes/reviewer.md",
+      "checksum": "69d944c5041a702c652395cd7b36db8d3fc503a31ad04da4dba0063fad2a3405"
+    },
+    {
+      "path": "docs/modes/task-creation.md",
+      "checksum": "763c322e565bfac34df6a3db31d205468bd532806b135121d52b51ba96eb7cb6"
+    },
+    {
+      "path": "docs/modes/testing.md",
+      "checksum": "c391d9989f8fa92f6a00872db75b9fc598f110811c9a90c222b06da2e315480e"
+    },
+    {
+      "path": "examples/eslint.config.js",
+      "checksum": "362fc2ed12414090a40a028b9f7a0d037a4fb7c6644e2c490b4bb42c100b6898"
+    },
+    {
+      "path": "examples/test-linter-hook.js",
+      "checksum": "dbabac99b3c524d11ce21545747e3c606bd3da13e2056f0b17c5727f3f98f2ba"
+    },
+    {
+      "path": "install.bat",
+      "checksum": "e5e0ef2fdc8c871876208cac2b86370e78a1b60215ddb2d1a822ed8200dca4f2"
+    },
+    {
+      "path": "install.js",
+      "checksum": "7b9e3d57a40eaf356130f79177c77a7dd219bf08a64fa132d27fc46e3fac4b35"
+    },
+    {
+      "path": "install.sh",
+      "checksum": "e553ed077e6f128df4c75b545c6a549b0fbc15d85fa6f651e97259e98cc071d6"
+    },
+    {
+      "path": "package-info.json",
+      "checksum": "c5ef13c362a37d83c69c0bf16be9fddd86151f140941c14f374f931b299ae290"
+    }
+  ]
+}

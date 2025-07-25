@@ -5,9 +5,6 @@ const globals = require('globals');
 
 module.exports = [
   {
-    ignores: ['node_modules/**', 'coverage/**', 'dist/**', 'dist-dev/**', '*.min.js', '.nyc_output/**', 'build/**']
-  },
-  {
     files: ['**/*.js'],
     languageOptions: {
       ecmaVersion: 2022,
