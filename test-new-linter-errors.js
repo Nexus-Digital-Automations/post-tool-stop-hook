@@ -1,16 +1,14 @@
-// Test file with intentional linter errors to trigger hook
-const unused_var = "this should trigger no-unused-vars";
-
-function badFunction() {
-  var old_style = "should use const/let"
-  console.log("missing semicolon")
+// Test file with fixed linter errors
+function goodFunction() {
+  const properly_used_var = 'should use const/let';
+  console.log('fixed semicolon and quotes:', properly_used_var);
   
-  if(true){
-    console.log("bad spacing")
+  if (true) {
+    console.log('fixed spacing and semicolon');
   }
   
-  return    "extra spaces";
+  return 'fixed extra spaces';
 }
 
-// Missing semicolon
-badFunction()
+// Fixed semicolon
+goodFunction();
