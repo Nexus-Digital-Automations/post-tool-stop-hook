@@ -219,7 +219,7 @@ describe('Package Hook Distribution System', () => {
       mockFs.existsSync.mockReturnValue(false);
       const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
       
-      const packager = new HookPackager();
+      const packager = new HookPackager({ verbose: true });
       await packager.copyRequiredFiles();
       
       expect(consoleSpy).toHaveBeenCalled();

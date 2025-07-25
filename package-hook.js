@@ -60,8 +60,8 @@ class HookPackager {
       output: options.output || CONFIG.defaultOutput,
       format: options.format || 'zip',
       clean: options.clean || false,
-      validate: options.validate || true,
-      verbose: options.verbose !== undefined ? options.verbose : true
+      validate: options.validate !== undefined ? options.validate : true,
+      verbose: options.verbose === true // Only true if explicitly set to true
     };
         
     // Now we can safely call detectVersion which may use this.log
@@ -751,11 +751,11 @@ SOFTWARE.
   }
     
   log(message) {
-    // If options not set yet or verbose is true, always log
-    if (!this.options || this.options.verbose) {
+    // Only log if verbose mode is explicitly enabled
+    if (this.options && this.options.verbose === true) {
       console.log(message);
     }
-    // If verbose is false, don't log anything
+    // If verbose is false or undefined, don't log anything
   }
 }
 
