@@ -1,19 +1,15 @@
 # Linter Errors Report
 
-**Generated:** 2025-07-25T19:54:55.178Z
-**Total Issues:** 3 (3 errors, 0 warnings)
+**Generated:** 2025-07-25T20:18:33.715Z
+**Total Issues:** 1 (0 errors, 1 warnings)
 **Files:** 1
 
-## performance-test-suite.js (eslint)
+## setup-post-tool-hook.test.js (eslint)
 
-**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/performance-tests/performance-test-suite.js`
-**Issues:** 3
+**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/setup-post-tool-hook.test.js`
+**Issues:** 1
 
-❌ **Line 18:7** - 'execAsync' is assigned a value but never used. `[no-unused-vars]`
-
-❌ **Line 140:67** - 'expectedMetrics' is defined but never used. Allowed unused args must match /^_/u. `[no-unused-vars]`
-
-❌ **Line 267:15** - 'size' is assigned a value but never used. `[no-unused-vars]`
+⚠️ **Line 22:7** - 'mockExit' is assigned a value but never used. `[no-unused-vars]`
 
 ---
 

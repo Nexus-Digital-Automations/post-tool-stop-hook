@@ -1468,5 +1468,37 @@ async function main() {
   }, CONFIG.timeout + 5000);
 }
 
-// Run the hook
-main();
+// Export functions for testing
+if (require.main === module) {
+  // Run the hook when executed directly
+  main();
+} else {
+  // Export functions for testing
+  module.exports = {
+    initializeLogging,
+    log,
+    writeLogFile,
+    validateConfigFile,
+    detectProjectType,
+    detectProjectTypes,
+    runPythonProjectLinter,
+    runJavaScriptProjectLinter,
+    lintProject,
+    getFileType,
+    extractFilePaths,
+    runPythonLinter,
+    runJavaScriptLinter,
+    lintFile,
+    writeLinterErrorsFile,
+    writeLinterErrorsToPath,
+    formatLinterFailurePrompt,
+    formatLinterPrompt,
+    removeLinterTasks,
+    analyzeTodoState,
+    determineInsertionPoint,
+    createSmartLinterTask,
+    insertLinterTaskSmart,
+    main,
+    CONFIG
+  };
+}

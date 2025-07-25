@@ -142,6 +142,19 @@ function showCurrentConfig() {
   }
 }
 
-// Run setup
-setupHook();
-showCurrentConfig();
+// Export functions for testing
+if (require.main === module) {
+  // Run setup when executed directly
+  setupHook();
+  showCurrentConfig();
+} else {
+  // Export functions for testing
+  module.exports = {
+    ensureSettingsDirectory,
+    loadSettings,
+    setupHook,
+    showCurrentConfig,
+    HOOK_PATH,
+    SETTINGS_PATH
+  };
+}

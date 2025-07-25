@@ -532,5 +532,30 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
-// Run main function
-main();
+// Export functions for testing
+if (require.main === module) {
+  // Run main function when executed directly
+  main();
+} else {
+  // Export functions for testing
+  module.exports = {
+    getArgValue,
+    showHelp,
+    ensureSettingsDirectory,
+    loadSettings,
+    saveSettings,
+    validateHookScript,
+    createLocalSettings,
+    installHook,
+    validateConfiguration,
+    checkLinterAvailability,
+    uninstallHook,
+    showCurrentConfig,
+    showHookInfo,
+    main,
+    CLAUDE_SETTINGS_PATHS,
+    SETTINGS_PATH,
+    HOOK_PATH,
+    flags
+  };
+}

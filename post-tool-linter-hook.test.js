@@ -1,421 +1,672 @@
 #!/usr/bin/env node
 
 /**
- * Comprehensive Test Suite for Post-Tool Linter Hook
+ * Unit Test Suite for Post-Tool Linter Hook
  * 
- * This test suite provides 100% coverage for critical linter hook functionality
- * using subprocess execution to test the hook as it would be used in production.
+ * Comprehensive unit tests for all functions in post-tool-linter-hook.js
+ * to achieve 100% line coverage and test all core functionality.
  */
 
-const { spawn } = require('child_process');
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
-const HOOK_PATH = path.resolve(__dirname, 'post-tool-linter-hook.js');
+// Mock dependencies
+jest.mock('fs');
+jest.mock('child_process');
+jest.mock('path');
 
-describe('Post-Tool Linter Hook', () => {
+// Import the hook functions
+const hook = require('./post-tool-linter-hook.js');
+
+describe('Post-Tool Linter Hook Unit Tests', () => {
   let testDir;
+  let mockFs, mockExecSync, mockPath;
 
   beforeAll(() => {
-    // Create test directory for temporary files
-    testDir = path.join(__dirname, 'test_temp_' + Date.now());
-    if (!fs.existsSync(testDir)) {
-      fs.mkdirSync(testDir, { recursive: true });
-    }
+    testDir = '/test/project';
+    mockFs = fs;
+    mockExecSync = execSync;
+    mockPath = path;
   });
 
-  afterAll(() => {
-    // Clean up test directory
-    if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
-    }
-  });
-
-  const runHook = (input, timeout = 5000) => {
-    return new Promise((resolve) => {
-      const child = spawn('node', [HOOK_PATH], {
-        stdio: ['pipe', 'pipe', 'pipe']
-      });
-
-      let stdout = '';
-      let stderr = '';
-
-      const timer = setTimeout(() => {
-        child.kill();
-        resolve({ code: -1, stdout: '', stderr: 'TIMEOUT' });
-      }, timeout);
-
-      child.stdout.on('data', (data) => {
-        stdout += data.toString();
-      });
-
-      child.stderr.on('data', (data) => {
-        stderr += data.toString();
-      });
-
-      child.on('close', (code) => {
-        clearTimeout(timer);
-        resolve({ code, stdout, stderr });
-      });
-
-      child.stdin.write(JSON.stringify(input));
-      child.stdin.end();
+  beforeEach(() => {
+    jest.clearAllMocks();
+    
+    // Mock path methods
+    mockPath.join.mockImplementation((...args) => args.join('/'));
+    mockPath.resolve.mockImplementation((...args) => '/' + args.join('/'));
+    mockPath.dirname.mockImplementation((p) => p.split('/').slice(0, -1).join('/'));
+    mockPath.basename.mockImplementation((p) => p.split('/').pop());
+    mockPath.extname.mockImplementation((p) => {
+      const parts = p.split('.');
+      return parts.length > 1 ? '.' + parts.pop() : '';
     });
-  };
 
-  describe('Input Validation', () => {
-    test('should handle valid Edit tool input', async () => {
-      const testFile = path.join(testDir, 'test.py');
-      fs.writeFileSync(testFile, 'def test():\n    pass\n');
+    // Mock fs methods
+    mockFs.existsSync.mockReturnValue(true);
+    mockFs.readFileSync.mockReturnValue('{}');
+    mockFs.writeFileSync.mockImplementation(() => {});
+    mockFs.mkdirSync.mockImplementation(() => {});
+    mockFs.readdirSync.mockReturnValue([]);
+    mockFs.statSync.mockReturnValue({ isDirectory: () => false });
 
-      const input = {
-        session_id: 'test-1',
-        hook_event_name: 'PostToolUse',
+    // Mock execSync
+    mockExecSync.mockReturnValue('');
+  });
+
+  describe('initializeLogging', () => {
+    test('should initialize logging with correct project path', () => {
+      const result = hook.initializeLogging(testDir);
+      expect(result).toBeUndefined();
+      expect(mockPath.join).toHaveBeenCalledWith(testDir, 'post-tool-linter-hook.log');
+    });
+
+    test('should handle missing project path', () => {
+      const result = hook.initializeLogging();
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('validateConfigFile', () => {
+    test('should return true for valid package.json', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('{"scripts": {"test": "jest"}}');
+
+      const result = hook.validateConfigFile('/path/package.json', 'javascript');
+      expect(result).toBe(true);
+      expect(mockFs.existsSync).toHaveBeenCalledWith('/path/package.json');
+    });
+
+    test('should return false for invalid package.json', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('{}');
+
+      const result = hook.validateConfigFile('/path/package.json', 'javascript');
+      expect(result).toBe(false);
+    });
+
+    test('should return true for valid pyproject.toml', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('[tool.ruff]\nselect = ["E", "F"]');
+
+      const result = hook.validateConfigFile('/path/pyproject.toml', 'python');
+      expect(result).toBe(true);
+    });
+
+    test('should return false for non-existent config file', () => {
+      mockFs.existsSync.mockReturnValue(false);
+
+      const result = hook.validateConfigFile('/path/to/missing.json', 'test');
+      expect(result).toBe(false);
+    });
+
+    test('should return false for invalid JSON package.json', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('invalid json');
+
+      const result = hook.validateConfigFile('/path/package.json', 'javascript');
+      expect(result).toBe(false);
+    });
+
+    test('should handle read errors gracefully', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockImplementation(() => {
+        throw new Error('Read error');
+      });
+
+      const result = hook.validateConfigFile('/path/to/config.json', 'test');
+      expect(result).toBe(false);
+    });
+
+    test('should return true for other file types if they exist', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('some content');
+
+      const result = hook.validateConfigFile('/path/requirements.txt', 'python');
+      expect(result).toBe(true);
+    });
+  });
+
+  describe('detectProjectType', () => {
+    test('should detect Python project from pyproject.toml', () => {
+      mockFs.existsSync.mockImplementation((path) => path.includes('pyproject.toml'));
+      mockFs.readFileSync.mockReturnValue('[tool.ruff]\nselect = ["E", "F"]');
+
+      const result = hook.detectProjectType(testDir);
+      expect(result).toBe('python');
+    });
+
+    test('should detect Python project from requirements.txt', () => {
+      mockFs.existsSync.mockImplementation((path) => path.includes('requirements.txt'));
+      mockFs.readFileSync.mockReturnValue('flask==2.0.1');
+
+      const result = hook.detectProjectType(testDir);
+      expect(result).toBe('python');
+    });
+
+    test('should detect JavaScript project from package.json', () => {
+      mockFs.existsSync.mockImplementation((path) => path.includes('package.json'));
+      mockFs.readFileSync.mockReturnValue('{"scripts": {"test": "jest"}}');
+
+      const result = hook.detectProjectType(testDir);
+      expect(result).toBe('javascript');
+    });
+
+    test('should return null for unrecognized project', () => {
+      mockFs.existsSync.mockReturnValue(false);
+
+      const result = hook.detectProjectType(testDir);
+      expect(result).toBe(null);
+    });
+
+    test('should handle errors gracefully', () => {
+      mockFs.existsSync.mockImplementation(() => {
+        throw new Error('File system error');
+      });
+
+      const result = hook.detectProjectType(testDir);
+      expect(result).toBe(null);
+    });
+
+    test('should prefer project type with higher score', () => {
+      mockFs.existsSync.mockImplementation((path) => 
+        path.includes('package.json') || path.includes('tsconfig.json') || path.includes('pyproject.toml')
+      );
+      mockFs.readFileSync.mockImplementation((path) => {
+        if (path.includes('package.json')) return '{"scripts": {"test": "jest"}}';
+        if (path.includes('tsconfig.json')) return '{"compilerOptions": {}}';
+        if (path.includes('pyproject.toml')) return '[tool.ruff]';
+        return '';
+      });
+
+      const result = hook.detectProjectType(testDir);
+      expect(result).toBe('javascript'); // JavaScript should win with 2 config files
+    });
+  });
+
+  describe('detectProjectTypes', () => {
+    test('should detect mixed project types', () => {
+      mockFs.existsSync.mockImplementation((path) => {
+        return path.includes('package.json') || path.includes('pyproject.toml');
+      });
+      mockFs.readFileSync.mockImplementation((path) => {
+        if (path.includes('package.json')) return '{"scripts": {"test": "jest"}}';
+        if (path.includes('pyproject.toml')) return '[tool.ruff]';
+        return '';
+      });
+
+      const result = hook.detectProjectTypes(testDir);
+      expect(result).toEqual(['javascript', 'python']);
+    });
+
+    test('should return array with single type for pure projects', () => {
+      mockFs.existsSync.mockImplementation((path) => path.includes('package.json'));
+      mockFs.readFileSync.mockReturnValue('{"scripts": {"test": "jest"}}');
+
+      const result = hook.detectProjectTypes(testDir);
+      expect(result).toEqual(['javascript']);
+    });
+
+    test('should return empty array for unrecognized projects', () => {
+      mockFs.existsSync.mockReturnValue(false);
+
+      const result = hook.detectProjectTypes(testDir);
+      expect(result).toEqual([]);
+    });
+
+    test('should handle validation failures', () => {
+      mockFs.existsSync.mockImplementation((path) => path.includes('package.json'));
+      mockFs.readFileSync.mockReturnValue('{}'); // Invalid package.json
+
+      const result = hook.detectProjectTypes(testDir);
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getFileType', () => {
+    test('should detect Python files', () => {
+      expect(hook.getFileType('/path/to/file.py')).toBe('python');
+      expect(hook.getFileType('/path/to/file.pyx')).toBe('python');
+      expect(hook.getFileType('/path/to/file.pyi')).toBe('python');
+    });
+
+    test('should detect JavaScript files', () => {
+      expect(hook.getFileType('/path/to/file.js')).toBe('javascript');
+      expect(hook.getFileType('/path/to/file.jsx')).toBe('javascript');
+      expect(hook.getFileType('/path/to/file.ts')).toBe('javascript');
+      expect(hook.getFileType('/path/to/file.tsx')).toBe('javascript');
+    });
+
+    test('should return unknown for unsupported files', () => {
+      expect(hook.getFileType('/path/to/file.txt')).toBe('unknown');
+      expect(hook.getFileType('/path/to/file.md')).toBe('unknown');
+      expect(hook.getFileType('/path/to/file')).toBe('unknown');
+    });
+
+    test('should handle missing extension', () => {
+      expect(hook.getFileType('/path/to/file_no_extension')).toBe('unknown');
+    });
+  });
+
+  describe('extractFilePaths', () => {
+    test('should extract file path from Edit tool data', () => {
+      const hookData = {
         tool_name: 'Edit',
-        tool_input: {
-          file_path: testFile,
-          old_string: 'pass',
-          new_string: 'return True'
-        },
-        tool_output: { success: true },
-        cwd: testDir
+        tool_input: { file_path: '/path/to/file.py' }
       };
 
-      const result = await runHook(input);
-      expect([0, 2]).toContain(result.code); // 0 = success, 2 = linting issues found
+      const result = hook.extractFilePaths(hookData);
+      expect(result).toEqual(['/path/to/file.py']);
     });
 
-    test('should handle valid Write tool input', async () => {
-      const testFile = path.join(testDir, 'write_test.js');
-
-      const input = {
-        session_id: 'test-2',
-        hook_event_name: 'PostToolUse',
+    test('should extract file path from Write tool data', () => {
+      const hookData = {
         tool_name: 'Write',
-        tool_input: {
-          file_path: testFile,
-          content: 'function test() {\n  console.log("test");\n}'
-        },
-        tool_output: { success: true },
-        cwd: testDir
+        tool_input: { file_path: '/path/to/file.js' }
       };
 
-      const result = await runHook(input);
-      expect([0, 2]).toContain(result.code);
+      const result = hook.extractFilePaths(hookData);
+      expect(result).toEqual(['/path/to/file.js']);
     });
 
-    test('should handle valid MultiEdit tool input', async () => {
-      const testFile = path.join(testDir, 'multi_test.py');
-      fs.writeFileSync(testFile, 'import os\ndef test():\n    pass\n');
-
-      const input = {
-        session_id: 'test-3',
-        hook_event_name: 'PostToolUse',
+    test('should extract file path from MultiEdit tool data', () => {
+      const hookData = {
         tool_name: 'MultiEdit',
-        tool_input: {
-          file_path: testFile,
-          edits: [
-            {
-              old_string: 'import os',
-              new_string: 'import os\nimport sys'
-            }
-          ]
-        },
-        tool_output: { success: true },
-        cwd: testDir
+        tool_input: { file_path: '/path/to/file.ts' }
       };
 
-      const result = await runHook(input);
-      expect([0, 2]).toContain(result.code);
+      const result = hook.extractFilePaths(hookData);
+      expect(result).toEqual(['/path/to/file.ts']);
     });
 
-    test('should skip non-enabled tools', async () => {
-      const input = {
-        session_id: 'test-4',
-        hook_event_name: 'PostToolUse',
+    test('should return empty array for unsupported tools', () => {
+      const hookData = {
         tool_name: 'Read',
-        tool_output: { success: true },
-        cwd: testDir
+        tool_input: { file_path: '/path/to/file.py' }
       };
 
-      const result = await runHook(input);
-      expect(result.code).toBe(0); // Should exit successfully without processing
+      const result = hook.extractFilePaths(hookData);
+      expect(result).toEqual([]);
     });
 
-    test('should skip failed tool executions', async () => {
-      const input = {
-        session_id: 'test-5',
-        hook_event_name: 'PostToolUse',
+    test('should return empty array for missing tool_input', () => {
+      const hookData = {
+        tool_name: 'Edit'
+      };
+
+      const result = hook.extractFilePaths(hookData);
+      expect(result).toEqual([]);
+    });
+
+    test('should return empty array for missing file_path', () => {
+      const hookData = {
         tool_name: 'Edit',
-        tool_output: { success: false, error: 'Edit failed' },
-        cwd: testDir
+        tool_input: { content: 'some content' }
       };
 
-      const result = await runHook(input);
-      expect(result.code).toBe(0); // Should exit without linting
-    });
-
-    test('should handle malformed JSON input', async () => {
-      const child = spawn('node', [HOOK_PATH], {
-        stdio: ['pipe', 'pipe', 'pipe']
-      });
-
-      child.stdin.write('invalid json');
-      child.stdin.end();
-
-      const result = await new Promise((resolve) => {
-        let stderr = '';
-        child.stderr.on('data', (data) => {
-          stderr += data.toString();
-        });
-
-        child.on('close', (code) => {
-          resolve({ code, stderr });
-        });
-      });
-
-      expect(result.code).toBe(0); // Should handle errors gracefully
+      const result = hook.extractFilePaths(hookData);
+      expect(result).toEqual([]);
     });
   });
 
-  describe('File Type Detection', () => {
-    test('should detect Python files', async () => {
-      const testFile = path.join(testDir, 'python_test.py');
-      fs.writeFileSync(testFile, 'def test():\n    x=1\n    return x\n');
+  describe('runPythonLinter', () => {
+    test('should run ruff successfully', async () => {
+      mockExecSync.mockReturnValue('{"results": []}');
+      mockFs.existsSync.mockReturnValue(true);
 
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: testFile },
-        tool_output: { success: true },
-        cwd: testDir
-      };
-
-      const result = await runHook(input);
-      expect([0, 2]).toContain(result.code);
-    });
-
-    test('should detect JavaScript files', async () => {
-      const testFile = path.join(testDir, 'js_test.js');
-      fs.writeFileSync(testFile, 'function test() {\n  var x = 1\n}');
-
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: testFile },
-        tool_output: { success: true },
-        cwd: testDir
-      };
-
-      const result = await runHook(input);
-      expect([0, 2]).toContain(result.code);
-    });
-
-    test('should skip non-code files', async () => {
-      const testFile = path.join(testDir, 'readme.md');
-      fs.writeFileSync(testFile, '# Test README');
-
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: testFile },
-        tool_output: { success: true },
-        cwd: testDir
-      };
-
-      const result = await runHook(input);
-      expect(result.code).toBe(0); // Should skip and exit successfully
-    });
-
-    test('should handle missing files', async () => {
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: '/nonexistent/file.py' },
-        tool_output: { success: true },
-        cwd: testDir
-      };
-
-      const result = await runHook(input);
-      expect(result.code).toBe(0); // Should handle gracefully
-    });
-  });
-
-  describe('Linter Integration', () => {
-    test('should execute ruff on Python files with violations', async () => {
-      const testFile = path.join(testDir, 'ruff_test.py');
-      fs.writeFileSync(testFile, 'import os\ndef bad_function(x,y):\n    z=x+y\n    return z\n');
-
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: testFile },
-        tool_output: { success: true },
-        cwd: testDir
-      };
-
-      const result = await runHook(input);
+      const result = await hook.runPythonLinter('/path/to/file.py', testDir);
       
-      if (result.code === 2) {
-        // Linting issues found - should contain prompt
-        expect(result.stderr).toContain('**LINTER ERRORS DETECTED**');
-      } else {
-        // Ruff might not be configured or available
-        expect(result.code).toBe(0);
-      }
+      expect(result.success).toBe(true);
+      expect(result.linter).toBe('ruff');
+      expect(result.violations).toEqual([]);
+      expect(mockExecSync).toHaveBeenCalled();
     });
 
-    test('should handle clean Python files', async () => {
-      const testFile = path.join(testDir, 'clean_test.py');
-      fs.writeFileSync(testFile, 'def clean_function(x, y):\n    z = x + y\n    return z\n');
+    test('should handle ruff command errors', async () => {
+      mockExecSync.mockImplementation(() => {
+        const error = new Error('Command failed');
+        error.status = 1;
+        error.stdout = Buffer.from('{"results": [{"violations": []}]}');
+        throw error;
+      });
+      mockFs.existsSync.mockReturnValue(true);
 
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: testFile },
-        tool_output: { success: true },
-        cwd: testDir
-      };
-
-      const result = await runHook(input);
-      expect(result.code).toBe(0); // Clean code should pass
+      const result = await hook.runPythonLinter('/path/to/file.py', testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.linter).toBe('ruff');
     });
 
-    test('should handle ESLint availability gracefully', async () => {
-      const testFile = path.join(testDir, 'eslint_test.js');
-      fs.writeFileSync(testFile, 'function test() {\n  console.log("test");\n}');
+    test('should handle missing file', async () => {
+      mockFs.existsSync.mockReturnValue(false);
 
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: testFile },
-        tool_output: { success: true },
-        cwd: testDir
-      };
-
-      const result = await runHook(input);
-      expect([0, 2]).toContain(result.code);
-    });
-  });
-
-  describe('Configuration Detection', () => {
-    test('should detect Python projects', async () => {
-      const pyprojectFile = path.join(testDir, 'pyproject.toml');
-      fs.writeFileSync(pyprojectFile, '[tool.ruff]\nselect = ["E", "F"]\n');
-
-      const testFile = path.join(testDir, 'config_test.py');
-      fs.writeFileSync(testFile, 'def test():\n    pass\n');
-
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: testFile },
-        tool_output: { success: true },
-        cwd: testDir
-      };
-
-      const result = await runHook(input);
-      expect([0, 2]).toContain(result.code);
-
-      // Clean up
-      fs.unlinkSync(pyprojectFile);
+      const result = await hook.runPythonLinter('/path/to/missing.py', testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('File does not exist');
     });
 
-    test('should detect JavaScript projects', async () => {
-      const packageFile = path.join(testDir, 'package.json');
-      fs.writeFileSync(packageFile, JSON.stringify({
-        name: 'test',
-        scripts: { test: 'jest' }
-      }));
+    test('should handle JSON parse errors', async () => {
+      mockExecSync.mockReturnValue('invalid json');
+      mockFs.existsSync.mockReturnValue(true);
 
-      const testFile = path.join(testDir, 'package_test.js');
-      fs.writeFileSync(testFile, 'function test() {\n  return true;\n}');
-
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: testFile },
-        tool_output: { success: true },
-        cwd: testDir
-      };
-
-      const result = await runHook(input);
-      expect([0, 2]).toContain(result.code);
-
-      // Clean up
-      fs.unlinkSync(packageFile);
+      const result = await hook.runPythonLinter('/path/to/file.py', testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Failed to parse');
     });
   });
 
-  describe('Error Handling', () => {
-    test('should handle timeout scenarios', async () => {
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: path.join(testDir, 'timeout_test.py') },
-        tool_output: { success: true },
-        cwd: testDir
-      };
+  describe('runJavaScriptLinter', () => {
+    test('should run ESLint successfully', async () => {
+      mockExecSync.mockReturnValue('[]');
+      mockFs.existsSync.mockReturnValue(true);
 
-      // Use very short timeout to test timeout handling
-      const result = await runHook(input, 50);
-      // Either times out or completes quickly - both are acceptable
-      expect(typeof result.code).toBe('number');
+      const result = await hook.runJavaScriptLinter('/path/to/file.js', testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.linter).toBe('eslint');
+      expect(result.violations).toEqual([]);
     });
 
-    test('should handle permission errors gracefully', async () => {
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: '/root/restricted_file.py' },
-        tool_output: { success: true },
-        cwd: testDir
-      };
+    test('should handle ESLint command errors', async () => {
+      mockExecSync.mockImplementation(() => {
+        const error = new Error('Command failed');
+        error.status = 1;
+        error.stdout = Buffer.from('[{"messages": []}]');
+        throw error;
+      });
+      mockFs.existsSync.mockReturnValue(true);
 
-      const result = await runHook(input);
-      expect(result.code).toBe(0); // Should handle gracefully
-    });
-  });
-
-  describe('Security Tests', () => {
-    test('should handle path traversal attempts', async () => {
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: '../../../etc/passwd' },
-        tool_output: { success: true },
-        cwd: testDir
-      };
-
-      const result = await runHook(input);
-      expect(result.code).toBe(0); // Should handle safely
+      const result = await hook.runJavaScriptLinter('/path/to/file.js', testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.linter).toBe('eslint');
     });
 
-    test('should sanitize command execution', async () => {
-      const testFile = path.join(testDir, 'injection_test.py');
-      fs.writeFileSync(testFile, 'def test():\n    pass\n');
+    test('should handle missing file', async () => {
+      mockFs.existsSync.mockReturnValue(false);
 
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: testFile },
-        tool_output: { success: true },
-        cwd: testDir
-      };
+      const result = await hook.runJavaScriptLinter('/path/to/missing.js', testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('File does not exist');
+    });
 
-      const result = await runHook(input);
-      expect([0, 2]).toContain(result.code);
+    test('should handle JSON parse errors', async () => {
+      mockExecSync.mockReturnValue('invalid json');
+      mockFs.existsSync.mockReturnValue(true);
+
+      const result = await hook.runJavaScriptLinter('/path/to/file.js', testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Failed to parse');
     });
   });
 
-  describe('Logging System', () => {
-    test('should create log files when configured', async () => {
-      const testFile = path.join(testDir, 'logging_test.py');
-      fs.writeFileSync(testFile, 'def test():\n    pass\n');
+  describe('lintFile', () => {
+    test('should lint Python file', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockExecSync.mockReturnValue('{"results": []}');
 
-      const input = {
-        tool_name: 'Edit',
-        tool_input: { file_path: testFile },
-        tool_output: { success: true },
-        cwd: testDir
+      const result = await hook.lintFile('/path/to/file.py', testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.linter).toBe('ruff');
+    });
+
+    test('should lint JavaScript file', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockExecSync.mockReturnValue('[]');
+
+      const result = await hook.lintFile('/path/to/file.js', testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.linter).toBe('eslint');
+    });
+
+    test('should skip unknown file types', async () => {
+      const result = await hook.lintFile('/path/to/file.txt', testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.error).toContain('Unsupported file type');
+    });
+  });
+
+  describe('writeLinterErrorsFile', () => {
+    test('should write linter errors to development directory', () => {
+      const results = [{
+        filePath: '/path/to/file.py',
+        linter: 'ruff',
+        violations: [{
+          line: 1,
+          column: 1,
+          message: 'Test error',
+          severity: 'error'
+        }]
+      }];
+
+      hook.writeLinterErrorsFile(results, testDir);
+      
+      expect(mockFs.mkdirSync).toHaveBeenCalled();
+      expect(mockFs.writeFileSync).toHaveBeenCalled();
+    });
+
+    test('should handle empty results', () => {
+      hook.writeLinterErrorsFile([], testDir);
+      
+      expect(mockFs.writeFileSync).toHaveBeenCalled();
+    });
+  });
+
+  describe('formatLinterPrompt', () => {
+    test('should format linter prompt with violations', () => {
+      const results = [{
+        filePath: '/path/to/file.py',
+        linter: 'ruff',
+        violations: [{
+          line: 1,
+          column: 1,
+          message: 'Test error',
+          severity: 'error'
+        }]
+      }];
+
+      const prompt = hook.formatLinterPrompt(results, testDir);
+      
+      expect(prompt).toContain('**LINTER ERRORS DETECTED**');
+      expect(prompt).toContain('file.py');
+      expect(prompt).toContain('Test error');
+    });
+
+    test('should handle empty results', () => {
+      const prompt = hook.formatLinterPrompt([], testDir);
+      
+      expect(prompt).toContain('No linting issues found');
+    });
+  });
+
+  describe('removeLinterTasks', () => {
+    test('should remove existing linter tasks', () => {
+      const todoData = {
+        tasks: [
+          { id: 'task1', title: 'Regular task' },
+          { id: 'linter_task_1', is_linter_task: true, title: 'Fix Linter Errors' },
+          { id: 'task2', title: 'Another task' }
+        ]
       };
 
-      const result = await runHook(input);
-      expect([0, 2]).toContain(result.code);
+      const result = hook.removeLinterTasks(todoData);
+      
+      expect(result.tasks).toHaveLength(2);
+      expect(result.tasks.some(task => task.is_linter_task)).toBe(false);
+    });
 
-      // Check if log file was created
-      const logFile = path.join(testDir, 'post-tool-linter-hook.log');
-      if (fs.existsSync(logFile)) {
-        const logContent = fs.readFileSync(logFile, 'utf8');
-        expect(logContent).toContain('POST-TOOL LINTER HOOK LOG');
-      }
+    test('should handle todo data without tasks', () => {
+      const todoData = {};
+      
+      const result = hook.removeLinterTasks(todoData);
+      
+      expect(result.tasks).toEqual([]);
+    });
+  });
+
+  describe('analyzeTodoState', () => {
+    test('should analyze valid TODO.json', async () => {
+      const todoContent = JSON.stringify({
+        current_task_index: 1,
+        tasks: [
+          { id: 'task1', status: 'completed' },
+          { id: 'task2', status: 'pending' }
+        ]
+      });
+      
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue(todoContent);
+
+      const result = await hook.analyzeTodoState(testDir);
+      
+      expect(result.exists).toBe(true);
+      expect(result.valid).toBe(true);
+      expect(result.taskCount).toBe(2);
+      expect(result.currentTaskIndex).toBe(1);
+    });
+
+    test('should handle missing TODO.json', async () => {
+      mockFs.existsSync.mockReturnValue(false);
+
+      const result = await hook.analyzeTodoState(testDir);
+      
+      expect(result.exists).toBe(false);
+      expect(result.valid).toBe(false);
+      expect(result.taskCount).toBe(0);
+    });
+
+    test('should handle invalid JSON', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('invalid json');
+
+      const result = await hook.analyzeTodoState(testDir);
+      
+      expect(result.exists).toBe(true);
+      expect(result.valid).toBe(false);
+    });
+  });
+
+  describe('determineInsertionPoint', () => {
+    test('should determine insertion point after current task', () => {
+      const analysis = {
+        currentTaskIndex: 2,
+        taskCount: 5
+      };
+
+      const result = hook.determineInsertionPoint(analysis);
+      
+      expect(result).toBe(3);
+    });
+
+    test('should handle missing current task index', () => {
+      const analysis = {
+        taskCount: 5
+      };
+
+      const result = hook.determineInsertionPoint(analysis);
+      
+      expect(result).toBe(5);
+    });
+
+    test('should handle empty task list', () => {
+      const analysis = {
+        taskCount: 0
+      };
+
+      const result = hook.determineInsertionPoint(analysis);
+      
+      expect(result).toBe(0);
+    });
+  });
+
+  describe('createSmartLinterTask', () => {
+    test('should create linter task with correct metadata', async () => {
+      const results = [{
+        filePath: '/path/to/file.py',
+        linter: 'ruff',
+        violations: [{
+          line: 1,
+          message: 'Test error',
+          severity: 'error'
+        }]
+      }];
+      
+      const filePaths = ['/path/to/file.py'];
+
+      const task = await hook.createSmartLinterTask(results, testDir, filePaths);
+      
+      expect(task.title).toContain('Fix Linter Errors');
+      expect(task.description).toContain('1 errors');
+      expect(task.important_files).toContain('development/linter-errors.md');
+      expect(task.is_linter_task).toBe(true);
+      expect(task.success_criteria).toBeInstanceOf(Array);
+    });
+
+    test('should handle empty results', async () => {
+      const task = await hook.createSmartLinterTask([], testDir, []);
+      
+      expect(task.title).toContain('Fix Linter Errors');
+      expect(task.description).toContain('0 errors and 0 warnings');
+    });
+  });
+
+  describe('insertLinterTaskSmart', () => {
+    test('should insert task at correct position', async () => {
+      const linterTask = {
+        id: 'linter_task',
+        title: 'Fix Linter Errors'
+      };
+      
+      const analysis = {
+        todoPath: path.join(testDir, 'TODO.json'),
+        data: {
+          tasks: [
+            { id: 'task1', status: 'completed' },
+            { id: 'task2', status: 'pending' }
+          ]
+        }
+      };
+      
+      mockFs.writeFileSync.mockImplementation(() => {});
+
+      await hook.insertLinterTaskSmart(linterTask, analysis, testDir);
+      
+      expect(mockFs.writeFileSync).toHaveBeenCalled();
+    });
+
+    test('should handle file write errors', async () => {
+      const linterTask = { id: 'linter_task' };
+      const analysis = {
+        todoPath: path.join(testDir, 'TODO.json'),
+        data: { tasks: [] }
+      };
+      
+      mockFs.writeFileSync.mockImplementation(() => {
+        throw new Error('Write error');
+      });
+
+      await expect(hook.insertLinterTaskSmart(linterTask, analysis, testDir))
+        .rejects.toThrow('Write error');
+    });
+  });
+
+  describe('CONFIG', () => {
+    test('should have valid configuration', () => {
+      expect(hook.CONFIG).toBeDefined();
+      expect(hook.CONFIG.timeout).toBeGreaterThan(0);
+      expect(hook.CONFIG.linters).toBeDefined();
+      expect(hook.CONFIG.linters.python).toBeDefined();
+      expect(hook.CONFIG.linters.javascript).toBeDefined();
+      expect(hook.CONFIG.enabledTools).toContain('Edit');
+      expect(hook.CONFIG.lintingMode).toBeDefined();
     });
   });
 });
