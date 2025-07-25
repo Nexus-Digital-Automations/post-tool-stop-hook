@@ -454,14 +454,21 @@ class HookPackager {
     });
   }
     
-  getAllFiles(dir) {
+  getAllFiles(dir, currentDepth = 0, maxDepth = 10) {
     const files = [];
+    
+    // Check depth limit to prevent stack overflow
+    if (currentDepth >= maxDepth) {
+      this.log(`⚠️ Maximum recursion depth (${maxDepth}) reached for directory: ${dir}`);
+      return files;
+    }
+    
     const entries = fs.readdirSync(dir, { withFileTypes: true });
         
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
       if (entry.isDirectory()) {
-        files.push(...this.getAllFiles(fullPath));
+        files.push(...this.getAllFiles(fullPath, currentDepth + 1, maxDepth));
       } else {
         files.push(fullPath);
       }
