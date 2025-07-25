@@ -1125,7 +1125,7 @@
       "description": "Modify prebuild hook to allow build to succeed even when some tests are failing, or fix critical test failures that prevent building",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "package.json",
         "jest.config.js"

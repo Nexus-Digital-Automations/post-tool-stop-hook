@@ -91,7 +91,7 @@ function validateConfigFile(configPath, type) {
     if (configPath.endsWith('package.json')) {
       const content = JSON.parse(fs.readFileSync(configPath, 'utf8'));
       // Valid if it has scripts, dependencies, or is explicitly a Node.js project
-      const isValid = content.scripts || content.dependencies || content.devDependencies || content.type;
+      const isValid = !!(content.scripts || content.dependencies || content.devDependencies || content.type);
       log(`  package.json validation: ${isValid ? 'VALID' : 'INVALID'}`);
       return isValid;
     }
@@ -1112,7 +1112,12 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], _taskCreated
 function removeLinterTasks(todoData) {
   log('Removing existing linter tasks to prevent accumulation...');
   
-  const tasks = todoData.tasks || [];
+  // Ensure todoData has tasks array
+  if (!todoData.tasks) {
+    todoData.tasks = [];
+  }
+  
+  const tasks = todoData.tasks;
   const initialTaskCount = tasks.length;
   
   // Find all linter tasks (both pending and completed)
@@ -1142,11 +1147,13 @@ function removeLinterTasks(todoData) {
     log(`Adjusted current_task_index to ${todoData.current_task_index}`);
   }
   
-  return {
+  // Store metadata for logging
+  todoData.__removedLinterTasks = {
     removedCount,
-    finalTaskCount,
-    updatedTodoData: todoData
+    finalTaskCount
   };
+  
+  return todoData;
 }
 
 async function analyzeTodoState(projectPath) {
@@ -1214,6 +1221,7 @@ async function createSmartLinterTask(results, projectPath, filePaths, _analysis)
   // Standardized task ID - predictable format
   const taskId = 'linter_task_active';
   const fileList = filePaths.map(fp => path.basename(fp)).join(', ');
+  
   
   // Standardized linter task format
   const linterTask = {
@@ -1468,5 +1476,37 @@ async function main() {
   }, CONFIG.timeout + 5000);
 }
 
-// Run the hook
-main();
+// Export functions for testing
+if (require.main === module) {
+  // Run the hook when executed directly
+  main();
+} else {
+  // Export functions for testing
+  module.exports = {
+    initializeLogging,
+    log,
+    writeLogFile,
+    validateConfigFile,
+    detectProjectType,
+    detectProjectTypes,
+    runPythonProjectLinter,
+    runJavaScriptProjectLinter,
+    lintProject,
+    getFileType,
+    extractFilePaths,
+    runPythonLinter,
+    runJavaScriptLinter,
+    lintFile,
+    writeLinterErrorsFile,
+    writeLinterErrorsToPath,
+    formatLinterFailurePrompt,
+    formatLinterPrompt,
+    removeLinterTasks,
+    analyzeTodoState,
+    determineInsertionPoint,
+    createSmartLinterTask,
+    insertLinterTaskSmart,
+    main,
+    CONFIG
+  };
+}

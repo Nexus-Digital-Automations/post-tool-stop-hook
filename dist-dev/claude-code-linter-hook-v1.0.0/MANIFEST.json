@@ -2,24 +2,44 @@
   "version": "1.0.0",
   "files": [
     {
+      "path": "CHANGELOG.md",
+      "checksum": "d318b49efd67328db5cb90dc98cf62f386ceb21d831c4038dadd161787a7a3d6"
+    },
+    {
+      "path": "CHECKSUMS.json",
+      "checksum": "48b71c9fc10eed0d8371cbb877c838b4f730fb4395f1d63d466c7fa6b1aebe3a"
+    },
+    {
+      "path": "LICENSE",
+      "checksum": "c2e5dd57769a2af45d99c52a3d6917cb83ce1aa47ba37b8aecc8ccc22c25cfa5"
+    },
+    {
+      "path": "MANIFEST.json",
+      "checksum": "5608f61ef3fb1391fdbdf6a5298c1c22aade31d12f173afd5ddce710441c0388"
+    },
+    {
+      "path": "QUICKSTART.md",
+      "checksum": "40031230506e8c7d7e5f9b80d511bccebf0de32d762f5722e732277b586f4ac4"
+    },
+    {
       "path": "bin/README.md",
       "checksum": "4587c1f496e41218d918acb6a3f6fd9951d641aa6c2e78d6365debffaac20308"
     },
     {
       "path": "bin/package.json",
-      "checksum": "2b99edb7eb00272f69ca6bcac0393eaffdd814b5d650a4349199b2e251b045c8"
+      "checksum": "be1a9edd3f9571c09db99b74911fe288497cdafb55d38aac00f36b8ae1ad8266"
     },
     {
       "path": "bin/post-tool-linter-hook.js",
-      "checksum": "981179dbe8c6ee8043c28087c5ae1159a3870c4aefadc69bfad592d227949fa8"
+      "checksum": "226a5d9b617d72a35c2464a55066146807481667feef2077354c05d695358ff6"
     },
     {
       "path": "bin/setup-linter-hook.js",
-      "checksum": "4f9a8a7e79e8843d4292dedc8a6b56f476161b2ce61c472ce15c88246e748712"
+      "checksum": "70a0fa99c92fe182d128827f5591dccccaf2dc0a35d593251b9157d46faf3692"
     },
     {
       "path": "bin/setup-post-tool-hook.js",
-      "checksum": "b21b8d753d0a293f78094c472c0985700c908a1f0e1bccbdde3c8e25c3b0c3dc"
+      "checksum": "e71dbcc40f96657175922151a5b4ec8e2f5e9c34855a3f06cb11195c100a1337"
     },
     {
       "path": "docs/docs/config.md",
@@ -59,7 +79,7 @@
     },
     {
       "path": "examples/eslint.config.js",
-      "checksum": "362fc2ed12414090a40a028b9f7a0d037a4fb7c6644e2c490b4bb42c100b6898"
+      "checksum": "53943025f2b9d5628ad3e26098da2b90d11ccd0b032d95c9871e967e71b04893"
     },
     {
       "path": "examples/test-linter-hook.js",
@@ -79,7 +99,7 @@
     },
     {
       "path": "package-info.json",
-      "checksum": "c5ef13c362a37d83c69c0bf16be9fddd86151f140941c14f374f931b299ae290"
+      "checksum": "f7fa37054611db19f5f09c54b8c39bac6b920461bbd2295c8ca79811b95a4d56"
     }
   ]
 }

@@ -1,13 +1,13 @@
-[2025-07-25T20:37:59.947Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-25T20:37:59.948Z] Date: 2025-07-25T20:37:59.948Z
-[2025-07-25T20:37:59.948Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-25T20:37:59.948Z] Node Version: v23.9.0
-[2025-07-25T20:37:59.948Z] Platform: darwin
-[2025-07-25T20:37:59.948Z] 
-[2025-07-25T20:37:59.948Z] === HOOK EXECUTION START ===
-[2025-07-25T20:37:59.948Z] Tool: Bash
-[2025-07-25T20:37:59.948Z] Session ID: 9780348b-2cc8-4986-a8df-1683a71ef4d2
-[2025-07-25T20:37:59.948Z] Hook input:
+[2025-07-25T20:40:01.360Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-25T20:40:01.366Z] Date: 2025-07-25T20:40:01.366Z
+[2025-07-25T20:40:01.366Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-25T20:40:01.366Z] Node Version: v23.9.0
+[2025-07-25T20:40:01.366Z] Platform: darwin
+[2025-07-25T20:40:01.366Z] 
+[2025-07-25T20:40:01.366Z] === HOOK EXECUTION START ===
+[2025-07-25T20:40:01.366Z] Tool: Bash
+[2025-07-25T20:40:01.366Z] Session ID: 9780348b-2cc8-4986-a8df-1683a71ef4d2
+[2025-07-25T20:40:01.366Z] Hook input:
   Data: {
   "session_id": "9780348b-2cc8-4986-a8df-1683a71ef4d2",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/9780348b-2cc8-4986-a8df-1683a71ef4d2.jsonl",
@@ -15,14 +15,14 @@
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
   "tool_input": {
-    "command": "node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('quality-improvement-1753475347355', 'completed').then(() => console.log('✅ Task quality-improvement-1753475347355 marked as completed'));\"",
-    "description": "Mark quality improvement task as completed"
+    "command": "node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('fix-build-pipeline-1753475806', 'completed').then(() => console.log('✅ Task fix-build-pipeline-1753475806 marked as completed'));\"",
+    "description": "Mark current task as completed"
   },
   "tool_response": {
-    "stdout": "✅ Task quality-improvement-1753475347355 marked as completed",
+    "stdout": "✅ Task fix-build-pipeline-1753475806 marked as completed",
     "stderr": "",
     "interrupted": false,
     "isImage": false
   }
 }
-[2025-07-25T20:37:59.948Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-25T20:40:01.366Z] Tool Bash is not in enabled tools list, skipping
