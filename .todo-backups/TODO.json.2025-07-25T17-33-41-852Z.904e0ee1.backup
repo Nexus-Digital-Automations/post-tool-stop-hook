@@ -492,7 +492,7 @@
       "description": "Comprehensive testing of the entire post-tool linter hook with smart task placement",
       "mode": "TESTING",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "post-tool-linter-hook.js",
         "TODO.json",
@@ -507,151 +507,7 @@
       ],
       "created_at": "2025-07-25T07:41:59.316Z",
       "requires_research": false,
-      "subtasks": [
-        {
-          "id": "test-hook-triggering",
-          "title": "Test PostToolUse hook activation and execution",
-          "description": "Verify that the hook correctly triggers on Edit, Write, and MultiEdit tool execution with proper timeout handling",
-          "mode": "TESTING",
-          "priority": "high",
-          "status": "pending",
-          "success_criteria": [
-            "Hook activates on Edit tool execution",
-            "Hook activates on Write tool execution", 
-            "Hook activates on MultiEdit tool execution",
-            "Hook respects timeout configuration (15s default)",
-            "Hook handles concurrent tool executions gracefully",
-            "Hook logs execution start and completion"
-          ],
-          "important_files": [
-            "post-tool-linter-hook.js",
-            "~/.claude/settings.json"
-          ],
-          "estimate": "2 hours"
-        },
-        {
-          "id": "test-linter-detection-accuracy",
-          "title": "Test linter error detection and reporting accuracy",
-          "description": "Validate that linters (ESLint, Ruff) correctly detect violations and generate accurate reports",
-          "mode": "TESTING", 
-          "priority": "high",
-          "status": "pending",
-          "success_criteria": [
-            "ESLint correctly detects JavaScript/TypeScript violations",
-            "Ruff correctly detects Python violations",
-            "Error categorization (errors vs warnings) is accurate",
-            "File path extraction works for all supported extensions",
-            "Line number reporting is precise",
-            "development/linter-errors.md is generated correctly"
-          ],
-          "important_files": [
-            "post-tool-linter-hook.js",
-            "development/linter-errors.md"
-          ],
-          "estimate": "3 hours"
-        },
-        {
-          "id": "test-smart-placement-scenarios",
-          "title": "Test smart task placement in realistic workflow scenarios",
-          "description": "Verify intelligent task insertion works correctly across various TODO.json states and project configurations",
-          "mode": "TESTING",
-          "priority": "high", 
-          "status": "pending",
-          "success_criteria": [
-            "Tasks inserted at correct position after current task",
-            "Important files array includes development/linter-errors.md and source files",
-            "Task metadata is complete (ID, title, description, success criteria)",
-            "Works with empty TODO.json files",
-            "Works with large TODO.json files (100+ tasks)",
-            "Handles various current_task_index values correctly"
-          ],
-          "important_files": [
-            "post-tool-linter-hook.js",
-            "TODO.json",
-            ".todo-backups/"
-          ],
-          "estimate": "4 hours"
-        },
-        {
-          "id": "test-atomic-operations-safety",
-          "title": "Test atomic TODO.json updates and backup creation",
-          "description": "Verify that TODO.json modifications are atomic, safe, and include proper backup mechanisms",
-          "mode": "TESTING",
-          "priority": "high",
-          "status": "pending", 
-          "success_criteria": [
-            "Backup files created before TODO.json modification",
-            "Backup files have proper timestamped naming convention",
-            "TODO.json updates are atomic (no partial writes)",
-            "Original TODO.json preserved on write failures",
-            "Concurrent access handled safely",
-            "File permissions preserved after updates"
-          ],
-          "important_files": [
-            "post-tool-linter-hook.js",
-            "TODO.json",
-            ".todo-backups/"
-          ],
-          "estimate": "3 hours"
-        },
-        {
-          "id": "test-error-resilience",
-          "title": "Test error handling and graceful degradation",
-          "description": "Validate system resilience when encountering various error conditions and edge cases",
-          "mode": "TESTING",
-          "priority": "medium",
-          "status": "pending",
-          "success_criteria": [
-            "Graceful handling of missing linter executables",
-            "Proper response to malformed TODO.json files",
-            "Safe handling of file system permission errors",
-            "Timeout handling for long-running linter processes",
-            "Recovery from disk space exhaustion",
-            "Fallback behavior when smart placement fails"
-          ],
-          "important_files": [
-            "post-tool-linter-hook.js",
-            "post-tool-linter-hook.log"
-          ],
-          "estimate": "3 hours"
-        },
-        {
-          "id": "test-integration-scenarios",
-          "title": "Test end-to-end integration scenarios",
-          "description": "Comprehensive testing of complete workflow from tool execution to task creation in realistic development scenarios",
-          "mode": "TESTING",
-          "priority": "medium",
-          "status": "pending",
-          "success_criteria": [
-            "Complete workflow: tool execution → linting → task creation",
-            "Multiple file editing scenarios work correctly",
-            "Different project types (JS/Python) handled appropriately",
-            "Hook works with various Claude Code workflow patterns",
-            "Performance acceptable with large codebases",
-            "Integration with existing development workflows"
-          ],
-          "important_files": [
-            "post-tool-linter-hook.js",
-            "TODO.json",
-            "development/",
-            "package.json",
-            "pyproject.toml"
-          ],
-          "estimate": "4 hours"
-        }
-      ],
-      "completed_at": "2025-07-25T17:56:30.000Z",
-      "completion_notes": [
-        "Successfully decomposed end-to-end validation into 6 comprehensive subtasks",
-        "Created test-hook-triggering: Validates PostToolUse hook activation across all supported tools",
-        "Created test-linter-detection-accuracy: Ensures ESLint and Ruff detection accuracy",
-        "Created test-smart-placement-scenarios: Tests intelligent TODO.json task insertion",
-        "Created test-atomic-operations-safety: Validates atomic updates and backup creation",
-        "Created test-error-resilience: Tests graceful degradation and error handling",
-        "Created test-integration-scenarios: End-to-end workflow validation",
-        "All subtasks have clear success criteria, time estimates, and important file references",
-        "Total estimated effort: 19 hours across 6 specialized testing workstreams"
-      ]
+      "subtasks": []
     },
     {
       "id": "fix-ruff-test-configuration",
@@ -701,7 +557,7 @@
   "review_strikes": 0,
   "strikes_completed_last_run": false,
   "current_task_index": 4,
-  "last_mode": "TASK_CREATION",
-  "execution_count": 32,
-  "last_hook_activation": 1753464821851
+  "last_mode": "DEVELOPMENT",
+  "execution_count": 31,
+  "last_hook_activation": 1753464699367
 }
