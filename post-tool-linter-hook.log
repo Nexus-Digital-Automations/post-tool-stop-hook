@@ -1,13 +1,13 @@
-[2025-07-25T21:21:38.631Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-25T21:21:38.631Z] Date: 2025-07-25T21:21:38.631Z
-[2025-07-25T21:21:38.631Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-25T21:21:38.631Z] Node Version: v23.9.0
-[2025-07-25T21:21:38.631Z] Platform: darwin
-[2025-07-25T21:21:38.631Z] 
-[2025-07-25T21:21:38.631Z] === HOOK EXECUTION START ===
-[2025-07-25T21:21:38.631Z] Tool: Bash
-[2025-07-25T21:21:38.631Z] Session ID: f697460d-0be4-4b4c-ade0-b05364c58f82
-[2025-07-25T21:21:38.631Z] Hook input:
+[2025-07-25T21:23:14.288Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-25T21:23:14.289Z] Date: 2025-07-25T21:23:14.289Z
+[2025-07-25T21:23:14.289Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-25T21:23:14.289Z] Node Version: v23.9.0
+[2025-07-25T21:23:14.289Z] Platform: darwin
+[2025-07-25T21:23:14.289Z] 
+[2025-07-25T21:23:14.289Z] === HOOK EXECUTION START ===
+[2025-07-25T21:23:14.289Z] Tool: Bash
+[2025-07-25T21:23:14.289Z] Session ID: f697460d-0be4-4b4c-ade0-b05364c58f82
+[2025-07-25T21:23:14.289Z] Hook input:
   Data: {
   "session_id": "f697460d-0be4-4b4c-ade0-b05364c58f82",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/f697460d-0be4-4b4c-ade0-b05364c58f82.jsonl",
@@ -15,14 +15,14 @@
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
   "tool_input": {
-    "command": "node -e \"\nconst TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager');\n(async () => {\n  const taskManager = new TaskManager('./TODO.json');\n  await taskManager.updateTaskStatus('linter_task_active', 'completed');\n  console.log('✅ Task linter_task_active marked as completed');\n})();\n\"",
-    "description": "Mark the linter task as completed"
+    "command": "node -e \"\nconst TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager');\n(async () => {\n  const taskManager = new TaskManager('./TODO.json');\n  await taskManager.updateTaskStatus('fix-getfiletype-function-tests-1753477696141', 'completed');\n  console.log('✅ Task fix-getfiletype-function-tests-1753477696141 marked as completed');\n})();\n\"",
+    "description": "Mark the task as completed"
   },
   "tool_response": {
-    "stdout": "✅ Task linter_task_active marked as completed",
+    "stdout": "✅ Task fix-getfiletype-function-tests-1753477696141 marked as completed",
     "stderr": "",
     "interrupted": false,
     "isImage": false
   }
 }
-[2025-07-25T21:21:38.631Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-25T21:23:14.289Z] Tool Bash is not in enabled tools list, skipping
