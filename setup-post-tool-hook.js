@@ -336,6 +336,7 @@ function validateConfiguration() {
   // Check global settings
   console.log('Checking global configuration...');
   const settings = loadSettings();
+  let hasGlobalHooks = false;
     
   if (!settings.hooks || !settings.hooks.PostToolUse) {
     console.log('❌ No PostToolUse hooks configured globally');
@@ -350,6 +351,7 @@ function validateConfiguration() {
       console.log('❌ No linter hooks found in global configuration');
     } else {
       console.log(`✅ Found ${linterHooks.length} linter hook(s) in global configuration`);
+      hasGlobalHooks = true;
       linterHooks.forEach((hook, index) => {
         console.log(`  Hook ${index + 1}:`);
         console.log(`    Matcher: ${hook.matcher}`);
@@ -362,6 +364,7 @@ function validateConfiguration() {
   }
     
   // Check local settings if in a project
+  let hasLocalHooks = false;
   const localSettingsPath = path.join(process.cwd(), '.claude', 'settings.local.json');
   if (fs.existsSync(localSettingsPath)) {
     console.log('\nChecking local configuration...');
@@ -376,6 +379,7 @@ function validateConfiguration() {
                 
         if (localLinterHooks.length > 0) {
           console.log(`✅ Found ${localLinterHooks.length} linter hook(s) in local configuration`);
+          hasLocalHooks = true;
         } else {
           console.log('❌ No linter hooks found in local configuration');
         }
@@ -391,7 +395,15 @@ function validateConfiguration() {
   console.log('\nChecking linter availability...');
   checkLinterAvailability();
     
-  return true;
+  // Return true if we found hooks either globally or locally
+  const hasValidConfiguration = hasGlobalHooks || hasLocalHooks;
+  if (hasValidConfiguration) {
+    console.log('\n✅ Hook configuration is valid');
+  } else {
+    console.log('\n❌ No linter hooks found in any configuration');
+  }
+  
+  return hasValidConfiguration;
 }
 
 function checkLinterAvailability() {

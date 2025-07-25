@@ -1,12 +1,12 @@
 # Linter Errors Report
 
-**Generated:** 2025-07-25T20:47:20.202Z
-**Total Issues:** 5 (3 errors, 2 warnings)
+**Generated:** 2025-07-25T20:52:26.588Z
+**Total Issues:** 4 (3 errors, 1 warnings)
 **Files:** 2
 
 ## js_test.js (eslint)
 
-**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/test_temp_1753476437582/js_test.js`
+**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/test_temp_1753476744552/js_test.js`
 **Issues:** 3
 
 ❌ **Line 1:10** - 'test' is defined but never used. `[no-unused-vars]`
@@ -17,14 +17,12 @@
 
 ---
 
-## eslint_test.js (eslint)
+## setup-post-tool-hook.js (eslint)
 
-**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/test_temp_1753476437582/eslint_test.js`
-**Issues:** 2
+**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/setup-post-tool-hook.js`
+**Issues:** 1
 
-❌ **Line 1:10** - 'test' is defined but never used. `[no-unused-vars]`
-
-⚠️ **Line 2:15** - Strings must use singlequote. `[quotes]` (auto-fixable)
+❌ **Line 354:7** - 'hasGlobalHooks' is assigned a value but never used. `[no-unused-vars]`
 
 ---
 

@@ -655,7 +655,9 @@
 <a name='L590'></a><a href='#L590'>590</a>
 <a name='L591'></a><a href='#L591'>591</a>
 <a name='L592'></a><a href='#L592'>592</a>
-<a name='L593'></a><a href='#L593'>593</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L593'></a><a href='#L593'>593</a>
+<a name='L594'></a><a href='#L594'>594</a>
+<a name='L595'></a><a href='#L595'>595</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -1247,6 +1249,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">#!/usr/bin/env node
 &nbsp;
 /**
@@ -1498,7 +1502,7 @@ function installHook() {
     
   // Validate hook script exists
   if (!validateHookScript()) {
-    return false;
+    throw new Error('Hook script validation failed');
   }
     
   <span class="missing-if-branch" title="if path not taken" >I</span>if (flags.local) {
@@ -1585,54 +1589,56 @@ function validateConfiguration() {
   // Check global settings
   console.log('Checking global configuration...');
   const settings = loadSettings();
+  let hasGlobalHooks = false;
     
   if (!settings.hooks || !settings.hooks.PostToolUse) {
     console.log('❌ No PostToolUse hooks configured globally');
   } else {
-    const linterHooks = settings.hooks.PostToolUse.filter(hook =&gt;
-      hook.hooks &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >hook.hooks.some(<span class="fstat-no" title="function not covered" >h </span>=&gt; </span>
-<span class="cstat-no" title="statement not covered" >        h.command &amp;&amp; h.command.includes('post-tool-linter-hook')</span>
+    const linterHook<span class="branch-1 cbranch-no" title="branch not covered" >s = settings.hoo<span class="fstat-no" title="function not covered" >ks</span>.PostToolUse.filter(hook =&gt;</span>
+      ho<span class="cstat-no" title="statement not covered" >ok.hooks &amp;&amp; hook.hooks.some(h =&gt; </span>
+        h.command &amp;&amp; h.command.includes('post-tool-linter-hook')
       )
     );
         
     if (linterHooks.length === 0) {
-      console.log('❌ No linter hooks found in global configuration');
-    } else <span class="missing-if-branch" title="else path not taken" >E</span>{
-<span class="cstat-no" title="statement not covered" >      console.log(`✅ Found ${linterHooks.length} linter hook(s) in global configuration`);</span>
-<span class="cstat-no" title="statement not covered" >      linterHooks.forEach(<span class="fstat-no" title="function not covered" >(h</span>ook, index) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >        console.log(`  Hook ${index + 1}:`);</span>
-<span class="cstat-no" title="statement not covered" >        console.log(`    Matcher: ${hook.matcher}`);</span>
-<span class="cstat-no" title="statement not covered" >        hook.hooks.forEach(<span class="fstat-no" title="function not covered" >(h</span>, hIndex) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >          console.log(`    Command ${hIndex + 1}: ${h.command}`);</span>
-<span class="cstat-no" title="statement not covered" >          console.log(`    Timeout: ${h.timeout}ms`);</span>
+      conso<span class="missing-if-branch" title="else path not taken" >E</span>le.log('❌ No linter hooks found in global configuration');
+    } <span class="cstat-no" title="statement not covered" >else {</span>
+<span class="cstat-no" title="statement not covered" >      console.log(`✅ Found<span class="fstat-no" title="function not covered" > $</span>{linterHooks.length} linter hook(s) in global configuration`);</span>
+      ha<span class="cstat-no" title="statement not covered" >sGlobalHooks = true;</span>
+      li<span class="cstat-no" title="statement not covered" >nterHooks.forEach((hook, index) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >        console.log(`  Hook<span class="fstat-no" title="function not covered" > $</span>{index + 1}:`);</span>
+        co<span class="cstat-no" title="statement not covered" >nsole.log(`    Matcher: ${hook.matcher}`);</span>
+        ho<span class="cstat-no" title="statement not covered" >ok.hooks.forEach((h, hIndex) =&gt; {</span>
+          console.log(`    Command ${hIndex + 1}: ${h.command}`);
+          console.log(`    Timeout: ${h.timeout}ms`);
         });
       });
     }
   }
     
-  // Check local settings if in a project
+  <span class="missing-if-branch" title="else path not taken" >E</span>// Check local settings if in a project
   const localSettingsPath = path.join(process.cwd(), '.claude', 'settings.local.json');
-  <span class="missing-if-branch" title="else path not taken" >E</span>if (fs.existsSync(localSettingsPath)) {
+  if (fs.existsSync(localSettingsPath)) {
     console.log('\nChecking local configuration...');
     try {
       const localSettings = JSON.parse(fs.readFileSync(localSettingsPath, 'utf8'));
-      if (localSettings.hooks &amp;&amp; localSettings.hooks.PostToolUse) {
-        const localLinterHooks = localSettings.hooks.PostToolUse.filter(hook =&gt;
-          hook.hooks &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >hook.hooks.some(<span class="fstat-no" title="function not covered" >h </span>=&gt; </span>
-<span class="cstat-no" title="statement not covered" >            h.command &amp;&amp; h.command.includes('post-tool-linter-hook')</span>
+      if (localSettings.<span class="branch-1 cbranch-no" title="branch not covered" >hooks &amp;&amp; localSe<span class="fstat-no" title="function not covered" >tt</span>ings.hooks.PostToolUse) {</span>
+        cons<span class="cstat-no" title="statement not covered" >t localLinterHooks = localSettings.hooks.PostToolUse.filt</span>er(hook =&gt;
+          hook.hooks &amp;&amp; hook.hooks.some(h =&gt; 
+            h.command &amp;&amp; h.command.includes('post-tool-linter-hook')
           )
-        );
-                
-        <span class="missing-if-branch" title="if path not taken" >I</span>if (localLinterHooks.length &gt; 0) {
-<span class="cstat-no" title="statement not covered" >          console.log(`✅ Found ${localLinterHooks.length} linter hook(s) in local configuration`);</span>
+        <span class="missing-if-branch" title="if path not taken" >I</span>);
+          <span class="cstat-no" title="statement not covered" >      </span>
+        if (localLinterHooks.length &gt; 0) {
+          console.log(`✅ Found ${localLinterHooks.length} linter hook(s) in local configuration`);
         } else {
           console.log('❌ No linter hooks found in local configuration');
         }
       } else {
         console.log('❌ No PostToolUse hooks in local configuration');
-      }
+<span class="cstat-no" title="statement not covered" >      }</span>
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.log(`❌ Error reading local settings: ${error.message}`);</span>
+      console.log(`❌ Error reading local settings: ${error.message}`);
     }
   }
     
@@ -1666,25 +1672,25 @@ function uninstallHook() {
     
   let removed = false;
     
-  // Remove from global settings
+  <span class="missing-if-branch" title="else path not taken" >E</span>// Remove from global settings
   const settingsPath = getSettingsPath();
-  <span class="missing-if-branch" title="else path not taken" >E</span>if (fs.existsSync(settingsPath)) {
+  if (fs.existsSync(settingsPath)) {
     const settings = loadSettings();
         
     if (settings.hooks &amp;&amp; settings.hooks.PostToolUse) {
-      const originalLength = settings.hooks.PostToolUse.length;
-      settings.hooks.PostToolUse = settings.hooks.PostToolUse.filter(hook =&gt;
-        !(hook.hooks &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >hook.hooks.some(<span class="fstat-no" title="function not covered" >h </span>=&gt; </span>
-<span class="cstat-no" title="statement not covered" >          h.command &amp;&amp; h.command.includes('post-tool-linter-hook')</span>
+      const originalLeng<span class="branch-1 cbranch-no" title="branch not covered" >th = settings.ho<span class="fstat-no" title="function not covered" >ok</span>s.PostToolUse.length;</span>
+      sett<span class="cstat-no" title="statement not covered" >ings.hooks.PostToolUse = settings.hooks.PostToolUse.filte</span>r(hook =&gt;
+        !(hook.hooks &amp;&amp; hook.hooks.some(h =&gt; 
+          h.command &amp;&amp; h.command.includes('post-tool-linter-hook')
         ))
-      );
-            
-      <span class="missing-if-branch" title="if path not taken" >I</span>if (settings.hooks.PostToolUse.length &lt; originalLength) {
-<span class="cstat-no" title="statement not covered" >        if (saveSettings(settings)) {</span>
-<span class="cstat-no" title="statement not covered" >          console.log('✅ Hook removed from global configuration');</span>
+      <span class="missing-if-branch" title="if path not taken" >I</span>);
+        <span class="cstat-no" title="statement not covered" >    </span>
+      if (<span class="cstat-no" title="statement not covered" >settings.hooks.PostToolUse.length &lt; originalLength) {</span>
+        if<span class="cstat-no" title="statement not covered" > (saveSettings(s</span>ettings)) {
+          console.log('✅ Hook removed from global configuration');
 <span class="cstat-no" title="statement not covered" >          removed = true;</span>
         } else {
-<span class="cstat-no" title="statement not covered" >          console.log('❌ Failed to save global settings');</span>
+          console.log('❌ Failed to save global settings');
         }
       } else {
         console.log('ℹ️  No linter hooks found in global configuration');
@@ -1692,58 +1698,58 @@ function uninstallHook() {
     }
   }
     
-  // Remove from local settings
+  <span class="missing-if-branch" title="else path not taken" >E</span>// Remove from local settings
   const localSettingsPath = path.join(process.cwd(), '.claude', 'settings.local.json');
-  <span class="missing-if-branch" title="else path not taken" >E</span>if (fs.existsSync(localSettingsPath)) {
+  if (fs.existsSync(localSettingsPath)) {
     try {
       const localSettings = JSON.parse(fs.readFileSync(localSettingsPath, 'utf8'));
             
       if (localSettings.hooks &amp;&amp; localSettings.hooks.PostToolUse) {
-        const originalLength = localSettings.hooks.PostToolUse.length;
-        localSettings.hooks.PostToolUse = localSettings.hooks.PostToolUse.filter(hook =&gt;
-          !(hook.hooks &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >hook.hooks.some(<span class="fstat-no" title="function not covered" >h </span>=&gt; </span>
-<span class="cstat-no" title="statement not covered" >            h.command &amp;&amp; h.command.includes('post-tool-linter-hook')</span>
+        const originalLeng<span class="branch-1 cbranch-no" title="branch not covered" >th = localSettin<span class="fstat-no" title="function not covered" >gs</span>.hooks.PostToolUse.length;</span>
+        loca<span class="cstat-no" title="statement not covered" >lSettings.hooks.PostToolUse = localSettings.hooks.PostToo</span>lUse.filter(hook =&gt;
+          !(hook.hooks &amp;&amp; hook.hooks.some(h =&gt; 
+            h.command &amp;&amp; h.command.includes('post-tool-linter-hook')
           ))
-        );
-                
-        <span class="missing-if-branch" title="if path not taken" >I</span>if (localSettings.hooks.PostToolUse.length &lt; originalLength) {
-<span class="cstat-no" title="statement not covered" >          fs.writeFileSync(localSettingsPath, JSON.stringify(localSettings, null, 2));</span>
-<span class="cstat-no" title="statement not covered" >          console.log('✅ Hook removed from local configuration');</span>
-<span class="cstat-no" title="statement not covered" >          removed = true;</span>
+        <span class="missing-if-branch" title="if path not taken" >I</span>);
+          <span class="cstat-no" title="statement not covered" >      </span>
+        if<span class="cstat-no" title="statement not covered" > (localSettings.hooks.PostToolUse.length &lt; originalLengt</span>h) {
+<span class="cstat-no" title="statement not covered" >          fs.writeFileSync</span>(localSettingsPath, JSON.stringify(localSettings, null, 2));
+          console.log('✅ Hook removed from local configuration');
+          removed = true;
         } else {
           console.log('ℹ️  No linter hooks found in local configuration');
         }
-      }
+<span class="cstat-no" title="statement not covered" >      }</span>
     } catch (error) {
-<span class="cstat-no" title="statement not covered" >      console.log(`❌ Error processing local settings: ${error.message}`);</span>
+      console.log(`❌ Error processing local settings: ${error.message}`);
     }
-  }
-    
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (removed) {
-<span class="cstat-no" title="statement not covered" >    console.log('\n✅ Hook uninstallation completed');</span>
+  <span class="missing-if-branch" title="if path not taken" >I</span>}
+    <span class="cstat-no" title="statement not covered" ></span>
+  if (removed) {
+    console.log('\n✅ Hook uninstallation completed');
   } else {
     console.log('\nℹ️  No hooks were removed');
   }
     
   return true;
-}
-&nbsp;
-function showCurrentConfig(settings = <span class="branch-0 cbranch-no" title="branch not covered" >null)</span> {
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (!settings) {
-<span class="cstat-no" title="statement not covered" >    settings = loadSettings();</span>
+}<span class="branch-0 cbranch-no" title="branch not covered" ></span>
+<span class="missing-if-branch" title="if path not taken" >I</span>
+func<span class="cstat-no" title="statement not covered" >tion showCurrentConfig(sett</span>ings = null) {
+  if (!settings) {
+    settings = loadSettings();
   }
     
   console.log('Current Hook Configuration:');
     
-  if (settings.hooks &amp;&amp; settings.hooks.PostToolUse) {
-    const linterHooks = settings.hooks.PostToolUse.filter(hook =&gt;
-      hook.hooks &amp;&amp; <span class="branch-1 cbranch-no" title="branch not covered" >hook.hooks.some(<span class="fstat-no" title="function not covered" >h </span>=&gt; </span>
-<span class="cstat-no" title="statement not covered" >        h.command &amp;&amp; h.command.includes('post-tool-linter-hook')</span>
+  if (settings.hooks<span class="branch-1 cbranch-no" title="branch not covered" > &amp;&amp; settings.hoo<span class="fstat-no" title="function not covered" >ks</span>.PostToolUse) {</span>
+    cons<span class="cstat-no" title="statement not covered" >t linterHooks = settings.hooks.PostToolUse.filter(hook =&gt;</span>
+      hook.hooks &amp;&amp; hook.hooks.some(h =&gt; 
+        h.command &amp;&amp; h.command.includes('post-tool-linter-hook')
       )
-    );
-        
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (linterHooks.length &gt; 0) {
-<span class="cstat-no" title="statement not covered" >      console.log(JSON.stringify(linterHooks, null, 2));</span>
+    <span class="missing-if-branch" title="if path not taken" >I</span>);
+      <span class="cstat-no" title="statement not covered" >  </span>
+    if (linterHooks.length &gt; 0) {
+      console.log(JSON.stringify(linterHooks, null, 2));
     } else {
       console.log('No linter hooks configured');
     }
@@ -1770,48 +1776,48 @@ function showHookInfo() {
   console.log('1. Open a project with Claude Code');
   console.log('2. Edit a Python or JavaScript file with linting issues');
   console.log('3. Claude will be prompted to fix linting errors immediately\n');
-}
-&nbsp;
-function <span class="fstat-no" title="function not covered" >main(</span>) {
-<span class="cstat-no" title="statement not covered" >  if (flags.help) {</span>
-<span class="cstat-no" title="statement not covered" >    showHelp();</span>
-<span class="cstat-no" title="statement not covered" >    return;</span>
+}<span class="fstat-no" title="function not covered" ></span>
+<span class="cstat-no" title="statement not covered" ></span>
+func<span class="cstat-no" title="statement not covered" >tion main() </span>{
+  if<span class="cstat-no" title="statement not covered" > (flags.</span>help) {
+    showHelp();
+    return;
+<span class="cstat-no" title="statement not covered" >  }</span>
+    <span class="cstat-no" title="statement not covered" ></span>
+  if<span class="cstat-no" title="statement not covered" > (flags.</span>validate) {
+    validateConfiguration();
+    return;
+<span class="cstat-no" title="statement not covered" >  }</span>
+    <span class="cstat-no" title="statement not covered" ></span>
+  if<span class="cstat-no" title="statement not covered" > (flags.</span>uninstall) {
+    uninstallHook();
+    return;
   }
-    
-<span class="cstat-no" title="statement not covered" >  if (flags.validate) {</span>
-<span class="cstat-no" title="statement not covered" >    validateConfiguration();</span>
-<span class="cstat-no" title="statement not covered" >    return;</span>
-  }
-    
-<span class="cstat-no" title="statement not covered" >  if (flags.uninstall) {</span>
-<span class="cstat-no" title="statement not covered" >    uninstallHook();</span>
-<span class="cstat-no" title="statement not covered" >    return;</span>
-  }
-    
+    <span class="cstat-no" title="statement not covered" ></span>
   // Default action: install hook
-  const success = <span class="cstat-no" title="statement not covered" >installHook();</span>
-    
-<span class="cstat-no" title="statement not covered" >  if (success) {</span>
-<span class="cstat-no" title="statement not covered" >    console.log('🎉 Post-tool linter hook setup completed successfully!');</span>
-<span class="cstat-no" title="statement not covered" >    console.log('\nThe hook will now automatically detect linting errors after file edits');</span>
+<span class="cstat-no" title="statement not covered" >  const success = installHook();</span>
+    <span class="cstat-no" title="statement not covered" ></span>
+  if<span class="cstat-no" title="statement not covered" > (success) {</span>
+<span class="cstat-no" title="statement not covered" >    console.log('🎉 Post-tool linter hook setup completed success</span>fully!');
+    console.log('\nThe hook will now automatically detect linting errors after file edits');
 <span class="cstat-no" title="statement not covered" >    console.log('and prompt Claude to fix them immediately.\n');</span>
-  } else {
-<span class="cstat-no" title="statement not covered" >    console.log('❌ Hook setup failed. Please check the errors above and try again.');</span>
-<span class="cstat-no" title="statement not covered" >    process.exit(1);</span>
+  } <span class="cstat-no" title="statement not covered" >else {</span>
+    console.log('❌ Hook setup failed. Please check the errors above and try again.');
+    process.exit(1);
   }
 }
-&nbsp;
-// Handle uncaught errors gracefully
-process.on('uncaughtException', <span class="fstat-no" title="function not covered" >(e</span>rror) =&gt; {
-<span class="cstat-no" title="statement not covered" >  console.error('\n❌ Unexpected error:', error.message);</span>
-<span class="cstat-no" title="statement not covered" >  console.error('Please report this issue with the full error details.');</span>
-<span class="cstat-no" title="statement not covered" >  process.exit(1);</span>
+<span class="fstat-no" title="function not covered" ></span>
+//<span class="cstat-no" title="statement not covered" > Handle uncaught errors gracefully</span>
+pr<span class="cstat-no" title="statement not covered" >ocess.on('uncaughtException', (error) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >  console.error('\n</span>❌ Unexpected error:', error.message);
+  console.error('Please report this issue with the full error details.');
+  process.exit(1);
 });
-&nbsp;
+<span class="missing-if-branch" title="if path not taken" >I</span>
 // Export functions for testing
-<span class="missing-if-branch" title="if path not taken" >I</span>if (require.main === module) {
+if<span class="cstat-no" title="statement not covered" > (requir</span>e.main === module) {
   // Run main function when executed directly
-<span class="cstat-no" title="statement not covered" >  main();</span>
+  main();
 } else {
   // Export functions for testing
   module.exports = {
@@ -1846,7 +1852,7 @@ process.on('uncaughtException', <span class="fstat-no" title="function not cover
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-25T20:51:29.864Z
+                at 2025-07-25T20:52:27.783Z
             </div>
         <script src="prettify.js"></script>
         <script>
