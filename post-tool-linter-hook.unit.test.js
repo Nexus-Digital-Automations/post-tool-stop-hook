@@ -39,6 +39,27 @@ describe('Post-Tool Linter Hook - Unit Tests', () => {
       const parts = p.split('.');
       return parts.length > 1 ? '.' + parts.pop() : '';
     });
+    mockPath.relative.mockImplementation((from, to) => {
+      // Simple relative path calculation for testing
+      const fromParts = from.split('/').filter(Boolean);
+      const toParts = to.split('/').filter(Boolean);
+      
+      // Find common prefix
+      let commonLength = 0;
+      while (commonLength < fromParts.length && commonLength < toParts.length &&
+             fromParts[commonLength] === toParts[commonLength]) {
+        commonLength++;
+      }
+      
+      // Go up from 'from' path
+      const upSteps = fromParts.length - commonLength;
+      const relativeParts = Array(upSteps).fill('..');
+      
+      // Add remaining parts from 'to' path
+      relativeParts.push(...toParts.slice(commonLength));
+      
+      return relativeParts.join('/') || '.';
+    });
 
     // Setup basic fs mocks
     mockFs.existsSync.mockReturnValue(true);
@@ -259,7 +280,7 @@ describe('Post-Tool Linter Hook - Unit Tests', () => {
       expect(task.title).toContain('Fix');
       expect(task.is_linter_task).toBe(true);
       expect(task.important_files).toContain('development/linter-errors.md');
-      expect(task.important_files).toContain('/path/to/file.py');
+      expect(task.important_files).toContain('../../path/to/file.py');
     });
   });
 });
