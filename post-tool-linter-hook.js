@@ -791,6 +791,7 @@ async function runJavaScriptLinter(filePath, projectPath) {
 async function lintFile(filePath, projectPath) {
   log(`\n--- Linting file: ${filePath} ---`);
   
+  const fileExtension = path.extname(filePath).toLowerCase();
   const fileType = getFileType(filePath);
   const projectType = detectProjectType(projectPath);
   const allProjectTypes = detectProjectTypes(projectPath);
@@ -798,9 +799,12 @@ async function lintFile(filePath, projectPath) {
   // Prefer file type over project type, but consider all available types
   let linterType = fileType || projectType;
   
-  log(`File type: ${fileType || 'none'}, Project type: ${projectType || 'none'}`);
+  log(`File extension: ${fileExtension}`);
+  log(`File type detected: ${fileType || 'none'}`);
+  log(`Project type detected: ${projectType || 'none'}`);
   log(`All project types: ${allProjectTypes.length > 0 ? allProjectTypes.join(', ') : 'none'}`);
   log(`Selected linter type: ${linterType || 'none'}`);
+  log(`Linter selection logic: ${fileType ? 'file extension priority' : projectType ? 'project type fallback' : 'no linter found'}`);
   
   if (!linterType) {
     log('No linter configured for this file/project type');
@@ -809,8 +813,10 @@ async function lintFile(filePath, projectPath) {
   
   switch (linterType) {
     case 'python':
+      log(`Executing Python linter (Ruff) for ${path.basename(filePath)}`);
       return await runPythonLinter(filePath, projectPath);
     case 'javascript':
+      log(`Executing JavaScript linter (ESLint) for ${path.basename(filePath)}`);
       return await runJavaScriptLinter(filePath, projectPath);
     default:
       log(`Unsupported linter type: ${linterType}`);
@@ -1372,16 +1378,31 @@ async function main() {
       let results = [];
       const allProjectTypes = detectProjectTypes(projectPath);
       
-      const shouldUseProjectWide = (
-        CONFIG.lintingMode === 'project-wide' ||
-        (CONFIG.lintingMode === 'hybrid' && allProjectTypes.length > 0)
-      );
+      // Improved hybrid mode logic: check if all edited files match project types
+      let shouldUseProjectWide = false;
+      
+      if (CONFIG.lintingMode === 'project-wide') {
+        shouldUseProjectWide = allProjectTypes.length > 0;
+      } else if (CONFIG.lintingMode === 'hybrid' && allProjectTypes.length > 0) {
+        // In hybrid mode, only use project-wide if all edited files match detected project types
+        const editedFileTypes = filePaths.map(fp => getFileType(fp)).filter(Boolean);
+        const allFileTypesMatchProject = editedFileTypes.length > 0 && 
+          editedFileTypes.every(fileType => allProjectTypes.includes(fileType));
+        
+        log(`Hybrid mode analysis: edited file types [${editedFileTypes.join(', ')}], project types [${allProjectTypes.join(', ')}]`);
+        log(`All file types match project: ${allFileTypesMatchProject}`);
+        
+        // Use project-wide only if:
+        // 1. All edited files match the detected project types, OR
+        // 2. We're editing many files (> maxFilesForFileMode)
+        shouldUseProjectWide = allFileTypesMatchProject || filePaths.length > CONFIG.maxFilesForFileMode;
+      }
       
       if (shouldUseProjectWide && allProjectTypes.length > 0) {
         log(`Using project-wide linting mode (${filePaths.length} files, types: ${allProjectTypes.join(', ')})`);
         results = await lintProject(projectPath, allProjectTypes);
       } else {
-        log(`Using file-by-file linting mode`);
+        log(`Using file-by-file linting mode (${filePaths.length} files)`);
         // Run linters on all modified files
         results = await Promise.all(
           filePaths.map(fp => lintFile(fp, projectPath))

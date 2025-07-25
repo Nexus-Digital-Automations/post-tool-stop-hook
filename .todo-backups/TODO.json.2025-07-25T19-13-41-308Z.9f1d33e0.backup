@@ -641,7 +641,7 @@
       "description": "Modify detectProjectType function to prioritize file extensions over project indicators to ensure correct linter selection",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
         "post-tool-linter-hook.js"
       ],
