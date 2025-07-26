@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1753500909768" clover="3.2.0">
-  <project timestamp="1753500909768" name="All files">
+<coverage generated="1753500946461" clover="3.2.0">
+  <project timestamp="1753500946461" name="All files">
     <metrics statements="1460" coveredstatements="959" conditionals="790" coveredconditionals="422" methods="199" coveredmethods="128" elements="2449" coveredelements="1509" complexity="0" loc="1460" ncloc="1460" packages="1" files="4" classes="4"/>
     <file name="package-hook.js" path="/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/package-hook.js">
       <metrics statements="316" coveredstatements="269" conditionals="131" coveredconditionals="112" methods="35" coveredmethods="32"/>
