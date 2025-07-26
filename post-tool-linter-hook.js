@@ -2681,11 +2681,14 @@ async function main() {
   });
   
   // Handle timeout
-  setTimeout(() => {
+  const timeoutTimer = setTimeout(() => {
     log('\nERROR: Hook timeout exceeded');
     writeLogFile();
     process.exit(0);
   }, CONFIG.timeout + 5000);
+  
+  // Use unref() to allow process to exit gracefully if this is the only timer left
+  timeoutTimer.unref();
 }
 
 // Export functions for testing
