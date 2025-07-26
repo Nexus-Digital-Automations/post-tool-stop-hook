@@ -1525,27 +1525,26 @@ describe('Post-Tool Linter Hook Unit Tests', () => {
     });
 
     test('should concatenate patterns from multiple ignore files', () => {
-      // Mock readIgnoreFile to return specific patterns
-      const originalReadIgnoreFile = hook.readIgnoreFile;
-      hook.readIgnoreFile = jest.fn().mockImplementation((filePath) => {
+      // Mock filesystem to return ignore file content
+      mockFs.existsSync.mockImplementation((filePath) => {
+        return filePath.includes('.eslintignore') || filePath.includes('.gitignore');
+      });
+      
+      mockFs.readFileSync.mockImplementation((filePath) => {
         if (filePath.includes('.eslintignore')) {
-          return ['dist/**', 'coverage/**'];
+          return 'dist/\ncoverage/\n';
         }
         if (filePath.includes('.gitignore')) {
-          return ['node_modules/**', '*.log'];
+          return 'node_modules/\n*.log\n';
         }
-        return [];
+        return '';
       });
 
       mockPath.join.mockImplementation((...args) => args.join('/'));
       
       const result = hook.loadIgnorePatternsForLinter('javascript', projectPath);
       
-      expect(result).toEqual(['dist/**', 'coverage/**', 'node_modules/**', '*.log']);
-      expect(hook.readIgnoreFile).toHaveBeenCalledTimes(2);
-      
-      // Restore original function
-      hook.readIgnoreFile = originalReadIgnoreFile;
+      expect(result).toEqual(['dist/**', 'coverage/**', 'node_modules/**', '**/*.log']);
     });
   });
 

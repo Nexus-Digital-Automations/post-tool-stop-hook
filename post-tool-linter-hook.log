@@ -1,28 +1,33 @@
-[2025-07-26T06:03:05.463Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-26T06:03:05.463Z] Date: 2025-07-26T06:03:05.463Z
-[2025-07-26T06:03:05.463Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-26T06:03:05.463Z] Node Version: v23.9.0
-[2025-07-26T06:03:05.463Z] Platform: darwin
-[2025-07-26T06:03:05.463Z] 
-[2025-07-26T06:03:05.463Z] === HOOK EXECUTION START ===
-[2025-07-26T06:03:05.463Z] Tool: Bash
-[2025-07-26T06:03:05.463Z] Session ID: c4bc34c6-40d4-4520-9b77-07ff8ed98113
-[2025-07-26T06:03:05.463Z] Hook input:
+[2025-07-26T06:08:04.931Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-26T06:08:04.932Z] Date: 2025-07-26T06:08:04.932Z
+[2025-07-26T06:08:04.932Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-26T06:08:04.932Z] Node Version: v23.9.0
+[2025-07-26T06:08:04.932Z] Platform: darwin
+[2025-07-26T06:08:04.932Z] 
+[2025-07-26T06:08:04.932Z] === HOOK EXECUTION START ===
+[2025-07-26T06:08:04.932Z] Tool: Read
+[2025-07-26T06:08:04.932Z] Session ID: c4bc34c6-40d4-4520-9b77-07ff8ed98113
+[2025-07-26T06:08:04.932Z] Hook input:
   Data: {
   "session_id": "c4bc34c6-40d4-4520-9b77-07ff8ed98113",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/c4bc34c6-40d4-4520-9b77-07ff8ed98113.jsonl",
   "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook",
   "hook_event_name": "PostToolUse",
-  "tool_name": "Bash",
+  "tool_name": "Read",
   "tool_input": {
-    "command": "cd /Users/jeremyparker/Desktop/Claude\\ Coding\\ Projects/post-tool-stop-hook && node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.readTodo().then(data => { const stats = { total: data.tasks.length, completed: data.tasks.filter(t => t.status === 'completed').length, pending: data.tasks.filter(t => t.status === 'pending').length, inProgress: data.tasks.filter(t => t.status === 'in_progress').length }; console.log('Project Stats:', JSON.stringify(stats, null, 2)); });\"",
-    "description": "Get project completion statistics"
+    "file_path": "/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/post-tool-linter-hook.test.js",
+    "offset": 25,
+    "limit": 40
   },
   "tool_response": {
-    "stdout": "Project Stats: {\n  \"total\": 69,\n  \"completed\": 64,\n  \"pending\": 5,\n  \"inProgress\": 0\n}",
-    "stderr": "",
-    "interrupted": false,
-    "isImage": false
+    "type": "text",
+    "file": {
+      "filePath": "/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/post-tool-linter-hook.test.js",
+      "content": "\n  beforeAll(() => {\n    testDir = '/test/project';\n    mockFs = fs;\n    mockExecSync = execSync;\n    mockPath = path;\n  });\n\n  beforeEach(() => {\n    jest.clearAllMocks();\n    \n    // Mock path methods with null/undefined safety\n    mockPath.join.mockImplementation((...args) => args.filter(a => a !== null && a !== undefined).join('/'));\n    mockPath.resolve.mockImplementation((...args) => '/' + args.filter(a => a !== null && a !== undefined).join('/'));\n    mockPath.dirname.mockImplementation((p) => {\n      if (!p || typeof p !== 'string') return '';\n      return p.split('/').slice(0, -1).join('/');\n    });\n    mockPath.basename.mockImplementation((p) => {\n      if (!p || typeof p !== 'string') return '';\n      return p.split('/').pop() || '';\n    });\n    mockPath.extname.mockImplementation((p) => {\n      if (!p || typeof p !== 'string') return '';\n      const parts = p.split('.');\n      return parts.length > 1 ? '.' + parts.pop() : '';\n    });\n    mockPath.relative.mockImplementation((from, to) => {\n      if (!from || !to || typeof from !== 'string' || typeof to !== 'string') return '';\n      return to.replace(from, '').replace(/^\\//, '');\n    });\n\n    // Mock fs methods\n    mockFs.existsSync.mockReturnValue(true);\n    mockFs.readFileSync.mockReturnValue('{}');\n    mockFs.writeFileSync.mockImplementation(() => {});\n    mockFs.mkdirSync.mockImplementation(() => {});\n    mockFs.readdirSync.mockReturnValue([]);\n    mockFs.statSync.mockReturnValue({ isDirectory: () => false });\n",
+      "numLines": 40,
+      "startLine": 25,
+      "totalLines": 2610
+    }
   }
 }
-[2025-07-26T06:03:05.463Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-26T06:08:04.932Z] Tool Read is not in enabled tools list, skipping
