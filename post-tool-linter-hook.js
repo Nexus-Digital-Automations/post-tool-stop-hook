@@ -99,16 +99,11 @@ function readIgnoreFile(ignoreFilePath) {
     const patterns = content
       .split('\n')
       .map(line => line.trim())
-      .filter(line => line && !line.startsWith('#')) // Remove empty lines and comments
-      .map(pattern => {
-        // Convert gitignore-style patterns to glob patterns
-        if (pattern.endsWith('/')) {
-          return `${pattern}**`; // Directory patterns
-        }
-        if (!pattern.includes('/')) {
-          return `**/${pattern}`; // File patterns should match anywhere
-        }
-        return pattern;
+      .filter(line => {
+        // Remove empty lines and comments, but preserve negation patterns
+        if (!line) return false;
+        if (line.startsWith('#')) return false;
+        return true;
       });
     
     log(`Loaded ${patterns.length} ignore patterns from ${ignoreFilePath}`);
@@ -127,52 +122,97 @@ function shouldIgnoreFile(filePath, ignorePatterns, projectPath) {
   // Convert absolute path to relative for pattern matching
   const relativePath = path.relative(projectPath, filePath);
   
-  // Test against each ignore pattern
+  // Test against each ignore pattern with enhanced gitignore compliance
+  let shouldIgnore = false;
+  
   for (const pattern of ignorePatterns) {
-    // Simple glob matching - exact match or wildcard
-    if (pattern === relativePath) {
-      log(`File ${relativePath} matches exact ignore pattern: ${pattern}`);
-      return true;
-    }
+    const result = matchGitignorePattern(relativePath, pattern);
     
-    // Check if pattern ends with wildcard and matches prefix
-    if (pattern.endsWith('**') && relativePath.startsWith(pattern.slice(0, -2))) {
-      log(`File ${relativePath} matches directory ignore pattern: ${pattern}`);
-      return true;
-    }
-    
-    // Check filename patterns (like *.log, *.tmp)
-    if (pattern.startsWith('**/') && pattern.includes('*')) {
-      const filePattern = pattern.substring(3); // Remove **/ prefix
-      const fileName = path.basename(relativePath);
-      
-      if (filePattern.includes('*')) {
-        // Simple wildcard matching
-        const regexPattern = filePattern
-          .replace(/\./g, '\\.')
-          .replace(/\*/g, '.*');
-        const regex = new RegExp(`^${regexPattern}$`);
-        
-        if (regex.test(fileName)) {
-          log(`File ${relativePath} matches filename pattern: ${pattern}`);
-          return true;
-        }
-      }
-    }
-    
-    // Check path patterns (like build/, dist/, etc.)
-    if (relativePath.includes('/')) {
-      const pathParts = relativePath.split('/');
-      for (const part of pathParts) {
-        if (pattern === part || (pattern.endsWith('**') && part.startsWith(pattern.slice(0, -2)))) {
-          log(`File ${relativePath} matches path component pattern: ${pattern}`);
-          return true;
-        }
+    if (result.matches) {
+      if (result.negation) {
+        // Negation pattern - re-include the file
+        shouldIgnore = false;
+        log(`File ${relativePath} re-included by negation pattern: ${pattern}`);
+      } else {
+        // Normal pattern - exclude the file
+        shouldIgnore = true;
+        log(`File ${relativePath} matches ignore pattern: ${pattern} (${result.type})`);
       }
     }
   }
   
-  return false;
+  return shouldIgnore;
+}
+
+function matchGitignorePattern(filePath, pattern) {
+  // Handle negation patterns
+  const isNegation = pattern.startsWith('!');
+  const cleanPattern = isNegation ? pattern.slice(1) : pattern;
+  
+  // Handle anchored patterns (starting with /)
+  const isAnchored = cleanPattern.startsWith('/');
+  const workingPattern = isAnchored ? cleanPattern.slice(1) : cleanPattern;
+  
+  // Handle directory patterns (ending with /)
+  const isDirectoryPattern = workingPattern.endsWith('/');
+  const finalPattern = isDirectoryPattern ? workingPattern.slice(0, -1) : workingPattern;
+  
+  // For directory patterns, check if the file is inside that directory
+  if (isDirectoryPattern) {
+    const match = matchPattern(filePath, finalPattern + '/**') || 
+                  matchPattern(filePath, finalPattern);
+    return {
+      matches: match,
+      negation: isNegation,
+      type: 'directory',
+      anchored: isAnchored
+    };
+  }
+  
+  // For anchored patterns, only match from root
+  if (isAnchored) {
+    const match = matchPattern(filePath, finalPattern);
+    return {
+      matches: match,
+      negation: isNegation,
+      type: 'anchored',
+      anchored: true
+    };
+  }
+  
+  // For unanchored patterns, match anywhere in the path
+  const match = matchPattern(filePath, finalPattern) || 
+                matchPattern(filePath, '**/' + finalPattern);
+  
+  return {
+    matches: match,
+    negation: isNegation,
+    type: 'glob',
+    anchored: false
+  };
+}
+
+function matchPattern(filePath, pattern) {
+  // Convert glob pattern to regex
+  const regexPattern = pattern
+    // Escape special regex characters except * and ?
+    .replace(/[+^${}()|[\]\\]/g, '\\$&')
+    // Handle ** (match any number of directories)
+    .replace(/\*\*/g, '.*')
+    // Handle * (match any character except /)
+    .replace(/(?<!\*)\*(?!\*)/g, '[^/]*')
+    // Handle ? (match single character except /)
+    .replace(/\?/g, '[^/]')
+    // Handle character classes [abc] and ranges [a-z]
+    .replace(/\[([^\]]*)\]/g, '[$1]');
+  
+  try {
+    const regex = new RegExp('^' + regexPattern + '$');
+    return regex.test(filePath);
+  } catch (error) {
+    log(`Error in pattern matching for pattern '${pattern}': ${error.message}`);
+    return false;
+  }
 }
 
 function loadIgnorePatternsForLinter(linterType, projectPath) {
@@ -232,9 +272,166 @@ function filterFilesWithIgnoreRules(filePaths, projectPath) {
   return filteredFiles;
 }
 
+function detectFrameworks(projectPath) {
+  const frameworks = [];
+  
+  try {
+    // Check for package.json (JavaScript frameworks)
+    const packagePath = path.join(projectPath, 'package.json');
+    if (fs.existsSync(packagePath)) {
+      const packageJson = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+      const dependencies = { ...packageJson.dependencies, ...packageJson.devDependencies };
+      
+      // React ecosystem
+      if (dependencies.react || dependencies['@types/react']) {
+        frameworks.push('react');
+        if (dependencies.next || dependencies['@next/core']) frameworks.push('nextjs');
+        if (dependencies['react-scripts']) frameworks.push('create-react-app');
+        if (dependencies.gatsby) frameworks.push('gatsby');
+      }
+      
+      // Vue ecosystem
+      if (dependencies.vue || dependencies['@vue/cli-service']) {
+        frameworks.push('vue');
+        if (dependencies.nuxt || dependencies['@nuxt/core']) frameworks.push('nuxt');
+      }
+      
+      // Angular
+      if (dependencies['@angular/core']) frameworks.push('angular');
+      
+      // Svelte
+      if (dependencies.svelte) frameworks.push('svelte');
+      
+      // Build tools
+      if (dependencies.vite) frameworks.push('vite');
+      if (dependencies.webpack) frameworks.push('webpack');
+      if (dependencies.parcel) frameworks.push('parcel');
+      
+      // Testing frameworks
+      if (dependencies.jest) frameworks.push('jest');
+      if (dependencies.cypress) frameworks.push('cypress');
+      if (dependencies.playwright) frameworks.push('playwright');
+      
+      // Other tools
+      if (dependencies.storybook || dependencies['@storybook/core']) frameworks.push('storybook');
+      if (dependencies.electron) frameworks.push('electron');
+    }
+    
+    // Check for Python frameworks
+    const pyprojectPath = path.join(projectPath, 'pyproject.toml');
+    if (fs.existsSync(pyprojectPath)) {
+      const content = fs.readFileSync(pyprojectPath, 'utf8');
+      if (content.includes('django')) frameworks.push('django');
+      if (content.includes('fastapi')) frameworks.push('fastapi');
+      if (content.includes('flask')) frameworks.push('flask');
+      if (content.includes('streamlit')) frameworks.push('streamlit');
+    }
+    
+    // Check requirements.txt
+    const reqPath = path.join(projectPath, 'requirements.txt');
+    if (fs.existsSync(reqPath)) {
+      const content = fs.readFileSync(reqPath, 'utf8');
+      if (content.includes('django')) frameworks.push('django');
+      if (content.includes('fastapi')) frameworks.push('fastapi');
+      if (content.includes('flask')) frameworks.push('flask');
+      if (content.includes('streamlit')) frameworks.push('streamlit');
+    }
+    
+    // Check for other framework indicators
+    if (fs.existsSync(path.join(projectPath, 'Dockerfile'))) frameworks.push('docker');
+    if (fs.existsSync(path.join(projectPath, 'docker-compose.yml'))) frameworks.push('docker-compose');
+    if (fs.existsSync(path.join(projectPath, '.terraform'))) frameworks.push('terraform');
+    
+  } catch (error) {
+    log(`Error detecting frameworks: ${error.message}`);
+  }
+  
+  log(`Detected frameworks: ${frameworks.join(', ')}`);
+  return frameworks;
+}
+
+function getFrameworkIgnorePatterns(frameworks) {
+  const patterns = [];
+  
+  for (const framework of frameworks) {
+    switch (framework) {
+      case 'react':
+        patterns.push('build/', 'dist/', '*.tsbuildinfo');
+        break;
+      case 'nextjs':
+        patterns.push('.next/', 'out/', '.vercel/');
+        break;
+      case 'gatsby':
+        patterns.push('.cache/', 'public/');
+        break;
+      case 'vue':
+        patterns.push('dist/');
+        break;
+      case 'nuxt':
+        patterns.push('.nuxt/', '.output/', '.nitro/');
+        break;
+      case 'angular':
+        patterns.push('dist/', '.angular/');
+        break;
+      case 'svelte':
+        patterns.push('.svelte-kit/');
+        break;
+      case 'vite':
+        patterns.push('dist/', '.vite/');
+        break;
+      case 'webpack':
+        patterns.push('dist/', 'build/');
+        break;
+      case 'parcel':
+        patterns.push('.parcel-cache/', 'dist/');
+        break;
+      case 'jest':
+        patterns.push('coverage/');
+        break;
+      case 'cypress':
+        patterns.push('cypress/videos/', 'cypress/screenshots/');
+        break;
+      case 'playwright':
+        patterns.push('test-results/', 'playwright-report/');
+        break;
+      case 'storybook':
+        patterns.push('storybook-static/');
+        break;
+      case 'electron':
+        patterns.push('out/', 'dist/');
+        break;
+      case 'django':
+        patterns.push('staticfiles/', 'media/', '*.mo', '*.pot');
+        break;
+      case 'fastapi':
+        patterns.push('__pycache__/', '*.pyc');
+        break;
+      case 'flask':
+        patterns.push('instance/', '.webassets-cache');
+        break;
+      case 'streamlit':
+        patterns.push('.streamlit/');
+        break;
+      case 'docker':
+        patterns.push('.dockerignore');
+        break;
+      case 'terraform':
+        patterns.push('*.tfstate', '*.tfplan', '.terraform/');
+        break;
+    }
+  }
+  
+  return [...new Set(patterns)]; // Remove duplicates
+}
+
 function generateIgnoreFileSuggestions(resultsWithViolations, projectPath) {
   const suggestedPatterns = [];
   const problematicFiles = new Set();
+  
+  // Add framework-specific patterns
+  const frameworks = detectFrameworks(projectPath);
+  const frameworkPatterns = getFrameworkIgnorePatterns(frameworks);
+  suggestedPatterns.push(...frameworkPatterns);
   
   for (const result of resultsWithViolations) {
     const filePath = result.file;
@@ -1990,6 +2187,7 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], _taskCreated
   if (ignoreGuidance.suggestedPatterns.length > 0) {
     prompt += `## 💡 Ignore File Configuration\n\n`;
     prompt += `Some linting issues may be in files that shouldn't be linted. Consider updating your ignore files:\n\n`;
+    prompt += `📋 **Complete Guide**: See \`docs/ignore-files-guide.md\` for comprehensive ignore file documentation, patterns, and troubleshooting.\n\n`;
     
     if (ignoreGuidance.suggestedPatterns.some(p => p.includes('.py') || p.includes('__pycache__'))) {
       prompt += `**For Python (create/update \`.ruffignore\`):**\n`;
@@ -2036,6 +2234,13 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], _taskCreated
 🚨 **CRITICAL WARNING:** This is a BLOCKING DEPLOYMENT ISSUE that prevents all progress
 
 **🔥🔥 DEPLOYMENT BLOCKED - FIX LINTER ERRORS BEFORE ANY OTHER WORK 🔥🔥**
+
+## 📚 HELP & RESOURCES
+
+**📖 Documentation**: \`docs/ignore-files-guide.md\` - Complete guide to ignore files, patterns, and troubleshooting
+**🔍 Debug Info**: \`post-tool-linter-hook.log\` - Detailed pattern matching and execution logs  
+**🧪 Test Patterns**: Use \`git check-ignore path/to/file\` to test ignore patterns
+**⚙️ Framework Setup**: Auto-detection and suggested patterns for React, Vue, Django, FastAPI, etc.
 
 `;
   

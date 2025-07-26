@@ -252,19 +252,20 @@
     {
       "id": "linter_task_active",
       "title": "Fix Linter Errors - IMMEDIATE",
-      "description": "Fix 0 errors and 0 warnings found in recently edited files: linter-errors.md",
+      "description": "Fix 0 errors and 0 warnings found in recently edited files: ignore-files-guide.md",
       "mode": "DEVELOPMENT",
       "priority": "high",
-      "status": "completed",
+      "status": "pending",
       "important_files": [
-        "development/linter-errors.md"
+        "development/linter-errors.md",
+        "docs/ignore-files-guide.md"
       ],
       "success_criteria": [
         "All linter errors in edited files resolved",
         "development/linter-errors.md shows no issues for edited files",
         "Code passes linting without warnings or errors"
       ],
-      "created_at": "2025-07-26T05:48:08.781Z",
+      "created_at": "2025-07-26T18:26:44.314Z",
       "is_linter_task": true,
       "linter_summary": {
         "total_violations": 0,
@@ -2443,10 +2444,10 @@
   "strikes_completed_last_run": false,
   "current_task_index": 4,
   "last_mode": "TASK_CREATION",
-  "execution_count": 204,
-  "last_hook_activation": 1753552912577,
+  "execution_count": 205,
+  "last_hook_activation": 1753554404315,
   "__removedLinterTasks": {
     "removedCount": 1,
-    "finalTaskCount": 64
+    "finalTaskCount": 68
   }
 }
