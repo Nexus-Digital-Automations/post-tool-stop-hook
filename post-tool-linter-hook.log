@@ -1,13 +1,13 @@
-[2025-07-26T05:46:56.705Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-26T05:46:56.706Z] Date: 2025-07-26T05:46:56.706Z
-[2025-07-26T05:46:56.706Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-26T05:46:56.706Z] Node Version: v23.9.0
-[2025-07-26T05:46:56.706Z] Platform: darwin
-[2025-07-26T05:46:56.706Z] 
-[2025-07-26T05:46:56.706Z] === HOOK EXECUTION START ===
-[2025-07-26T05:46:56.706Z] Tool: Bash
-[2025-07-26T05:46:56.706Z] Session ID: c4bc34c6-40d4-4520-9b77-07ff8ed98113
-[2025-07-26T05:46:56.706Z] Hook input:
+[2025-07-26T05:48:13.723Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-26T05:48:13.723Z] Date: 2025-07-26T05:48:13.723Z
+[2025-07-26T05:48:13.723Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-26T05:48:13.723Z] Node Version: v23.9.0
+[2025-07-26T05:48:13.723Z] Platform: darwin
+[2025-07-26T05:48:13.723Z] 
+[2025-07-26T05:48:13.723Z] === HOOK EXECUTION START ===
+[2025-07-26T05:48:13.723Z] Tool: Bash
+[2025-07-26T05:48:13.723Z] Session ID: c4bc34c6-40d4-4520-9b77-07ff8ed98113
+[2025-07-26T05:48:13.723Z] Hook input:
   Data: {
   "session_id": "c4bc34c6-40d4-4520-9b77-07ff8ed98113",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/c4bc34c6-40d4-4520-9b77-07ff8ed98113.jsonl",
@@ -15,14 +15,14 @@
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
   "tool_input": {
-    "command": "cd /Users/jeremyparker/Desktop/Claude\\ Coding\\ Projects/post-tool-stop-hook && node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('update-coverage-thresholds', 'completed').then(() => console.log('✅ Task update-coverage-thresholds marked as completed')).catch(err => console.error('❌ Error:', err.message));\"",
-    "description": "Mark the coverage threshold update task as completed"
+    "command": "cd /Users/jeremyparker/Desktop/Claude\\ Coding\\ Projects/post-tool-stop-hook && node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('linter_task_active', 'completed').then(() => console.log('✅ Task linter_task_active marked as completed')).catch(err => console.error('❌ Error:', err.message));\"",
+    "description": "Mark the linter task as completed"
   },
   "tool_response": {
-    "stdout": "✅ Task update-coverage-thresholds marked as completed",
+    "stdout": "✅ Task linter_task_active marked as completed",
     "stderr": "",
     "interrupted": false,
     "isImage": false
   }
 }
-[2025-07-26T05:46:56.706Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-26T05:48:13.723Z] Tool Bash is not in enabled tools list, skipping
