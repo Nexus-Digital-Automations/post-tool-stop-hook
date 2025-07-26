@@ -2440,10 +2440,14 @@ async function insertLinterTaskSmart(linterTask, analysis, projectPath) {
   const todoPath = path.join(projectPath, 'TODO.json');
   
   try {
-    // Create a backup before modifying
-    const backupPath = `${todoPath}.backup.${Date.now()}`;
-    fs.copyFileSync(todoPath, backupPath);
-    log(`Created backup: ${backupPath}`);
+    // Create a backup before modifying (non-fatal if it fails)
+    try {
+      const backupPath = `${todoPath}.backup.${Date.now()}`;
+      fs.copyFileSync(todoPath, backupPath);
+      log(`Created backup: ${backupPath}`);
+    } catch (backupError) {
+      log(`Warning: Failed to create backup - ${backupError.message}, continuing anyway`);
+    }
     
     const todoData = { ...analysis.todoData };
     
