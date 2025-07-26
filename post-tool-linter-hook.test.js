@@ -1461,16 +1461,15 @@ describe('Post-Tool Linter Hook Unit Tests', () => {
     const projectPath = '/test/project';
 
     beforeEach(() => {
-      // Reset CONFIG mock to default values
+      // Reset CONFIG mock to default values, preserving original structure
       hook.CONFIG.respectIgnoreFiles = true;
-      hook.CONFIG.linters = {
-        python: {
-          ignoreFiles: ['.ruffignore', '.gitignore']
-        },
-        javascript: {
-          ignoreFiles: ['.eslintignore', '.gitignore']
-        }
-      };
+      // Only modify ignoreFiles, preserve other properties like fileExtensions
+      if (hook.CONFIG.linters.python) {
+        hook.CONFIG.linters.python.ignoreFiles = ['.ruffignore', '.gitignore'];
+      }
+      if (hook.CONFIG.linters.javascript) {
+        hook.CONFIG.linters.javascript.ignoreFiles = ['.eslintignore', '.gitignore'];
+      }
     });
 
     test('should return empty array when respectIgnoreFiles is disabled', () => {
@@ -1491,28 +1490,26 @@ describe('Post-Tool Linter Hook Unit Tests', () => {
     });
 
     test('should load patterns from configured ignore files', () => {
-      // Mock readIgnoreFile to return specific patterns
-      const originalReadIgnoreFile = hook.readIgnoreFile;
-      hook.readIgnoreFile = jest.fn().mockImplementation((filePath) => {
+      // Mock filesystem to return ignore file content
+      mockFs.existsSync.mockImplementation((filePath) => {
+        return filePath.includes('.ruffignore') || filePath.includes('.gitignore');
+      });
+      
+      mockFs.readFileSync.mockImplementation((filePath) => {
         if (filePath.includes('.ruffignore')) {
-          return ['__pycache__/**', '*.pyc'];
+          return '__pycache__/\n*.pyc\n';
         }
         if (filePath.includes('.gitignore')) {
-          return ['node_modules/**', '.env'];
+          return 'node_modules/\n.env\n';
         }
-        return [];
+        return '';
       });
 
       mockPath.join.mockImplementation((...args) => args.join('/'));
       
       const result = hook.loadIgnorePatternsForLinter('python', projectPath);
       
-      expect(result).toEqual(['__pycache__/**', '*.pyc', 'node_modules/**', '.env']);
-      expect(hook.readIgnoreFile).toHaveBeenCalledWith('/test/project/.ruffignore');
-      expect(hook.readIgnoreFile).toHaveBeenCalledWith('/test/project/.gitignore');
-      
-      // Restore original function
-      hook.readIgnoreFile = originalReadIgnoreFile;
+      expect(result).toEqual(['__pycache__/**', '**/*.pyc', 'node_modules/**', '**/.env']);
     });
 
     test('should handle case when linter config exists but ignoreFiles is undefined', () => {
@@ -2100,80 +2097,145 @@ coverage
         });
 
         test('should handle ruff exit code 1 as success (lines 469-470)', async () => {
-          mockExecSync.mockImplementation(() => {
-            const error = new Error('Command failed');
-            error.status = 1;
-            error.stdout = 'Fixed 5 violations';
-            throw error;
-          });
-
-          const result = await hook.runPythonProjectAutoFix('/test/project');
+          // Ensure auto-fix is enabled for this test
+          const originalAutoFix = hook.CONFIG.autoFix;
+          const originalPythonAutoFix = hook.CONFIG.linters.python.autoFix;
           
-          expect(result.success).toBe(true);
-          expect(result.fixed).toBe(true);
-          expect(result.linter).toBe('ruff');
-          expect(result.projectWide).toBe(true);
-          expect(result.output).toBe('Fixed 5 violations');
+          try {
+            hook.CONFIG.autoFix = true;
+            hook.CONFIG.linters.python.autoFix = true;
+            
+            mockExecSync.mockImplementation(() => {
+              const error = new Error('Command failed');
+              error.status = 1;
+              error.stdout = 'Fixed 5 violations';
+              throw error;
+            });
+
+            const result = await hook.runPythonProjectAutoFix('/test/project');
+            
+            expect(result.success).toBe(true);
+            expect(result.fixed).toBe(true);
+            expect(result.linter).toBe('ruff');
+            expect(result.projectWide).toBe(true);
+            expect(result.output).toBe('Fixed 5 violations');
+          } finally {
+            // Restore original config
+            hook.CONFIG.autoFix = originalAutoFix;
+            hook.CONFIG.linters.python.autoFix = originalPythonAutoFix;
+          }
         });
 
         test('should handle ruff command not found error (lines 482-483)', async () => {
-          mockExecSync.mockImplementation(() => {
-            const error = new Error('ruff: command not found');
-            error.status = 127;
-            throw error;
-          });
-
-          const result = await hook.runPythonProjectAutoFix('/test/project');
+          // Ensure auto-fix is enabled for this test
+          const originalAutoFix = hook.CONFIG.autoFix;
+          const originalPythonAutoFix = hook.CONFIG.linters.python.autoFix;
           
-          expect(result.success).toBe(false);
-          expect(result.fixed).toBe(false);
-          expect(result.linter).toBe('ruff');
-          expect(result.projectWide).toBe(true);
-          expect(result.executionFailure).toBe(true);
+          try {
+            hook.CONFIG.autoFix = true;
+            hook.CONFIG.linters.python.autoFix = true;
+            
+            mockExecSync.mockImplementation(() => {
+              const error = new Error('ruff: command not found');
+              error.status = 127;
+              throw error;
+            });
+
+            const result = await hook.runPythonProjectAutoFix('/test/project');
+            
+            expect(result.success).toBe(false);
+            expect(result.fixed).toBe(false);
+            expect(result.linter).toBe('ruff');
+            expect(result.projectWide).toBe(true);
+            expect(result.executionFailure).toBe(true);
+          } finally {
+            // Restore original config
+            hook.CONFIG.autoFix = originalAutoFix;
+            hook.CONFIG.linters.python.autoFix = originalPythonAutoFix;
+          }
         });
 
         test('should handle ruff not recognized error on Windows (lines 482-483)', async () => {
-          mockExecSync.mockImplementation(() => {
-            const error = new Error('\'ruff\' is not recognized as an internal or external command');
-            error.status = 9009;
-            throw error;
-          });
-
-          const result = await hook.runPythonProjectAutoFix('/test/project');
+          // Ensure auto-fix is enabled for this test
+          const originalAutoFix = hook.CONFIG.autoFix;
+          const originalPythonAutoFix = hook.CONFIG.linters.python.autoFix;
           
-          expect(result.success).toBe(false);
-          expect(result.fixed).toBe(false);
-          expect(result.linter).toBe('ruff');
-          expect(result.executionFailure).toBe(true);
+          try {
+            hook.CONFIG.autoFix = true;
+            hook.CONFIG.linters.python.autoFix = true;
+            
+            mockExecSync.mockImplementation(() => {
+              const error = new Error('\'ruff\' is not recognized as an internal or external command');
+              error.status = 9009;
+              throw error;
+            });
+
+            const result = await hook.runPythonProjectAutoFix('/test/project');
+            
+            expect(result.success).toBe(false);
+            expect(result.fixed).toBe(false);
+            expect(result.linter).toBe('ruff');
+            expect(result.executionFailure).toBe(true);
+          } finally {
+            // Restore original config
+            hook.CONFIG.autoFix = originalAutoFix;
+            hook.CONFIG.linters.python.autoFix = originalPythonAutoFix;
+          }
         });
 
         test('should handle other ruff execution errors', async () => {
-          mockExecSync.mockImplementation(() => {
-            const error = new Error('Syntax error in configuration');
-            error.status = 2;
-            throw error;
-          });
-
-          const result = await hook.runPythonProjectAutoFix('/test/project');
+          // Ensure auto-fix is enabled for this test
+          const originalAutoFix = hook.CONFIG.autoFix;
+          const originalPythonAutoFix = hook.CONFIG.linters.python.autoFix;
           
-          expect(result.success).toBe(false);
-          expect(result.fixed).toBe(false);
-          expect(result.linter).toBe('ruff');
-          expect(result.projectWide).toBe(true);
+          try {
+            hook.CONFIG.autoFix = true;
+            hook.CONFIG.linters.python.autoFix = true;
+            
+            mockExecSync.mockImplementation(() => {
+              const error = new Error('Syntax error in configuration');
+              error.status = 2;
+              throw error;
+            });
+
+            const result = await hook.runPythonProjectAutoFix('/test/project');
+            
+            expect(result.success).toBe(false);
+            expect(result.fixed).toBe(false);
+            expect(result.linter).toBe('ruff');
+            expect(result.projectWide).toBe(true);
+          } finally {
+            // Restore original config
+            hook.CONFIG.autoFix = originalAutoFix;
+            hook.CONFIG.linters.python.autoFix = originalPythonAutoFix;
+          }
         });
 
         test('should handle timeout errors', async () => {
-          mockExecSync.mockImplementation(() => {
-            const error = new Error('ETIMEDOUT');
-            error.code = 'ETIMEDOUT';
-            throw error;
-          });
-
-          const result = await hook.runPythonProjectAutoFix('/test/project');
+          // Ensure auto-fix is enabled for this test
+          const originalAutoFix = hook.CONFIG.autoFix;
+          const originalPythonAutoFix = hook.CONFIG.linters.python.autoFix;
           
-          expect(result.success).toBe(false);
-          expect(result.linter).toBe('ruff');
-          expect(result.projectWide).toBe(true);
+          try {
+            hook.CONFIG.autoFix = true;
+            hook.CONFIG.linters.python.autoFix = true;
+            
+            mockExecSync.mockImplementation(() => {
+              const error = new Error('ETIMEDOUT');
+              error.code = 'ETIMEDOUT';
+              throw error;
+            });
+
+            const result = await hook.runPythonProjectAutoFix('/test/project');
+            
+            expect(result.success).toBe(false);
+            expect(result.linter).toBe('ruff');
+            expect(result.projectWide).toBe(true);
+          } finally {
+            // Restore original config
+            hook.CONFIG.autoFix = originalAutoFix;
+            hook.CONFIG.linters.python.autoFix = originalPythonAutoFix;
+          }
         });
       });
 
