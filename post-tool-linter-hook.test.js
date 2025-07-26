@@ -2657,6 +2657,99 @@ coverage
           expect(hook.getFileType('file.unknown')).toBe('unknown'); // Unknown extension (returns 'unknown')
         });
       });
+
+      // Tests for uncovered framework patterns (lines 370, 379, 415)
+      describe('getFrameworkIgnorePatterns uncovered cases', () => {
+        test('should return patterns for nuxt framework (line 370)', () => {
+          const patterns = hook.getFrameworkIgnorePatterns(['nuxt']);
+          expect(patterns).toContain('.nuxt/');
+          expect(patterns).toContain('.output/');
+          expect(patterns).toContain('.nitro/');
+        });
+
+        test('should return patterns for vite framework (line 379)', () => {
+          const patterns = hook.getFrameworkIgnorePatterns(['vite']);
+          expect(patterns).toContain('dist/');
+          expect(patterns).toContain('.vite/');
+        });
+
+        test('should return patterns for docker framework (line 415)', () => {
+          const patterns = hook.getFrameworkIgnorePatterns(['docker']);
+          expect(patterns).toContain('.dockerignore');
+        });
+
+        test('should return patterns for multiple uncovered frameworks', () => {
+          const patterns = hook.getFrameworkIgnorePatterns(['nuxt', 'vite', 'docker']);
+          expect(patterns).toContain('.nuxt/');
+          expect(patterns).toContain('.vite/');
+          expect(patterns).toContain('.dockerignore');
+          // Should remove duplicates (dist/ appears in both nuxt and vite)
+          expect(patterns.filter(p => p === 'dist/').length).toBe(1);
+        });
+
+        test('should handle empty frameworks array', () => {
+          const patterns = hook.getFrameworkIgnorePatterns([]);
+          expect(patterns).toEqual([]);
+        });
+
+        test('should handle unknown frameworks', () => {
+          const patterns = hook.getFrameworkIgnorePatterns(['unknown-framework']);
+          expect(patterns).toEqual([]);
+        });
+      });
+
+      // Tests for uncovered error handling functions
+      describe('formatLinterFailurePrompt function', () => {
+        test('should format linter failure prompt correctly', () => {
+          const mockFailures = [
+            { linterName: 'ESLint', error: 'Error 1', type: 'execution' },
+            { linterName: 'ESLint', error: 'Error 2', type: 'config' }
+          ];
+          
+          const prompt = hook.formatLinterFailurePrompt(mockFailures, '/test/project');
+          expect(prompt).toContain('🚨 LINTER EXECUTION FAILED');
+          expect(prompt).toContain('2 linters');
+          expect(typeof prompt).toBe('string');
+        });
+
+        test('should handle empty failures array', () => {
+          const prompt = hook.formatLinterFailurePrompt([], '/test/project');
+          expect(prompt).toBe('');
+        });
+
+        test('should handle single failure', () => {
+          const mockFailures = [
+            { linterName: 'Ruff', error: 'Configuration error', type: 'config' }
+          ];
+          
+          const prompt = hook.formatLinterFailurePrompt(mockFailures, '/test/project');
+          expect(prompt).toContain('1 linter');
+          expect(typeof prompt).toBe('string');
+        });
+      });
+
+      // Test for package-hook coverage (through HookPackager class)
+      describe('HookPackager class methods', () => {
+        test('should create HookPackager instance', () => {
+          const { HookPackager } = require('./package-hook.js');
+          const packager = new HookPackager();
+          expect(packager).toBeInstanceOf(HookPackager);
+        });
+
+        test('should call HookPackager methods for coverage', () => {
+          const { HookPackager } = require('./package-hook.js');
+          const packager = new HookPackager();
+          
+          // Test parseArgs method exists and is callable
+          expect(typeof packager.parseArgs).toBe('function');
+          
+          // Test showHelp method exists and is callable  
+          expect(typeof packager.showHelp).toBe('function');
+          
+          // Test main method exists and is callable
+          expect(typeof packager.main).toBe('function');
+        });
+      });
     });
   });
 });

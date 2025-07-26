@@ -1,13 +1,13 @@
-[2025-07-26T18:37:33.187Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-26T18:37:33.187Z] Date: 2025-07-26T18:37:33.187Z
-[2025-07-26T18:37:33.187Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-26T18:37:33.187Z] Node Version: v23.9.0
-[2025-07-26T18:37:33.187Z] Platform: darwin
-[2025-07-26T18:37:33.187Z] 
-[2025-07-26T18:37:33.187Z] === HOOK EXECUTION START ===
-[2025-07-26T18:37:33.187Z] Tool: Bash
-[2025-07-26T18:37:33.187Z] Session ID: 0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e
-[2025-07-26T18:37:33.187Z] Hook input:
+[2025-07-26T18:45:01.711Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-26T18:45:01.712Z] Date: 2025-07-26T18:45:01.712Z
+[2025-07-26T18:45:01.712Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-26T18:45:01.712Z] Node Version: v23.9.0
+[2025-07-26T18:45:01.712Z] Platform: darwin
+[2025-07-26T18:45:01.712Z] 
+[2025-07-26T18:45:01.712Z] === HOOK EXECUTION START ===
+[2025-07-26T18:45:01.712Z] Tool: Bash
+[2025-07-26T18:45:01.712Z] Session ID: 0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e
+[2025-07-26T18:45:01.712Z] Hook input:
   Data: {
   "session_id": "0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e.jsonl",
@@ -15,14 +15,14 @@
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
   "tool_input": {
-    "command": "npm test -- --testNamePattern=\"should handle ruff auto-fix execution failure\"",
-    "description": "Test specific async auto-fix test to confirm it's working"
+    "command": "cd /Users/jeremyparker/Desktop/Claude\\ Coding\\ Projects/post-tool-stop-hook && node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const taskManager = new TaskManager('./TODO.json'); taskManager.updateTaskStatus('linter_task_active', 'completed').then(() => console.log('✅ Task linter_task_active marked as completed'));\"",
+    "description": "Mark the linter task as completed"
   },
   "tool_response": {
-    "stdout": "> post-tool-linter-hook@1.0.0 test\n> jest --testNamePattern=should handle ruff auto-fix execution failure\nPASS ./post-tool-linter-hook.test.js\n\nTest Suites: 6 skipped, 1 passed, 1 of 7 total\nTests:       376 skipped, 1 passed, 377 total\nSnapshots:   0 total\nTime:        0.752 s, estimated 4 s\nRan all test suites with tests matching \"should handle ruff auto-fix execution failure\".",
+    "stdout": "✅ Task linter_task_active marked as completed",
     "stderr": "",
     "interrupted": false,
     "isImage": false
   }
 }
-[2025-07-26T18:37:33.187Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-26T18:45:01.712Z] Tool Bash is not in enabled tools list, skipping

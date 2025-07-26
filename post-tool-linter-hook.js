@@ -2686,6 +2686,8 @@ if (require.main === module) {
     validateConfigFile,
     detectProjectType,
     detectProjectTypes,
+    detectFrameworks,
+    getFrameworkIgnorePatterns,
     runPythonProjectAutoFix,
     runJavaScriptProjectAutoFix,
     runPythonProjectLinter,
