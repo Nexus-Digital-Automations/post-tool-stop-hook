@@ -2,7 +2,7 @@
   "name": "claude-code-linter-hook",
   "version": "1.0.0",
   "description": "Claude Code Post-Tool Linter Hook - Automatic linting after file modifications",
-  "created": "2025-07-25T20:39:21.686Z",
+  "created": "2025-07-25T22:12:40.897Z",
   "platform": "darwin",
   "nodeVersion": "v23.9.0",
   "files": [
@@ -10,151 +10,151 @@
       "path": "CHANGELOG.md",
       "size": 719,
       "checksum": "d318b49efd67328db5cb90dc98cf62f386ceb21d831c4038dadd161787a7a3d6",
-      "modified": "2025-07-25T20:04:30.934Z"
+      "modified": "2025-07-25T20:39:21.693Z"
     },
     {
       "path": "CHECKSUMS.json",
-      "size": 2249,
-      "checksum": "48b71c9fc10eed0d8371cbb877c838b4f730fb4395f1d63d466c7fa6b1aebe3a",
-      "modified": "2025-07-25T20:04:30.937Z"
+      "size": 2337,
+      "checksum": "4137d6a03e85ab10c01fdf1032721fa8438b7a8cd6271552968fa9a6a98a83d6",
+      "modified": "2025-07-25T20:39:21.695Z"
     },
     {
       "path": "LICENSE",
       "size": 1080,
       "checksum": "c2e5dd57769a2af45d99c52a3d6917cb83ce1aa47ba37b8aecc8ccc22c25cfa5",
-      "modified": "2025-07-25T20:04:30.934Z"
+      "modified": "2025-07-25T20:39:21.693Z"
     },
     {
       "path": "MANIFEST.json",
-      "size": 2787,
-      "checksum": "5608f61ef3fb1391fdbdf6a5298c1c22aade31d12f173afd5ddce710441c0388",
-      "modified": "2025-07-25T20:04:30.934Z"
+      "size": 3426,
+      "checksum": "e537158041b5f0c38d96e08e8596f20296da59a127b11aabfbfe0cadf4d03716",
+      "modified": "2025-07-25T20:39:21.693Z"
     },
     {
       "path": "QUICKSTART.md",
       "size": 2213,
       "checksum": "40031230506e8c7d7e5f9b80d511bccebf0de32d762f5722e732277b586f4ac4",
-      "modified": "2025-07-25T20:04:30.934Z"
+      "modified": "2025-07-25T20:39:21.693Z"
     },
     {
       "path": "bin/README.md",
       "size": 9300,
       "checksum": "4587c1f496e41218d918acb6a3f6fd9951d641aa6c2e78d6365debffaac20308",
-      "modified": "2025-07-25T20:39:21.682Z"
+      "modified": "2025-07-25T22:12:40.892Z"
     },
     {
       "path": "bin/package.json",
-      "size": 1599,
-      "checksum": "be1a9edd3f9571c09db99b74911fe288497cdafb55d38aac00f36b8ae1ad8266",
-      "modified": "2025-07-25T20:39:21.682Z"
+      "size": 1595,
+      "checksum": "d8233a7375c8c831341533c91390382547aab4ef9b75ba4fb4ede5d90f41dc25",
+      "modified": "2025-07-25T22:12:40.893Z"
     },
     {
       "path": "bin/post-tool-linter-hook.js",
-      "size": 53889,
-      "checksum": "226a5d9b617d72a35c2464a55066146807481667feef2077354c05d695358ff6",
-      "modified": "2025-07-25T20:39:21.680Z"
+      "size": 67842,
+      "checksum": "f6526577b823379160a9c89b2eaed939a98ef697e1cf204d3c88f74f5711476c",
+      "modified": "2025-07-25T22:12:40.891Z"
     },
     {
       "path": "bin/setup-linter-hook.js",
       "size": 4597,
       "checksum": "70a0fa99c92fe182d128827f5591dccccaf2dc0a35d593251b9157d46faf3692",
-      "modified": "2025-07-25T20:39:21.680Z"
+      "modified": "2025-07-25T22:12:40.892Z"
     },
     {
       "path": "bin/setup-post-tool-hook.js",
-      "size": 17242,
-      "checksum": "e71dbcc40f96657175922151a5b4ec8e2f5e9c34855a3f06cb11195c100a1337",
-      "modified": "2025-07-25T20:39:21.681Z"
+      "size": 18838,
+      "checksum": "ada3b914d398199bfee788280a8bc08d3b3bf325f7d27baed0b99ba37f76350b",
+      "modified": "2025-07-25T22:12:40.892Z"
     },
     {
       "path": "docs/docs/config.md",
       "size": 8341,
       "checksum": "ae133e00b644e4896e5ce7e6681442638b2f148402a38e61232947cc73c5fdcf",
-      "modified": "2025-07-25T20:39:21.683Z"
+      "modified": "2025-07-25T22:12:40.893Z"
     },
     {
       "path": "docs/docs/smart-task-placement.md",
       "size": 10164,
       "checksum": "be831c8a5a99cb338955a18320d520df6edb06875fd195a11b5c45050a59708d",
-      "modified": "2025-07-25T20:39:21.683Z"
+      "modified": "2025-07-25T22:12:40.893Z"
     },
     {
       "path": "docs/docs/user-guide.md",
       "size": 12723,
       "checksum": "c58b041a7d0147f1c1f696ac5aea9eae6cbd0dce4ef34d94e0187e71f18c9e5e",
-      "modified": "2025-07-25T20:39:21.683Z"
+      "modified": "2025-07-25T22:12:40.894Z"
     },
     {
       "path": "docs/modes/development.md",
       "size": 9568,
       "checksum": "72174203c15191b030b8f3f0c601a813b9f7c68d16c4d4aa72e5b64676bd1699",
-      "modified": "2025-07-25T20:39:21.684Z"
+      "modified": "2025-07-25T22:12:40.894Z"
     },
     {
       "path": "docs/modes/refactoring.md",
       "size": 9708,
       "checksum": "b3e60668ae3e31018a4cda156ab9cc5f6d83bd105f83b8c8d67bfc0bfb535b18",
-      "modified": "2025-07-25T20:39:21.684Z"
+      "modified": "2025-07-25T22:12:40.895Z"
     },
     {
       "path": "docs/modes/research.md",
       "size": 7996,
       "checksum": "80617ea8f221f2d5593896461a7f8f580948a5977d489905f91546fd59606947",
-      "modified": "2025-07-25T20:39:21.684Z"
+      "modified": "2025-07-25T22:12:40.895Z"
     },
     {
       "path": "docs/modes/reviewer.md",
       "size": 20460,
       "checksum": "69d944c5041a702c652395cd7b36db8d3fc503a31ad04da4dba0063fad2a3405",
-      "modified": "2025-07-25T20:39:21.685Z"
+      "modified": "2025-07-25T22:12:40.896Z"
     },
     {
       "path": "docs/modes/task-creation.md",
       "size": 19671,
       "checksum": "763c322e565bfac34df6a3db31d205468bd532806b135121d52b51ba96eb7cb6",
-      "modified": "2025-07-25T20:39:21.685Z"
+      "modified": "2025-07-25T22:12:40.896Z"
     },
     {
       "path": "docs/modes/testing.md",
       "size": 16455,
       "checksum": "c391d9989f8fa92f6a00872db75b9fc598f110811c9a90c222b06da2e315480e",
-      "modified": "2025-07-25T20:39:21.685Z"
+      "modified": "2025-07-25T22:12:40.897Z"
     },
     {
       "path": "examples/eslint.config.js",
       "size": 1620,
       "checksum": "53943025f2b9d5628ad3e26098da2b90d11ccd0b032d95c9871e967e71b04893",
-      "modified": "2025-07-25T20:39:21.686Z"
+      "modified": "2025-07-25T22:12:40.897Z"
     },
     {
       "path": "examples/test-linter-hook.js",
       "size": 5677,
       "checksum": "dbabac99b3c524d11ce21545747e3c606bd3da13e2056f0b17c5727f3f98f2ba",
-      "modified": "2025-07-25T20:39:21.685Z"
+      "modified": "2025-07-25T22:12:40.897Z"
     },
     {
       "path": "install.bat",
       "size": 1112,
       "checksum": "e5e0ef2fdc8c871876208cac2b86370e78a1b60215ddb2d1a822ed8200dca4f2",
-      "modified": "2025-07-25T20:39:21.686Z"
+      "modified": "2025-07-25T22:12:40.898Z"
     },
     {
       "path": "install.js",
       "size": 1642,
       "checksum": "7b9e3d57a40eaf356130f79177c77a7dd219bf08a64fa132d27fc46e3fac4b35",
-      "modified": "2025-07-25T20:39:21.686Z"
+      "modified": "2025-07-25T22:12:40.898Z"
     },
     {
       "path": "install.sh",
       "size": 1136,
       "checksum": "e553ed077e6f128df4c75b545c6a549b0fbc15d85fa6f651e97259e98cc071d6",
-      "modified": "2025-07-25T20:39:21.686Z"
+      "modified": "2025-07-25T22:12:40.898Z"
     },
     {
       "path": "package-info.json",
-      "size": 4627,
-      "checksum": "c5ef13c362a37d83c69c0bf16be9fddd86151f140941c14f374f931b299ae290",
-      "modified": "2025-07-25T20:04:30.931Z"
+      "size": 5794,
+      "checksum": "f7fa37054611db19f5f09c54b8c39bac6b920461bbd2295c8ca79811b95a4d56",
+      "modified": "2025-07-25T20:39:21.691Z"
     }
   ],
   "installation": {

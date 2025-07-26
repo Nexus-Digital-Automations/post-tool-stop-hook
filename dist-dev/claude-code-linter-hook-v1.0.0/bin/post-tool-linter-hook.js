@@ -63,7 +63,7 @@ const CONFIG = {
     python: {
       command: 'ruff check --output-format json',
       projectCommand: 'ruff check . --output-format json',
-      fileExtensions: ['.py', '.pyi'],
+      fileExtensions: ['.py', '.pyi', '.pyx'],
       configFiles: ['pyproject.toml', 'setup.py', 'requirements.txt', '.python-version', 'Pipfile'],
       ignoreFiles: ['.ruffignore', '.gitignore']
     },
@@ -77,6 +77,229 @@ const CONFIG = {
   },
   skipExtensions: ['.json', '.md', '.txt', '.yml', '.yaml', '.xml', '.csv', '.log']
 };
+
+// Ignore file handling functions
+function readIgnoreFile(ignoreFilePath) {
+  log(`Reading ignore file: ${ignoreFilePath}`);
+  
+  try {
+    if (!fs.existsSync(ignoreFilePath)) {
+      log(`Ignore file not found: ${ignoreFilePath}`);
+      return [];
+    }
+    
+    const content = fs.readFileSync(ignoreFilePath, 'utf8');
+    const patterns = content
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line && !line.startsWith('#')) // Remove empty lines and comments
+      .map(pattern => {
+        // Convert gitignore-style patterns to glob patterns
+        if (pattern.endsWith('/')) {
+          return `${pattern}**`; // Directory patterns
+        }
+        if (!pattern.includes('/')) {
+          return `**/${pattern}`; // File patterns should match anywhere
+        }
+        return pattern;
+      });
+    
+    log(`Loaded ${patterns.length} ignore patterns from ${ignoreFilePath}`);
+    return patterns;
+  } catch (error) {
+    log(`Failed to read ignore file ${ignoreFilePath}: ${error.message}`);
+    return [];
+  }
+}
+
+function shouldIgnoreFile(filePath, ignorePatterns, projectPath) {
+  if (!ignorePatterns || ignorePatterns.length === 0) {
+    return false;
+  }
+  
+  // Convert absolute path to relative for pattern matching
+  const relativePath = path.relative(projectPath, filePath);
+  
+  // Test against each ignore pattern
+  for (const pattern of ignorePatterns) {
+    // Simple glob matching - exact match or wildcard
+    if (pattern === relativePath) {
+      log(`File ${relativePath} matches exact ignore pattern: ${pattern}`);
+      return true;
+    }
+    
+    // Check if pattern ends with wildcard and matches prefix
+    if (pattern.endsWith('**') && relativePath.startsWith(pattern.slice(0, -2))) {
+      log(`File ${relativePath} matches directory ignore pattern: ${pattern}`);
+      return true;
+    }
+    
+    // Check filename patterns (like *.log, *.tmp)
+    if (pattern.startsWith('**/') && pattern.includes('*')) {
+      const filePattern = pattern.substring(3); // Remove **/ prefix
+      const fileName = path.basename(relativePath);
+      
+      if (filePattern.includes('*')) {
+        // Simple wildcard matching
+        const regexPattern = filePattern
+          .replace(/\./g, '\\.')
+          .replace(/\*/g, '.*');
+        const regex = new RegExp(`^${regexPattern}$`);
+        
+        if (regex.test(fileName)) {
+          log(`File ${relativePath} matches filename pattern: ${pattern}`);
+          return true;
+        }
+      }
+    }
+    
+    // Check path patterns (like build/, dist/, etc.)
+    if (relativePath.includes('/')) {
+      const pathParts = relativePath.split('/');
+      for (const part of pathParts) {
+        if (pattern === part || (pattern.endsWith('**') && part.startsWith(pattern.slice(0, -2)))) {
+          log(`File ${relativePath} matches path component pattern: ${pattern}`);
+          return true;
+        }
+      }
+    }
+  }
+  
+  return false;
+}
+
+function loadIgnorePatternsForLinter(linterType, projectPath) {
+  log(`Loading ignore patterns for ${linterType} linter`);
+  
+  if (!CONFIG.respectIgnoreFiles) {
+    log('Ignore file support is disabled in configuration');
+    return [];
+  }
+  
+  const linterConfig = CONFIG.linters[linterType];
+  if (!linterConfig || !linterConfig.ignoreFiles) {
+    log(`No ignore files configured for ${linterType}`);
+    return [];
+  }
+  
+  let allPatterns = [];
+  
+  for (const ignoreFile of linterConfig.ignoreFiles) {
+    const ignoreFilePath = path.join(projectPath, ignoreFile);
+    const patterns = readIgnoreFile(ignoreFilePath);
+    allPatterns = allPatterns.concat(patterns);
+  }
+  
+  log(`Total ignore patterns loaded for ${linterType}: ${allPatterns.length}`);
+  return allPatterns;
+}
+
+function filterFilesWithIgnoreRules(filePaths, projectPath) {
+  log(`Filtering ${filePaths.length} files with ignore rules`);
+  
+  if (!CONFIG.respectIgnoreFiles) {
+    log('Ignore file support disabled, returning all files');
+    return filePaths;
+  }
+  
+  const filteredFiles = [];
+  
+  for (const filePath of filePaths) {
+    const fileType = getFileType(filePath);
+    let shouldIgnore = false;
+    
+    if (fileType) {
+      // Load ignore patterns for this file type
+      const ignorePatterns = loadIgnorePatternsForLinter(fileType, projectPath);
+      shouldIgnore = shouldIgnoreFile(filePath, ignorePatterns, projectPath);
+    }
+    
+    if (shouldIgnore) {
+      log(`Ignoring file due to ignore patterns: ${path.relative(projectPath, filePath)}`);
+    } else {
+      filteredFiles.push(filePath);
+    }
+  }
+  
+  log(`Filtered ${filePaths.length} files down to ${filteredFiles.length} files`);
+  return filteredFiles;
+}
+
+function generateIgnoreFileSuggestions(resultsWithViolations, projectPath) {
+  const suggestedPatterns = [];
+  const problematicFiles = new Set();
+  
+  for (const result of resultsWithViolations) {
+    const filePath = result.file;
+    const relativePath = path.relative(projectPath, filePath);
+    const fileName = path.basename(filePath);
+    
+    // Detect common problematic file types that likely shouldn't be linted
+    const problematicPatterns = [
+      // Temporary and build files
+      { pattern: /\.tmp$|\.temp$/, suggestion: '*.tmp\n*.temp' },
+      { pattern: /\.log$/, suggestion: '*.log' },
+      { pattern: /\.cache$/, suggestion: '*.cache' },
+      { pattern: /\.backup$|\.bak$/, suggestion: '*.backup\n*.bak' },
+      
+      // Python specific
+      { pattern: /\.pyc$|\.pyo$/, suggestion: '*.pyc\n*.pyo' },
+      { pattern: /__pycache__/, suggestion: '__pycache__/' },
+      { pattern: /\.egg-info/, suggestion: '*.egg-info/' },
+      { pattern: /build\//, suggestion: 'build/' },
+      { pattern: /dist\//, suggestion: 'dist/' },
+      { pattern: /\.venv\/|venv\/|env\//, suggestion: '.venv/\nvenv/\nenv/' },
+      
+      // JavaScript/Node specific
+      { pattern: /node_modules/, suggestion: 'node_modules/' },
+      { pattern: /\.min\.js$/, suggestion: '*.min.js' },
+      { pattern: /\.bundle\.js$/, suggestion: '*.bundle.js' },
+      { pattern: /coverage\//, suggestion: 'coverage/' },
+      
+      // Development and testing
+      { pattern: /development\//, suggestion: 'development/' },
+      { pattern: /test-output\/|test_output\//, suggestion: 'test-output/\ntest_output/' },
+      { pattern: /\.git\//, suggestion: '.git/' },
+      
+      // Documentation and config that might be auto-generated
+      { pattern: /\.md\.backup$/, suggestion: '*.md.backup' },
+      { pattern: /\.json\.backup$/, suggestion: '*.json.backup' }
+    ];
+    
+    // Check if this file matches any problematic patterns
+    for (const { pattern, suggestion } of problematicPatterns) {
+      if (pattern.test(relativePath) || pattern.test(fileName)) {
+        problematicFiles.add(filePath);
+        // Add suggestion if not already present
+        const patterns = suggestion.split('\n');
+        for (const p of patterns) {
+          if (!suggestedPatterns.includes(p)) {
+            suggestedPatterns.push(p);
+          }
+        }
+        break;
+      }
+    }
+    
+    // Special case: if file is in a directory that commonly contains non-source files
+    const commonIgnoreDirs = ['tmp', 'temp', 'cache', 'logs', 'artifacts', '.pytest_cache', '.coverage'];
+    const pathParts = relativePath.split(path.sep);
+    for (const dir of commonIgnoreDirs) {
+      if (pathParts.includes(dir)) {
+        problematicFiles.add(filePath);
+        if (!suggestedPatterns.includes(`${dir}/`)) {
+          suggestedPatterns.push(`${dir}/`);
+        }
+      }
+    }
+  }
+  
+  return {
+    suggestedPatterns: suggestedPatterns,
+    problematicFileCount: problematicFiles.size,
+    problematicFiles: Array.from(problematicFiles)
+  };
+}
 
 // Utility functions
 function validateConfigFile(configPath, type) {
@@ -125,44 +348,49 @@ function validateConfigFile(configPath, type) {
 function detectProjectType(projectPath) {
   log(`Detecting project type for: ${projectPath}`);
   
-  const foundTypes = [];
-  
-  // Check each linter type and validate config files
-  for (const [type, config] of Object.entries(CONFIG.linters)) {
-    log(`Checking for ${type} project indicators...`);
-    let typeScore = 0;
+  try {
+    const foundTypes = [];
     
-    for (const configFile of config.configFiles) {
-      const configPath = path.join(projectPath, configFile);
-      const exists = fs.existsSync(configPath);
-      log(`  ${configFile}: ${exists ? 'FOUND' : 'not found'}`);
+    // Check each linter type and validate config files
+    for (const [type, config] of Object.entries(CONFIG.linters)) {
+      log(`Checking for ${type} project indicators...`);
+      let typeScore = 0;
       
-      if (exists && validateConfigFile(configPath, type)) {
-        typeScore++;
-        log(`    -> Valid ${type} indicator (score: ${typeScore})`);
+      for (const configFile of config.configFiles) {
+        const configPath = path.join(projectPath, configFile);
+        const exists = fs.existsSync(configPath);
+        log(`  ${configFile}: ${exists ? 'FOUND' : 'not found'}`);
+        
+        if (exists && validateConfigFile(configPath, type)) {
+          typeScore++;
+          log(`    -> Valid ${type} indicator (score: ${typeScore})`);
+        }
+      }
+      
+      if (typeScore > 0) {
+        foundTypes.push({ type, score: typeScore });
       }
     }
     
-    if (typeScore > 0) {
-      foundTypes.push({ type, score: typeScore });
-    }
-  }
-  
-  // Return the type with highest score, or null if no valid types found
-  if (foundTypes.length > 0) {
-    foundTypes.sort((a, b) => b.score - a.score);
-    const selectedType = foundTypes[0].type;
-    log(`Project type detected: ${selectedType} (score: ${foundTypes[0].score})`);
-    
-    if (foundTypes.length > 1) {
-      log(`Other detected types: ${foundTypes.slice(1).map(t => `${t.type}(${t.score})`).join(', ')}`);
+    // Return the type with highest score, or null if no valid types found
+    if (foundTypes.length > 0) {
+      foundTypes.sort((a, b) => b.score - a.score);
+      const selectedType = foundTypes[0].type;
+      log(`Project type detected: ${selectedType} (score: ${foundTypes[0].score})`);
+      
+      if (foundTypes.length > 1) {
+        log(`Other detected types: ${foundTypes.slice(1).map(t => `${t.type}(${t.score})`).join(', ')}`);
+      }
+      
+      return selectedType;
     }
     
-    return selectedType;
+    log('No valid project type detected');
+    return null;
+  } catch (error) {
+    log(`Error detecting project type: ${error.message}`);
+    return null;
   }
-  
-  log('No valid project type detected');
-  return null;
 }
 
 function detectProjectTypes(projectPath) {
@@ -193,7 +421,7 @@ async function runPythonProjectLinter(projectPath) {
   log(`Running Python project linter (ruff) on: ${projectPath}`);
   
   try {
-    const command = 'ruff check . --output-format json';
+    const command = 'ruff check . --output-format json --respect-gitignore';
     log(`Executing project command: ${command}`);
     
     const result = execSync(command, {
@@ -511,9 +739,9 @@ function getFileType(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   log(`Getting file type for extension: ${ext}`);
   
-  // Check if extension should be skipped
-  if (CONFIG.skipExtensions.includes(ext)) {
-    log(`Extension ${ext} is in skip list - no linting needed`);
+  // Check if extension should be skipped or if there's no extension
+  if (CONFIG.skipExtensions.includes(ext) || ext === '') {
+    log(`Extension ${ext} is in skip list or empty - no linting needed`);
     return null;
   }
   
@@ -525,7 +753,7 @@ function getFileType(filePath) {
   }
   
   log(`No linter configured for extension: ${ext}`);
-  return null;
+  return 'unknown';
 }
 
 function extractFilePaths(hookData) {
@@ -550,15 +778,33 @@ function extractFilePaths(hookData) {
     return exists;
   });
   
-  log(`Total paths found: ${existingPaths.length}`);
-  return existingPaths;
+  log(`Total paths found before filtering: ${existingPaths.length}`);
+  
+  // Apply ignore file filtering
+  const projectPath = hookData.cwd || process.cwd();
+  const filteredPaths = filterFilesWithIgnoreRules(existingPaths, projectPath);
+  
+  log(`Total paths after ignore filtering: ${filteredPaths.length}`);
+  return filteredPaths;
 }
 
 async function runPythonLinter(filePath, projectPath) {
   log(`Running Python linter (ruff) on: ${filePath}`);
   
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    log(`ERROR: File does not exist: ${filePath}`);
+    return {
+      success: false,
+      linter: 'ruff',
+      file: filePath,
+      violations: [],
+      error: 'File does not exist'
+    };
+  }
+  
   try {
-    const command = `ruff check "${filePath}" --output-format json`;
+    const command = `ruff check "${filePath}" --output-format json --respect-gitignore`;
     log(`Executing command: ${command}`);
     
     const result = execSync(command, {
@@ -569,22 +815,33 @@ async function runPythonLinter(filePath, projectPath) {
     });
     
     log(`Ruff executed successfully, parsing output...`);
-    const violations = JSON.parse(result || '[]');
-    log(`Found ${violations.length} violations`);
-    
-    return {
-      success: violations.length === 0,
-      linter: 'ruff',
-      file: filePath,
-      violations: violations.map(v => ({
-        line: v.location?.row || v.location?.start?.row || 0,
-        column: v.location?.column || v.location?.start?.column || 0,
-        code: v.code,
-        message: v.message,
-        severity: 'error',
-        fixable: v.fix !== null && v.fix !== undefined
-      }))
-    };
+    try {
+      const violations = JSON.parse(result || '[]');
+      log(`Found ${violations.length} violations`);
+      
+      return {
+        success: true,
+        linter: 'ruff',
+        file: filePath,
+        violations: violations.map(v => ({
+          line: v.location?.row || v.location?.start?.row || 0,
+          column: v.location?.column || v.location?.start?.column || 0,
+          code: v.code,
+          message: v.message,
+          severity: 'error',
+          fixable: v.fix !== null && v.fix !== undefined
+        }))
+      };
+    } catch (parseError) {
+      log(`Failed to parse ruff output: ${parseError.message}`);
+      return {
+        success: false,
+        linter: 'ruff',
+        file: filePath,
+        violations: [],
+        error: 'Failed to parse ruff output'
+      };
+    }
   } catch (error) {
     log(`Ruff execution failed with status: ${error.status}`);
     
@@ -596,7 +853,7 @@ async function runPythonLinter(filePath, projectPath) {
         log(`Found ${violations.length} violations from error output`);
         
         return {
-          success: false,
+          success: true,
           linter: 'ruff',
           file: filePath,
           violations: violations.map(v => ({
@@ -664,6 +921,18 @@ async function runPythonLinter(filePath, projectPath) {
 }
 
 async function runJavaScriptLinter(filePath, projectPath) {
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    log(`ERROR: File does not exist: ${filePath}`);
+    return {
+      success: false,
+      linter: 'eslint',
+      file: filePath,
+      violations: [],
+      error: 'File does not exist'
+    };
+  }
+  
   try {
     // Try to find eslint in multiple locations
     let eslintCommand = 'eslint';
@@ -690,22 +959,33 @@ async function runJavaScriptLinter(filePath, projectPath) {
       stdio: ['pipe', 'pipe', 'pipe']
     });
     
-    const reports = JSON.parse(result || '[]');
-    const fileReport = reports[0] || { messages: [] };
-    
-    return {
-      success: fileReport.errorCount === 0 && fileReport.warningCount === 0,
-      linter: 'eslint',
-      file: filePath,
-      violations: fileReport.messages.map(m => ({
-        line: m.line,
-        column: m.column,
-        severity: m.severity === 2 ? 'error' : 'warning',
-        message: m.message,
-        code: m.ruleId,
-        fixable: m.fix !== undefined
-      }))
-    };
+    try {
+      const reports = JSON.parse(result || '[]');
+      const fileReport = reports[0] || { messages: [] };
+      
+      return {
+        success: true,
+        linter: 'eslint',
+        file: filePath,
+        violations: fileReport.messages.map(m => ({
+          line: m.line,
+          column: m.column,
+          severity: m.severity === 2 ? 'error' : 'warning',
+          message: m.message,
+          code: m.ruleId,
+          fixable: m.fix !== undefined
+        }))
+      };
+    } catch (parseError) {
+      log(`Failed to parse ESLint output: ${parseError.message}`);
+      return {
+        success: false,
+        linter: 'eslint',
+        file: filePath,
+        violations: [],
+        error: 'Failed to parse ESLint output'
+      };
+    }
   } catch (error) {
     log(`ESLint execution failed: ${error.message}`);
     
@@ -719,7 +999,7 @@ async function runJavaScriptLinter(filePath, projectPath) {
         log(`Found ${fileReport.messages.length} ESLint violations`);
         
         return {
-          success: fileReport.errorCount === 0,
+          success: true,
           linter: 'eslint',
           file: filePath,
           violations: fileReport.messages.map(m => ({
@@ -797,7 +1077,18 @@ async function lintFile(filePath, projectPath) {
   const allProjectTypes = detectProjectTypes(projectPath);
   
   // Prefer file type over project type, but consider all available types
-  let linterType = fileType || projectType;
+  // However, if fileType is null due to skip extensions, don't use projectType
+  let linterType;
+  if (fileType === null) {
+    // File explicitly marked as skip (in skipExtensions)
+    linterType = null;
+  } else if (fileType) {
+    // File type detected from extension
+    linterType = fileType;
+  } else {
+    // No file type detected, fall back to project type
+    linterType = projectType;
+  }
   
   log(`File extension: ${fileExtension}`);
   log(`File type detected: ${fileType || 'none'}`);
@@ -808,7 +1099,7 @@ async function lintFile(filePath, projectPath) {
   
   if (!linterType) {
     log('No linter configured for this file/project type');
-    return { success: true, file: filePath, reason: 'No linter configured for this file type' };
+    return { success: false, file: filePath, error: 'Unsupported file type' };
   }
   
   switch (linterType) {
@@ -820,7 +1111,7 @@ async function lintFile(filePath, projectPath) {
       return await runJavaScriptLinter(filePath, projectPath);
     default:
       log(`Unsupported linter type: ${linterType}`);
-      return { success: true, file: filePath, reason: 'Unsupported file type' };
+      return { success: false, file: filePath, error: 'Unsupported file type' };
   }
 }
 
@@ -886,6 +1177,44 @@ function writeLinterErrorsFile(resultsWithViolations, projectPath) {
         content += ` \`[${violation.code}]\``;
       }
       content += `${fixable}\n\n`;
+    }
+    
+    content += `---\n\n`;
+  }
+  
+  // Add ignore file guidance section
+  const ignoreGuidance = generateIgnoreFileSuggestions(resultsWithViolations, projectPath);
+  if (ignoreGuidance.suggestedPatterns.length > 0) {
+    content += `## 💡 Ignore File Configuration\n\n`;
+    content += `Some linting issues may be in files that shouldn't be linted. Consider updating your ignore files:\n\n`;
+    
+    if (ignoreGuidance.suggestedPatterns.some(p => p.includes('.py') || p.includes('__pycache__'))) {
+      content += `**For Python (create/update \`.ruffignore\`):**\n`;
+      content += `\`\`\`\n`;
+      ignoreGuidance.suggestedPatterns
+        .filter(p => p.includes('.py') || p.includes('__pycache__') || p.includes('.pyc'))
+        .forEach(pattern => content += `${pattern}\n`);
+      content += `\`\`\`\n\n`;
+    }
+    
+    if (ignoreGuidance.suggestedPatterns.some(p => p.includes('.js') || p.includes('.ts') || p.includes('node_modules'))) {
+      content += `**For JavaScript/TypeScript (create/update \`.eslintignore\`):**\n`;
+      content += `\`\`\`\n`;
+      ignoreGuidance.suggestedPatterns
+        .filter(p => p.includes('.js') || p.includes('.ts') || p.includes('node_modules') || p.includes('dist/'))
+        .forEach(pattern => content += `${pattern}\n`);
+      content += `\`\`\`\n\n`;
+    }
+    
+    // Generic patterns
+    const genericPatterns = ignoreGuidance.suggestedPatterns
+      .filter(p => !p.includes('.py') && !p.includes('.js') && !p.includes('.ts') && 
+                   !p.includes('__pycache__') && !p.includes('node_modules'));
+    if (genericPatterns.length > 0) {
+      content += `**General patterns (both \`.ruffignore\` and \`.eslintignore\`):**\n`;
+      content += `\`\`\`\n`;
+      genericPatterns.forEach(pattern => content += `${pattern}\n`);
+      content += `\`\`\`\n\n`;
     }
     
     content += `---\n\n`;
@@ -1088,6 +1417,44 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], _taskCreated
     prompt += `**Full project errors available in**: \`${relativeErrorsPath}\`\n\n`;
   }
   
+  // Add ignore file guidance if applicable
+  const ignoreGuidance = generateIgnoreFileSuggestions(resultsWithViolations, projectPath);
+  if (ignoreGuidance.suggestedPatterns.length > 0) {
+    prompt += `## 💡 Ignore File Configuration\n\n`;
+    prompt += `Some linting issues may be in files that shouldn't be linted. Consider updating your ignore files:\n\n`;
+    
+    if (ignoreGuidance.suggestedPatterns.some(p => p.includes('.py') || p.includes('__pycache__'))) {
+      prompt += `**For Python (create/update \`.ruffignore\`):**\n`;
+      prompt += `\`\`\`\n`;
+      ignoreGuidance.suggestedPatterns
+        .filter(p => p.includes('.py') || p.includes('__pycache__') || p.includes('.pyc'))
+        .forEach(pattern => prompt += `${pattern}\n`);
+      prompt += `\`\`\`\n\n`;
+    }
+    
+    if (ignoreGuidance.suggestedPatterns.some(p => p.includes('.js') || p.includes('.ts') || p.includes('node_modules'))) {
+      prompt += `**For JavaScript/TypeScript (create/update \`.eslintignore\`):**\n`;
+      prompt += `\`\`\`\n`;
+      ignoreGuidance.suggestedPatterns
+        .filter(p => p.includes('.js') || p.includes('.ts') || p.includes('node_modules') || p.includes('dist/'))
+        .forEach(pattern => prompt += `${pattern}\n`);
+      prompt += `\`\`\`\n\n`;
+    }
+    
+    // Generic patterns
+    const genericPatterns = ignoreGuidance.suggestedPatterns
+      .filter(p => !p.includes('.py') && !p.includes('.js') && !p.includes('.ts') && 
+                   !p.includes('__pycache__') && !p.includes('node_modules'));
+    if (genericPatterns.length > 0) {
+      prompt += `**General patterns (both \`.ruffignore\` and \`.eslintignore\`):**\n`;
+      prompt += `\`\`\`\n`;
+      genericPatterns.forEach(pattern => prompt += `${pattern}\n`);
+      prompt += `\`\`\`\n\n`;
+    }
+    
+    prompt += `---\n\n`;
+  }
+
   prompt += `
 ## 🚨🚨 **MANDATORY IMMEDIATE ACTIONS - NO EXCEPTIONS** 🚨🚨
 
@@ -1160,6 +1527,17 @@ async function analyzeTodoState(projectPath) {
   log('Analyzing TODO.json state for smart task placement...');
   const todoPath = path.join(projectPath, 'TODO.json');
   
+  // Check if file exists first
+  if (!fs.existsSync(todoPath)) {
+    log('TODO.json does not exist');
+    return {
+      exists: false,
+      valid: false,
+      taskCount: 0,
+      currentTaskIndex: null
+    };
+  }
+  
   try {
     const todoData = JSON.parse(fs.readFileSync(todoPath, 'utf8'));
     log(`Found ${todoData.tasks?.length || 0} existing tasks`);
@@ -1177,16 +1555,25 @@ async function analyzeTodoState(projectPath) {
     log(`Pending tasks: ${pendingTasks.length}, High priority: ${highPriorityTasks.length}`);
     
     return {
+      exists: true,
+      valid: true,
+      taskCount: tasks.length,
+      currentTaskIndex: currentTaskIndex,
+      // Include additional data for backward compatibility with existing usage
       todoData,
       currentTask,
-      currentTaskIndex,
       pendingTasks,
       highPriorityTasks,
       totalTasks: tasks.length
     };
   } catch (error) {
     log(`Failed to analyze TODO.json: ${error.message}`);
-    return null;
+    return {
+      exists: true,
+      valid: false,
+      taskCount: 0,
+      currentTaskIndex: null
+    };
   }
 }
 
@@ -1196,11 +1583,17 @@ function determineInsertionPoint(analysis) {
     return -1; // Append to end
   }
   
-  const { currentTaskIndex } = analysis;
+  const { currentTaskIndex, taskCount } = analysis;
   
   // Strategy: Insert linter task as the immediate next task
   // This makes it the highest priority without disrupting current work
-  const insertionIndex = currentTaskIndex + 1;
+  let insertionIndex;
+  if (currentTaskIndex !== undefined && currentTaskIndex !== null) {
+    insertionIndex = currentTaskIndex + 1;
+  } else {
+    // If no current task index, append to end
+    insertionIndex = taskCount || 0;
+  }
   
   log(`Determined insertion point: index ${insertionIndex} (after current task)`);
   return insertionIndex;
