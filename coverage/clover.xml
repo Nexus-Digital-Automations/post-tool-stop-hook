@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1753559142764" clover="3.2.0">
-  <project timestamp="1753559142764" name="All files">
-    <metrics statements="1782" coveredstatements="1424" conditionals="1014" coveredconditionals="674" methods="217" coveredmethods="176" elements="3013" coveredelements="2274" complexity="0" loc="1782" ncloc="1782" packages="1" files="4" classes="4"/>
+<coverage generated="1753559642284" clover="3.2.0">
+  <project timestamp="1753559642284" name="All files">
+    <metrics statements="1783" coveredstatements="1419" conditionals="1014" coveredconditionals="674" methods="217" coveredmethods="175" elements="3014" coveredelements="2268" complexity="0" loc="1783" ncloc="1783" packages="1" files="4" classes="4"/>
     <file name="package-hook.js" path="/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/package-hook.js">
       <metrics statements="353" coveredstatements="330" conditionals="141" coveredconditionals="125" methods="38" coveredmethods="38"/>
       <line num="29" count="3" type="stmt"/>
@@ -359,7 +359,7 @@
       <line num="1174" count="3" type="stmt"/>
     </file>
     <file name="post-tool-linter-hook.js" path="/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/post-tool-linter-hook.js">
-      <metrics statements="1095" coveredstatements="814" conditionals="713" coveredconditionals="427" methods="136" coveredmethods="101"/>
+      <metrics statements="1096" coveredstatements="809" conditionals="713" coveredconditionals="427" methods="136" coveredmethods="100"/>
       <line num="11" count="2" type="stmt"/>
       <line num="12" count="2" type="stmt"/>
       <line num="13" count="2" type="stmt"/>
@@ -1336,10 +1336,10 @@
       <line num="2483" count="2" type="stmt"/>
       <line num="2485" count="2" type="stmt"/>
       <line num="2486" count="2" type="stmt"/>
-      <line num="2492" count="2" type="stmt"/>
-      <line num="2495" count="2" type="stmt"/>
-      <line num="2496" count="2" type="stmt"/>
-      <line num="2498" count="2" type="stmt"/>
+      <line num="2492" count="0" type="stmt"/>
+      <line num="2495" count="0" type="stmt"/>
+      <line num="2496" count="0" type="stmt"/>
+      <line num="2498" count="0" type="stmt"/>
       <line num="2499" count="0" type="stmt"/>
       <line num="2501" count="0" type="stmt"/>
       <line num="2503" count="0" type="stmt"/>
@@ -1448,13 +1448,14 @@
       <line num="2676" count="0" type="stmt"/>
       <line num="2677" count="0" type="stmt"/>
       <line num="2679" count="0" type="stmt"/>
-      <line num="2684" count="2" type="stmt"/>
+      <line num="2684" count="0" type="stmt"/>
       <line num="2685" count="0" type="stmt"/>
       <line num="2686" count="0" type="stmt"/>
       <line num="2687" count="0" type="stmt"/>
-      <line num="2692" count="2" type="cond" truecount="1" falsecount="1"/>
-      <line num="2694" count="0" type="stmt"/>
-      <line num="2697" count="2" type="stmt"/>
+      <line num="2691" count="0" type="stmt"/>
+      <line num="2695" count="2" type="cond" truecount="1" falsecount="1"/>
+      <line num="2697" count="0" type="stmt"/>
+      <line num="2700" count="2" type="stmt"/>
     </file>
     <file name="setup-linter-hook.js" path="/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/setup-linter-hook.js">
       <metrics statements="71" coveredstatements="69" conditionals="28" coveredconditionals="27" methods="9" coveredmethods="9"/>

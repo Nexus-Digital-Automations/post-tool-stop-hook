@@ -23,9 +23,9 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">72.81% </span>
+                <span class="strong">72.33% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>860/1181</span>
+                <span class='fraction'>855/1182</span>
             </div>
         
             
@@ -37,16 +37,16 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">74.26% </span>
+                <span class="strong">73.52% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>101/136</span>
+                <span class='fraction'>100/136</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">74.33% </span>
+                <span class="strong">73.81% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>814/1095</span>
+                <span class='fraction'>809/1096</span>
             </div>
         
             
@@ -2799,7 +2799,10 @@
 <a name='L2734'></a><a href='#L2734'>2734</a>
 <a name='L2735'></a><a href='#L2735'>2735</a>
 <a name='L2736'></a><a href='#L2736'>2736</a>
-<a name='L2737'></a><a href='#L2737'>2737</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L2737'></a><a href='#L2737'>2737</a>
+<a name='L2738'></a><a href='#L2738'>2738</a>
+<a name='L2739'></a><a href='#L2739'>2739</a>
+<a name='L2740'></a><a href='#L2740'>2740</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -5290,13 +5293,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -5482,11 +5485,14 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -8025,14 +8031,14 @@ async function insertLinterTaskSmart(linterTask, analysis, projectPath) {
 }
 &nbsp;
 // Main execution
-async function main() {
-  let inputData = '';
+async function <span class="fstat-no" title="function not covered" >main(</span>) {
+  let inputData = <span class="cstat-no" title="statement not covered" >'';</span>
   
   // Read stdin
-  process.stdin.setEncoding('utf8');
-  process.stdin.on('data', <span class="fstat-no" title="function not covered" >ch</span>unk =&gt; <span class="cstat-no" title="statement not covered" >inputData += chunk)</span>;
+<span class="cstat-no" title="statement not covered" >  process.stdin.setEncoding('utf8');</span>
+<span class="cstat-no" title="statement not covered" >  process.stdin.on('data', <span class="fstat-no" title="function not covered" >ch</span>unk =&gt; <span class="cstat-no" title="statement not covered" >inputData += chunk)</span>;</span>
   
-  process.stdin.on('end', <span class="fstat-no" title="function not covered" >as</span>ync () =&gt; {
+<span class="cstat-no" title="statement not covered" >  process.stdin.on('end', <span class="fstat-no" title="function not covered" >as</span>ync () =&gt; {</span>
     let projectPath = <span class="cstat-no" title="statement not covered" >process.cwd();</span>
     
 <span class="cstat-no" title="statement not covered" >    try {</span>
@@ -8218,11 +8224,14 @@ async function main() {
   });
   
   // Handle timeout
-  setTimeout(<span class="fstat-no" title="function not covered" >()</span> =&gt; {
+  const timeoutTimer = <span class="cstat-no" title="statement not covered" >setTimeout(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >    log('\nERROR: Hook timeout exceeded');</span>
 <span class="cstat-no" title="statement not covered" >    writeLogFile();</span>
 <span class="cstat-no" title="statement not covered" >    process.exit(0);</span>
   }, CONFIG.timeout + 5000);
+  
+  // Use unref() to allow process to exit gracefully if this is the only timer left
+<span class="cstat-no" title="statement not covered" >  timeoutTimer.unref();</span>
 }
 &nbsp;
 // Export functions for testing
@@ -8278,7 +8287,7 @@ async function main() {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-26T19:45:42.746Z
+                at 2025-07-26T19:54:02.264Z
             </div>
         <script src="prettify.js"></script>
         <script>
