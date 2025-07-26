@@ -1370,4 +1370,288 @@ describe('Post-Tool Linter Hook Unit Tests', () => {
       expect(hook.CONFIG.lintingMode).toBeDefined();
     });
   });
+
+  describe('shouldIgnoreFile', () => {
+    const projectPath = '/test/project';
+
+    test('should return false when no ignore patterns provided', () => {
+      const result = hook.shouldIgnoreFile('/test/project/src/file.js', [], projectPath);
+      expect(result).toBe(false);
+    });
+
+    test('should return false when ignore patterns is null', () => {
+      const result = hook.shouldIgnoreFile('/test/project/src/file.js', null, projectPath);
+      expect(result).toBe(false);
+    });
+
+    test('should return false when ignore patterns is empty', () => {
+      const result = hook.shouldIgnoreFile('/test/project/src/file.js', [], projectPath);
+      expect(result).toBe(false);
+    });
+
+    test('should match exact file path pattern', () => {
+      mockPath.relative.mockReturnValue('src/file.js');
+      const patterns = ['src/file.js'];
+      const result = hook.shouldIgnoreFile('/test/project/src/file.js', patterns, projectPath);
+      expect(result).toBe(true);
+    });
+
+    test('should match directory wildcard pattern', () => {
+      mockPath.relative.mockReturnValue('node_modules/package/file.js');
+      const patterns = ['node_modules/**'];
+      const result = hook.shouldIgnoreFile('/test/project/node_modules/package/file.js', patterns, projectPath);
+      expect(result).toBe(true);
+    });
+
+    test('should match filename pattern with wildcard', () => {
+      mockPath.relative.mockReturnValue('src/test.log');
+      mockPath.basename.mockReturnValue('test.log');
+      const patterns = ['**/*.log'];
+      const result = hook.shouldIgnoreFile('/test/project/src/test.log', patterns, projectPath);
+      expect(result).toBe(true);
+    });
+
+    test('should match complex filename pattern', () => {
+      mockPath.relative.mockReturnValue('src/component.test.js');
+      mockPath.basename.mockReturnValue('component.test.js');
+      const patterns = ['**/*.test.*'];
+      const result = hook.shouldIgnoreFile('/test/project/src/component.test.js', patterns, projectPath);
+      expect(result).toBe(true);
+    });
+
+    test('should match path component pattern', () => {
+      mockPath.relative.mockReturnValue('build/dist/file.js');
+      const patterns = ['build'];
+      const result = hook.shouldIgnoreFile('/test/project/build/dist/file.js', patterns, projectPath);
+      expect(result).toBe(true);
+    });
+
+    test('should match path component with wildcard', () => {
+      mockPath.relative.mockReturnValue('dist-dev/lib/file.js');
+      const patterns = ['dist**'];
+      const result = hook.shouldIgnoreFile('/test/project/dist-dev/lib/file.js', patterns, projectPath);
+      expect(result).toBe(true);
+    });
+
+    test('should not match when no patterns match', () => {
+      mockPath.relative.mockReturnValue('src/main.js');
+      mockPath.basename.mockReturnValue('main.js');
+      const patterns = ['dist/**', '**/*.log', 'test'];
+      const result = hook.shouldIgnoreFile('/test/project/src/main.js', patterns, projectPath);
+      expect(result).toBe(false);
+    });
+
+    test('should handle file without path separators', () => {
+      mockPath.relative.mockReturnValue('README.md');
+      mockPath.basename.mockReturnValue('README.md');
+      const patterns = ['**/*.md'];
+      const result = hook.shouldIgnoreFile('/test/project/README.md', patterns, projectPath);
+      expect(result).toBe(true);
+    });
+
+    test('should handle edge case with empty relative path', () => {
+      mockPath.relative.mockReturnValue('');
+      const patterns = ['src/**'];
+      const result = hook.shouldIgnoreFile('/test/project', patterns, projectPath);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('loadIgnorePatternsForLinter', () => {
+    const projectPath = '/test/project';
+
+    beforeEach(() => {
+      // Reset CONFIG mock to default values
+      hook.CONFIG.respectIgnoreFiles = true;
+      hook.CONFIG.linters = {
+        python: {
+          ignoreFiles: ['.ruffignore', '.gitignore']
+        },
+        javascript: {
+          ignoreFiles: ['.eslintignore', '.gitignore']
+        }
+      };
+    });
+
+    test('should return empty array when respectIgnoreFiles is disabled', () => {
+      hook.CONFIG.respectIgnoreFiles = false;
+      const result = hook.loadIgnorePatternsForLinter('python', projectPath);
+      expect(result).toEqual([]);
+    });
+
+    test('should return empty array when linter config not found', () => {
+      const result = hook.loadIgnorePatternsForLinter('nonexistent', projectPath);
+      expect(result).toEqual([]);
+    });
+
+    test('should return empty array when no ignore files configured', () => {
+      hook.CONFIG.linters.python.ignoreFiles = null;
+      const result = hook.loadIgnorePatternsForLinter('python', projectPath);
+      expect(result).toEqual([]);
+    });
+
+    test('should load patterns from configured ignore files', () => {
+      // Mock readIgnoreFile to return specific patterns
+      const originalReadIgnoreFile = hook.readIgnoreFile;
+      hook.readIgnoreFile = jest.fn().mockImplementation((filePath) => {
+        if (filePath.includes('.ruffignore')) {
+          return ['__pycache__/**', '*.pyc'];
+        }
+        if (filePath.includes('.gitignore')) {
+          return ['node_modules/**', '.env'];
+        }
+        return [];
+      });
+
+      mockPath.join.mockImplementation((...args) => args.join('/'));
+      
+      const result = hook.loadIgnorePatternsForLinter('python', projectPath);
+      
+      expect(result).toEqual(['__pycache__/**', '*.pyc', 'node_modules/**', '.env']);
+      expect(hook.readIgnoreFile).toHaveBeenCalledWith('/test/project/.ruffignore');
+      expect(hook.readIgnoreFile).toHaveBeenCalledWith('/test/project/.gitignore');
+      
+      // Restore original function
+      hook.readIgnoreFile = originalReadIgnoreFile;
+    });
+
+    test('should handle case when linter config exists but ignoreFiles is undefined', () => {
+      hook.CONFIG.linters.python = { configFiles: ['pyproject.toml'] }; // Missing ignoreFiles
+      const result = hook.loadIgnorePatternsForLinter('python', projectPath);
+      expect(result).toEqual([]);
+    });
+
+    test('should handle empty ignore files array', () => {
+      hook.CONFIG.linters.python.ignoreFiles = [];
+      const result = hook.loadIgnorePatternsForLinter('python', projectPath);
+      expect(result).toEqual([]);
+    });
+
+    test('should concatenate patterns from multiple ignore files', () => {
+      // Mock readIgnoreFile to return specific patterns
+      const originalReadIgnoreFile = hook.readIgnoreFile;
+      hook.readIgnoreFile = jest.fn().mockImplementation((filePath) => {
+        if (filePath.includes('.eslintignore')) {
+          return ['dist/**', 'coverage/**'];
+        }
+        if (filePath.includes('.gitignore')) {
+          return ['node_modules/**', '*.log'];
+        }
+        return [];
+      });
+
+      mockPath.join.mockImplementation((...args) => args.join('/'));
+      
+      const result = hook.loadIgnorePatternsForLinter('javascript', projectPath);
+      
+      expect(result).toEqual(['dist/**', 'coverage/**', 'node_modules/**', '*.log']);
+      expect(hook.readIgnoreFile).toHaveBeenCalledTimes(2);
+      
+      // Restore original function
+      hook.readIgnoreFile = originalReadIgnoreFile;
+    });
+  });
+
+  describe('readIgnoreFile', () => {
+    beforeEach(() => {
+      jest.clearAllMocks();
+    });
+
+    test('should return empty array when file does not exist', () => {
+      mockFs.existsSync.mockReturnValue(false);
+      const result = hook.readIgnoreFile('/path/to/.gitignore');
+      expect(result).toEqual([]);
+      expect(mockFs.existsSync).toHaveBeenCalledWith('/path/to/.gitignore');
+    });
+
+    test('should parse ignore file content correctly', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue(`
+# Comments should be ignored
+node_modules
+*.log
+dist/
+
+# Another comment
+coverage
+*.tmp
+`);
+      
+      const result = hook.readIgnoreFile('/path/to/.gitignore');
+      expect(result).toEqual([
+        '**/node_modules',
+        '**/*.log',
+        'dist/**',
+        '**/coverage',
+        '**/*.tmp'
+      ]);
+    });
+
+    test('should handle empty ignore file', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('');
+      
+      const result = hook.readIgnoreFile('/path/to/.gitignore');
+      expect(result).toEqual([]);
+    });
+
+    test('should handle ignore file with only comments and empty lines', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue(`
+# This is a comment
+  
+# Another comment
+
+  # Comment with spaces
+  
+`);
+      
+      const result = hook.readIgnoreFile('/path/to/.gitignore');
+      expect(result).toEqual([]);
+    });
+
+    test('should handle file read error gracefully', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockImplementation(() => {
+        throw new Error('Permission denied');
+      });
+      
+      const result = hook.readIgnoreFile('/path/to/.gitignore');
+      expect(result).toEqual([]);
+    });
+
+    test('should trim whitespace from patterns', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue(`
+  node_modules  
+*.log   
+  dist/
+  coverage
+`);
+      
+      const result = hook.readIgnoreFile('/path/to/.gitignore');
+      expect(result).toEqual([
+        '**/node_modules',
+        '**/*.log',
+        'dist/**',
+        '**/coverage'
+      ]);
+    });
+
+    test('should handle directory patterns correctly', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('dist/\nnode_modules/\nbuild/');
+      
+      const result = hook.readIgnoreFile('/path/to/.gitignore');
+      expect(result).toEqual(['dist/**', 'node_modules/**', 'build/**']);
+    });
+
+    test('should handle path-based patterns correctly', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('src/temp.js\nlib/old/*\n.git/config');
+      
+      const result = hook.readIgnoreFile('/path/to/.gitignore');
+      expect(result).toEqual(['src/temp.js', 'lib/old/*', '.git/config']);
+    });
+  });
 });

@@ -2500,6 +2500,9 @@ if (require.main === module) {
     determineInsertionPoint,
     createSmartLinterTask,
     insertLinterTaskSmart,
+    readIgnoreFile,
+    shouldIgnoreFile,
+    loadIgnorePatternsForLinter,
     main,
     CONFIG
   };

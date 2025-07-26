@@ -1,13 +1,13 @@
-[2025-07-26T05:00:48.823Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-26T05:00:48.824Z] Date: 2025-07-26T05:00:48.824Z
-[2025-07-26T05:00:48.824Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-26T05:00:48.824Z] Node Version: v23.9.0
-[2025-07-26T05:00:48.824Z] Platform: darwin
-[2025-07-26T05:00:48.824Z] 
-[2025-07-26T05:00:48.824Z] === HOOK EXECUTION START ===
-[2025-07-26T05:00:48.824Z] Tool: Bash
-[2025-07-26T05:00:48.824Z] Session ID: c4bc34c6-40d4-4520-9b77-07ff8ed98113
-[2025-07-26T05:00:48.824Z] Hook input:
+[2025-07-26T05:04:41.235Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-26T05:04:41.235Z] Date: 2025-07-26T05:04:41.235Z
+[2025-07-26T05:04:41.235Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-26T05:04:41.235Z] Node Version: v23.9.0
+[2025-07-26T05:04:41.235Z] Platform: darwin
+[2025-07-26T05:04:41.235Z] 
+[2025-07-26T05:04:41.235Z] === HOOK EXECUTION START ===
+[2025-07-26T05:04:41.235Z] Tool: Bash
+[2025-07-26T05:04:41.235Z] Session ID: c4bc34c6-40d4-4520-9b77-07ff8ed98113
+[2025-07-26T05:04:41.235Z] Hook input:
   Data: {
   "session_id": "c4bc34c6-40d4-4520-9b77-07ff8ed98113",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/c4bc34c6-40d4-4520-9b77-07ff8ed98113.jsonl",
@@ -15,14 +15,14 @@
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
   "tool_input": {
-    "command": "node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('linter_task_active', 'completed').then(() => console.log('✅ Task linter_task_active marked as completed'));\"",
-    "description": "Mark linter task as completed"
+    "command": "node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('test-ignore-patterns-1753505844463', 'completed').then(() => console.log('✅ Task marked as completed'));\"",
+    "description": "Mark task as completed"
   },
   "tool_response": {
-    "stdout": "✅ Task linter_task_active marked as completed",
+    "stdout": "✅ Task marked as completed",
     "stderr": "",
     "interrupted": false,
     "isImage": false
   }
 }
-[2025-07-26T05:00:48.824Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-26T05:04:41.235Z] Tool Bash is not in enabled tools list, skipping
