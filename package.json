@@ -36,16 +36,16 @@
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 59,
-        "functions": 68,
-        "lines": 71,
-        "statements": 70
+        "branches": 65,
+        "functions": 74,
+        "lines": 77,
+        "statements": 76
       },
       "./post-tool-linter-hook.js": {
-        "branches": 48,
-        "functions": 57,
-        "lines": 62,
-        "statements": 61
+        "branches": 57,
+        "functions": 66,
+        "lines": 72,
+        "statements": 71
       }
     },
     "testMatch": [
