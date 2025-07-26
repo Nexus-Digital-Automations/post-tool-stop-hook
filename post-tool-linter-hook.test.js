@@ -783,6 +783,218 @@ describe('Post-Tool Linter Hook Unit Tests', () => {
     });
   });
 
+  describe('runJavaScriptProjectAutoFix', () => {
+    test('should run eslint project auto-fix successfully', async () => {
+      mockExecSync.mockReturnValue('');
+      const result = await hook.runJavaScriptProjectAutoFix(testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.linter).toBe('eslint');
+      expect(result.projectWide).toBe(true);
+      expect(result.fixed).toBe(true);
+    });
+
+    test('should handle eslint exit code 1 as success', async () => {
+      const error = new Error('Process exited with code 1');
+      error.status = 1;
+      error.stdout = 'Fixed 3 violations';
+      mockExecSync.mockImplementation(() => { throw error; });
+      const result = await hook.runJavaScriptProjectAutoFix(testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.fixed).toBe(true);
+      expect(result.projectWide).toBe(true);
+    });
+
+    test('should handle missing eslint dependency', async () => {
+      const error = new Error('eslint: command not found');
+      mockExecSync.mockImplementation(() => { throw error; });
+      const result = await hook.runJavaScriptProjectAutoFix(testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.executionFailure).toBe(true);
+      expect(result.failureType).toBe('missing_dependency');
+    });
+
+    test('should handle timeout errors', async () => {
+      const error = new Error('Operation timed out');
+      error.code = 'ETIMEDOUT';
+      mockExecSync.mockImplementation(() => { throw error; });
+      const result = await hook.runJavaScriptProjectAutoFix(testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.executionFailure).toBe(true);
+      expect(result.failureType).toBe('timeout');
+    });
+
+    test('should handle unexpected errors', async () => {
+      const error = new Error('Unexpected error');
+      error.stderr = 'Some error output';
+      mockExecSync.mockImplementation(() => { throw error; });
+      const result = await hook.runJavaScriptProjectAutoFix(testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.executionFailure).toBe(true);
+      expect(result.failureType).toBe('execution_error');
+    });
+
+    test('should handle auto-fix disabled', async () => {
+      const originalAutoFix = hook.CONFIG.linters.javascript.autoFix;
+      hook.CONFIG.linters.javascript.autoFix = false;
+      const result = await hook.runJavaScriptProjectAutoFix(testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.fixed).toBe(false);
+      expect(result.skipped).toBe(true);
+      expect(result.reason).toBe('Auto-fix disabled in configuration');
+      
+      hook.CONFIG.linters.javascript.autoFix = originalAutoFix;
+    });
+  });
+
+  describe('runJavaScriptProjectLinter', () => {
+    test('should run eslint project linter successfully', async () => {
+      const mockOutput = JSON.stringify([
+        {
+          filePath: '/test/file1.js',
+          messages: [{
+            line: 1,
+            column: 1,
+            severity: 2,
+            message: 'Missing semicolon',
+            ruleId: 'semi'
+          }]
+        }
+      ]);
+      mockExecSync.mockReturnValue(mockOutput);
+      const results = await hook.runJavaScriptProjectLinter(testDir);
+      
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(1);
+      expect(results[0].linter).toBe('eslint');
+      expect(results[0].success).toBe(false);
+      expect(results[0].violations).toBeDefined();
+    });
+
+    test('should handle empty project results', async () => {
+      mockExecSync.mockReturnValue('[]');
+      const results = await hook.runJavaScriptProjectLinter(testDir);
+      
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(1);
+      expect(results[0].success).toBe(true);
+      expect(results[0].violations).toEqual([]);
+    });
+
+    test('should handle eslint parsing errors', async () => {
+      const error = new Error('Command failed');
+      error.status = 1;
+      error.stdout = 'Invalid JSON output';
+      mockExecSync.mockImplementation(() => { throw error; });
+      const results = await hook.runJavaScriptProjectLinter(testDir);
+      
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(1);
+      expect(results[0].success).toBe(true);
+      expect(results[0].violations).toEqual([]);
+    });
+
+    test('should handle missing eslint', async () => {
+      const error = new Error('eslint not recognized as a command');
+      mockExecSync.mockImplementation(() => { throw error; });
+      const results = await hook.runJavaScriptProjectLinter(testDir);
+      
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(1);
+      expect(results[0].success).toBe(false);
+      expect(results[0].executionFailure).toBe(true);
+      expect(results[0].failureType).toBe('missing_dependency');
+    });
+
+    test('should handle timeout', async () => {
+      const error = new Error('timeout exceeded');
+      error.code = 'ETIMEDOUT';
+      mockExecSync.mockImplementation(() => { throw error; });
+      const results = await hook.runJavaScriptProjectLinter(testDir);
+      
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(1);
+      expect(results[0].success).toBe(false);
+      expect(results[0].executionFailure).toBe(true);
+      expect(results[0].failureType).toBe('timeout');
+    });
+  });
+
+  describe('runPythonProjectLinter', () => {
+    test('should run ruff project linter successfully', async () => {
+      const mockOutput = JSON.stringify([
+        {
+          filename: '/test/file1.py',
+          location: { row: 1, column: 1 },
+          code: 'E302',
+          message: 'Expected 2 blank lines',
+          fix: null
+        }
+      ]);
+      mockExecSync.mockReturnValue(mockOutput);
+      const results = await hook.runPythonProjectLinter(testDir);
+      
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(1);
+      expect(results[0].linter).toBe('ruff');
+      expect(results[0].success).toBe(false);
+      expect(results[0].violations).toBeDefined();
+    });
+
+    test('should handle empty project results', async () => {
+      mockExecSync.mockReturnValue('[]');
+      const results = await hook.runPythonProjectLinter(testDir);
+      
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(1);
+      expect(results[0].success).toBe(true);
+      expect(results[0].violations).toEqual([]);
+    });
+
+    test('should handle ruff parsing errors', async () => {
+      const error = new Error('Command failed');
+      error.status = 1;
+      error.stdout = 'Invalid JSON output';
+      mockExecSync.mockImplementation(() => { throw error; });
+      const results = await hook.runPythonProjectLinter(testDir);
+      
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(1);
+      expect(results[0].success).toBe(true);
+      expect(results[0].violations).toEqual([]);
+    });
+
+    test('should handle missing ruff', async () => {
+      const error = new Error('ruff: command not found');
+      mockExecSync.mockImplementation(() => { throw error; });
+      const results = await hook.runPythonProjectLinter(testDir);
+      
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(1);
+      expect(results[0].success).toBe(false);
+      expect(results[0].executionFailure).toBe(true);
+      expect(results[0].failureType).toBe('missing_dependency');
+    });
+
+    test('should handle timeout', async () => {
+      const error = new Error('timeout exceeded');
+      error.code = 'ETIMEDOUT';
+      mockExecSync.mockImplementation(() => { throw error; });
+      const results = await hook.runPythonProjectLinter(testDir);
+      
+      expect(Array.isArray(results)).toBe(true);
+      expect(results.length).toBe(1);
+      expect(results[0].success).toBe(false);
+      expect(results[0].executionFailure).toBe(true);
+      expect(results[0].failureType).toBe('timeout');
+    });
+  });
+
   describe('runJavaScriptAutoFix', () => {
     test('should run eslint auto-fix successfully', async () => {
       mockFs.existsSync.mockReturnValue(true);
