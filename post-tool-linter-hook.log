@@ -1,13 +1,13 @@
-[2025-07-26T19:28:29.817Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-26T19:28:29.817Z] Date: 2025-07-26T19:28:29.817Z
-[2025-07-26T19:28:29.817Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-26T19:28:29.817Z] Node Version: v23.9.0
-[2025-07-26T19:28:29.817Z] Platform: darwin
-[2025-07-26T19:28:29.817Z] 
-[2025-07-26T19:28:29.817Z] === HOOK EXECUTION START ===
-[2025-07-26T19:28:29.817Z] Tool: Bash
-[2025-07-26T19:28:29.817Z] Session ID: 0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e
-[2025-07-26T19:28:29.817Z] Hook input:
+[2025-07-26T19:30:22.857Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-26T19:30:22.857Z] Date: 2025-07-26T19:30:22.857Z
+[2025-07-26T19:30:22.857Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-26T19:30:22.857Z] Node Version: v23.9.0
+[2025-07-26T19:30:22.857Z] Platform: darwin
+[2025-07-26T19:30:22.857Z] 
+[2025-07-26T19:30:22.857Z] === HOOK EXECUTION START ===
+[2025-07-26T19:30:22.857Z] Tool: Bash
+[2025-07-26T19:30:22.857Z] Session ID: 0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e
+[2025-07-26T19:30:22.857Z] Hook input:
   Data: {
   "session_id": "0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e.jsonl",
@@ -15,14 +15,14 @@
   "hook_event_name": "PostToolUse",
   "tool_name": "Bash",
   "tool_input": {
-    "command": "cd \"/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook\" && node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('quality_fix_mocking_issues', 'completed').then(() => console.log('✅ Task quality_fix_mocking_issues marked as completed')).catch(err => console.error('❌ Error:', err.message));\"",
-    "description": "Mark the mocking issues task as completed"
+    "command": "cd \"/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook\" && node -e \"const TaskManager = require('/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-hook/lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('quality_fix_error_handling', 'completed').then(() => console.log('✅ Task quality_fix_error_handling marked as completed')).catch(err => console.error('❌ Error:', err.message));\"",
+    "description": "Mark the task-creation task as completed"
   },
   "tool_response": {
-    "stdout": "✅ Task quality_fix_mocking_issues marked as completed",
+    "stdout": "✅ Task quality_fix_error_handling marked as completed",
     "stderr": "",
     "interrupted": false,
     "isImage": false
   }
 }
-[2025-07-26T19:28:29.817Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-26T19:30:22.857Z] Tool Bash is not in enabled tools list, skipping
