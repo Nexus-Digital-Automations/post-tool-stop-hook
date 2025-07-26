@@ -408,6 +408,10 @@ function detectProjectTypes(projectPath) {
   for (const [type, config] of Object.entries(CONFIG.linters)) {
     let typeScore = 0;
     
+    if (!config || !config.configFiles || !Array.isArray(config.configFiles)) {
+      continue;
+    }
+    
     for (const configFile of config.configFiles) {
       const configPath = path.join(projectPath, configFile);
       if (fs.existsSync(configPath) && validateConfigFile(configPath, type)) {
@@ -1058,7 +1062,7 @@ function getFileType(filePath) {
   }
   
   for (const [type, config] of Object.entries(CONFIG.linters)) {
-    if (config.fileExtensions.includes(ext)) {
+    if (config && config.fileExtensions && config.fileExtensions.includes(ext)) {
       log(`File type detected: ${type}`);
       return type;
     }
@@ -2503,6 +2507,8 @@ if (require.main === module) {
     readIgnoreFile,
     shouldIgnoreFile,
     loadIgnorePatternsForLinter,
+    filterFilesWithIgnoreRules,
+    generateIgnoreFileSuggestions,
     main,
     CONFIG
   };
