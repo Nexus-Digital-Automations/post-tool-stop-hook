@@ -1,136 +1,28 @@
-[2025-07-26T18:29:14.528Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-26T18:29:14.529Z] Date: 2025-07-26T18:29:14.529Z
-[2025-07-26T18:29:14.529Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-26T18:29:14.529Z] Node Version: v23.9.0
-[2025-07-26T18:29:14.529Z] Platform: darwin
-[2025-07-26T18:29:14.529Z] 
-[2025-07-26T18:29:14.529Z] === HOOK EXECUTION START ===
-[2025-07-26T18:29:14.529Z] Tool: TodoWrite
-[2025-07-26T18:29:14.529Z] Session ID: 0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e
-[2025-07-26T18:29:14.529Z] Hook input:
+[2025-07-26T18:37:33.187Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-26T18:37:33.187Z] Date: 2025-07-26T18:37:33.187Z
+[2025-07-26T18:37:33.187Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-26T18:37:33.187Z] Node Version: v23.9.0
+[2025-07-26T18:37:33.187Z] Platform: darwin
+[2025-07-26T18:37:33.187Z] 
+[2025-07-26T18:37:33.187Z] === HOOK EXECUTION START ===
+[2025-07-26T18:37:33.187Z] Tool: Bash
+[2025-07-26T18:37:33.187Z] Session ID: 0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e
+[2025-07-26T18:37:33.187Z] Hook input:
   Data: {
   "session_id": "0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e.jsonl",
   "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook",
   "hook_event_name": "PostToolUse",
-  "tool_name": "TodoWrite",
+  "tool_name": "Bash",
   "tool_input": {
-    "todos": [
-      {
-        "content": "Enhance pattern matching engine with proper gitignore-spec compliance",
-        "status": "completed",
-        "priority": "high",
-        "id": "ignore_improvements_1"
-      },
-      {
-        "content": "Add smart project detection and framework-specific ignore patterns",
-        "status": "completed",
-        "priority": "high",
-        "id": "ignore_improvements_2"
-      },
-      {
-        "content": "Create comprehensive ignore files documentation guide",
-        "status": "completed",
-        "priority": "high",
-        "id": "ignore_improvements_4"
-      },
-      {
-        "content": "Update linter feedback to reference new documentation",
-        "status": "completed",
-        "priority": "medium",
-        "id": "ignore_improvements_5"
-      },
-      {
-        "content": "Implement hierarchical ignore file support",
-        "status": "pending",
-        "priority": "medium",
-        "id": "ignore_improvements_3"
-      },
-      {
-        "content": "Add auto-setup functionality for missing ignore files",
-        "status": "pending",
-        "priority": "low",
-        "id": "ignore_improvements_6"
-      }
-    ]
+    "command": "npm test -- --testNamePattern=\"should handle ruff auto-fix execution failure\"",
+    "description": "Test specific async auto-fix test to confirm it's working"
   },
   "tool_response": {
-    "oldTodos": [
-      {
-        "content": "Enhance pattern matching engine with proper gitignore-spec compliance",
-        "status": "completed",
-        "priority": "high",
-        "id": "ignore_improvements_1"
-      },
-      {
-        "content": "Add smart project detection and framework-specific ignore patterns",
-        "status": "in_progress",
-        "priority": "high",
-        "id": "ignore_improvements_2"
-      },
-      {
-        "content": "Implement hierarchical ignore file support",
-        "status": "pending",
-        "priority": "medium",
-        "id": "ignore_improvements_3"
-      },
-      {
-        "content": "Create comprehensive ignore files documentation guide",
-        "status": "completed",
-        "priority": "high",
-        "id": "ignore_improvements_4"
-      },
-      {
-        "content": "Update linter feedback to reference new documentation",
-        "status": "completed",
-        "priority": "medium",
-        "id": "ignore_improvements_5"
-      },
-      {
-        "content": "Add auto-setup functionality for missing ignore files",
-        "status": "pending",
-        "priority": "low",
-        "id": "ignore_improvements_6"
-      }
-    ],
-    "newTodos": [
-      {
-        "content": "Enhance pattern matching engine with proper gitignore-spec compliance",
-        "status": "completed",
-        "priority": "high",
-        "id": "ignore_improvements_1"
-      },
-      {
-        "content": "Add smart project detection and framework-specific ignore patterns",
-        "status": "completed",
-        "priority": "high",
-        "id": "ignore_improvements_2"
-      },
-      {
-        "content": "Create comprehensive ignore files documentation guide",
-        "status": "completed",
-        "priority": "high",
-        "id": "ignore_improvements_4"
-      },
-      {
-        "content": "Update linter feedback to reference new documentation",
-        "status": "completed",
-        "priority": "medium",
-        "id": "ignore_improvements_5"
-      },
-      {
-        "content": "Implement hierarchical ignore file support",
-        "status": "pending",
-        "priority": "medium",
-        "id": "ignore_improvements_3"
-      },
-      {
-        "content": "Add auto-setup functionality for missing ignore files",
-        "status": "pending",
-        "priority": "low",
-        "id": "ignore_improvements_6"
-      }
-    ]
+    "stdout": "> post-tool-linter-hook@1.0.0 test\n> jest --testNamePattern=should handle ruff auto-fix execution failure\nPASS ./post-tool-linter-hook.test.js\n\nTest Suites: 6 skipped, 1 passed, 1 of 7 total\nTests:       376 skipped, 1 passed, 377 total\nSnapshots:   0 total\nTime:        0.752 s, estimated 4 s\nRan all test suites with tests matching \"should handle ruff auto-fix execution failure\".",
+    "stderr": "",
+    "interrupted": false,
+    "isImage": false
   }
 }
-[2025-07-26T18:29:14.529Z] Tool TodoWrite is not in enabled tools list, skipping
+[2025-07-26T18:37:33.187Z] Tool Bash is not in enabled tools list, skipping

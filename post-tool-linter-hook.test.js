@@ -1860,7 +1860,7 @@ coverage
     });
 
     describe('linter execution error handling', () => {
-      test('should handle ruff execution failures with invalid output', () => {
+      test('should handle ruff execution failures with invalid output', async () => {
         mockExecSync.mockImplementation(() => {
           const error = new Error('Command failed');
           error.status = 1;
@@ -1868,31 +1868,31 @@ coverage
           throw error;
         });
 
-        const result = hook.runPythonLinter('/test/file.py', '/test/project');
+        const result = await hook.runPythonLinter('/test/file.py', '/test/project');
         
         expect(result.success).toBe(true);
         expect(result.violations).toEqual([]);
       });
 
-      test('should handle eslint execution failures with invalid output', () => {
+      test('should handle eslint execution failures with invalid output', async () => {
         mockExecSync.mockImplementation(() => {
           const error = new Error('Command failed');
           error.stdout = 'invalid json output';
           throw error;
         });
 
-        const result = hook.runJavaScriptLinter('/test/file.js', '/test/project');
+        const result = await hook.runJavaScriptLinter('/test/file.js', '/test/project');
         
         expect(result.success).toBe(true);
         expect(result.violations).toEqual([]);
       });
 
-      test('should handle linter timeout scenarios', () => {
+      test('should handle linter timeout scenarios', async () => {
         mockExecSync.mockImplementation(() => {
           throw new Error('TIMEOUT: Command timed out');
         });
 
-        const result = hook.runPythonLinter('/test/file.py', '/test/project');
+        const result = await hook.runPythonLinter('/test/file.py', '/test/project');
         
         expect(result.success).toBe(false);
         expect(result.linter).toBe('ruff');
@@ -1932,25 +1932,25 @@ coverage
     });
 
     describe('auto-fix error handling', () => {
-      test('should handle ruff auto-fix execution failure', () => {
+      test('should handle ruff auto-fix execution failure', async () => {
         mockExecSync.mockImplementation(() => {
           const error = new Error('Command failed');
           error.status = 2; // Non-violation error
           throw error;
         });
 
-        const result = hook.runPythonAutoFix('/test/file.py', '/test/project');
+        const result = await hook.runPythonAutoFix('/test/file.py', '/test/project');
         
         expect(result.success).toBe(false);
         expect(result.linter).toBe('ruff');
       });
 
-      test('should handle eslint auto-fix execution failure', () => {
+      test('should handle eslint auto-fix execution failure', async () => {
         mockExecSync.mockImplementation(() => {
           throw new Error('ESLint not found');
         });
 
-        const result = hook.runJavaScriptAutoFix('/test/file.js', '/test/project');
+        const result = await hook.runJavaScriptAutoFix('/test/file.js', '/test/project');
         
         expect(result.success).toBe(false);
         expect(result.linter).toBe('eslint');
@@ -1958,7 +1958,7 @@ coverage
     });
 
     describe('project-wide linter error handling', () => {
-      test('should handle ruff project execution with parse error', () => {
+      test('should handle ruff project execution with parse error', async () => {
         mockExecSync.mockImplementation(() => {
           const error = new Error('Command failed');
           error.status = 1;
@@ -1966,21 +1966,21 @@ coverage
           throw error;
         });
 
-        const result = hook.runPythonProjectLinter('/test/project');
+        const result = await hook.runPythonProjectLinter('/test/project');
         
         expect(Array.isArray(result)).toBe(true);
         expect(result[0].success).toBe(true);
         expect(result[0].projectWide).toBe(true);
       });
 
-      test('should handle eslint project execution with parse error', () => {
+      test('should handle eslint project execution with parse error', async () => {
         mockExecSync.mockImplementation(() => {
           const error = new Error('Command failed');
           error.stdout = 'invalid json';
           throw error;
         });
 
-        const result = hook.runJavaScriptProjectLinter('/test/project');
+        const result = await hook.runJavaScriptProjectLinter('/test/project');
         
         expect(Array.isArray(result)).toBe(true);
         expect(result[0].success).toBe(true);
