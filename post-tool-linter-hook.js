@@ -181,8 +181,17 @@ function matchGitignorePattern(filePath, pattern) {
   }
   
   // For unanchored patterns, match anywhere in the path
-  const match = matchPattern(filePath, finalPattern) || 
-                matchPattern(filePath, '**/' + finalPattern);
+  let match = matchPattern(filePath, finalPattern) || 
+              matchPattern(filePath, '**/' + finalPattern) ||
+              matchPattern(filePath, finalPattern + '/**') ||
+              matchPattern(filePath, '**/' + finalPattern + '/**');
+  
+  // Special case: if pattern starts with **/, also try matching without the **/ prefix
+  // This handles cases like **/*.md matching both README.md and docs/README.md
+  if (!match && finalPattern.startsWith('**/')) {
+    const rootPattern = finalPattern.substring(3); // Remove **/ prefix
+    match = matchPattern(filePath, rootPattern);
+  }
   
   return {
     matches: match,
@@ -197,10 +206,12 @@ function matchPattern(filePath, pattern) {
   const regexPattern = pattern
     // Escape special regex characters except * and ?
     .replace(/[+^${}()|[\]\\]/g, '\\$&')
-    // Handle ** (match any number of directories)
-    .replace(/\*\*/g, '.*')
+    // Handle ** (match any number of directories) - use placeholder first
+    .replace(/\*\*/g, '__DOUBLESTAR__')
     // Handle * (match any character except /)
-    .replace(/(?<!\*)\*(?!\*)/g, '[^/]*')
+    .replace(/\*/g, '[^/]*')
+    // Restore ** as .* (match anything including /)
+    .replace(/__DOUBLESTAR__/g, '.*')
     // Handle ? (match single character except /)
     .replace(/\?/g, '[^/]')
     // Handle character classes [abc] and ranges [a-z]

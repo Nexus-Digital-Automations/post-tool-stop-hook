@@ -992,6 +992,90 @@ SOFTWARE.
     }
     // If verbose is false or undefined, don't log anything
   }
+
+  parseArgs() {
+    const args = process.argv.slice(2);
+    const options = {};
+      
+    for (let i = 0; i < args.length; i++) {
+      const arg = args[i];
+          
+      switch (arg) {
+        case '--output':
+          options.output = args[++i];
+          break;
+        case '--version':
+          options.version = args[++i];
+          break;
+        case '--format':
+          const format = args[++i];
+          if (!CONFIG.supportedFormats.includes(format)) {
+            console.error(`Error: Unsupported format '${format}'. Supported: ${CONFIG.supportedFormats.join(', ')}`);
+            process.exit(1);
+          }
+          options.format = format;
+          break;
+        case '--clean':
+          options.clean = true;
+          break;
+        case '--no-validate':
+          options.validate = false;
+          break;
+        case '--verbose':
+          options.verbose = true;
+          break;
+        case '--help':
+          this.showHelp();
+          process.exit(0);
+          break;
+        default:
+          console.error(`Error: Unknown option '${arg}'`);
+          process.exit(1);
+      }
+    }
+      
+    return options;
+  }
+
+  showHelp() {
+    console.log(`
+Claude Code Post-Tool Linter Hook Distribution Packager
+
+Usage: node package-hook.js [options]
+
+Options:
+  --output <dir>    Output directory for package (default: ./dist)
+  --version <ver>   Package version (default: auto-detect from package.json)
+  --format <fmt>    Package format: zip, tar.gz, or folder (default: zip)
+  --clean           Clean output directory before packaging
+  --no-validate     Skip package validation
+  --verbose         Enable verbose logging
+  --help            Show this help message
+
+Examples:
+  node package-hook.js
+  node package-hook.js --output ./release --format tar.gz
+  node package-hook.js --version 2.0.0 --clean --verbose
+
+Supported formats: ${CONFIG.supportedFormats.join(', ')}
+`);
+  }
+
+  async main() {
+    try {
+      const options = this.parseArgs();
+      const packager = new HookPackager(options);
+      const result = await packager.createPackage();
+          
+      console.log('\n🎉 Packaging completed successfully!');
+      console.log(`📦 Package: ${result.packagePath}`);
+      console.log(`⏱️  Duration: ${result.duration}s`);
+      
+    } catch (error) {
+      console.error(`\n❌ Packaging failed: ${error.message}`);
+      process.exit(1);
+    }
+  }
 }
 
 // CLI Interface

@@ -1,15 +1,15 @@
 {
   "execution": {
-    "timestamp": "2025-07-26T18:52:35.091Z",
+    "timestamp": "2025-07-26T19:28:12.104Z",
     "projectRoot": "/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook",
     "hookVersion": "1.0.0",
     "nodeVersion": "v23.9.0",
     "platform": "darwin",
     "arch": "arm64",
-    "pid": 32063,
+    "pid": 29049,
     "cwd": "/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook",
-    "endTimestamp": "2025-07-26T18:52:44.840Z",
-    "durationMs": 9749
+    "endTimestamp": "2025-07-26T19:28:21.468Z",
+    "durationMs": 9364
   },
   "input": {
     "sessionId": "0c0dc3ef-1f8f-45b4-a1d7-99662388bd3e",
@@ -26,17 +26,17 @@
   "projectState": {
     "todoPath": "/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/TODO.json",
     "project": "post-tool-stop-hook",
-    "totalTasks": 75,
+    "totalTasks": 76,
     "pendingTasks": 8,
     "inProgressTasks": 0,
-    "completedTasks": 67,
+    "completedTasks": 68,
     "lastMode": "DEVELOPMENT",
     "reviewStrikes": 0,
     "strikesCompletedLastRun": false,
     "currentTask": {
-      "id": "linter_task_active",
-      "title": "Fix Linter Errors - IMMEDIATE",
-      "description": "Fix 0 errors and 0 warnings found in recently edited files: quality-improvement-plan.md",
+      "id": "quality_fix_mocking_issues",
+      "title": "Fix Test Mocking Issues",
+      "description": "Repair mock setup to return correct values - getFileType() returning correct file types instead of unknown, fix file system path resolution mocks, ensure execution context mocking works correctly",
       "mode": "DEVELOPMENT",
       "priority": "high",
       "status": "pending"
@@ -45,7 +45,7 @@
   "decisions": [
     {
       "type": "strike_handling",
-      "timestamp": "2025-07-26T18:52:35.097Z",
+      "timestamp": "2025-07-26T19:28:12.110Z",
       "action": "continue",
       "message": null,
       "currentStrikes": 0,
@@ -53,70 +53,70 @@
     },
     {
       "type": "mode_selection",
-      "timestamp": "2025-07-26T18:52:44.836Z",
+      "timestamp": "2025-07-26T19:28:21.464Z",
       "previousMode": "DEVELOPMENT",
-      "selectedMode": "TASK_CREATION",
-      "reason": "Every 4th execution: entering TASK_CREATION mode (count: 216)"
+      "selectedMode": "DEVELOPMENT",
+      "reason": "Using task mode: DEVELOPMENT (execution 219)"
     }
   ],
   "flow": [
     {
-      "timestamp": "2025-07-26T18:52:35.092Z",
+      "timestamp": "2025-07-26T19:28:12.104Z",
       "message": "Received input from Claude Code"
     },
     {
-      "timestamp": "2025-07-26T18:52:35.092Z",
+      "timestamp": "2025-07-26T19:28:12.104Z",
       "message": "Received Stop event from Claude Code"
     },
     {
-      "timestamp": "2025-07-26T18:52:35.093Z",
-      "message": "Normal timing detected (83531ms) - continuing with caution"
+      "timestamp": "2025-07-26T19:28:12.105Z",
+      "message": "Normal timing detected (720447ms) - continuing with caution"
     },
     {
-      "timestamp": "2025-07-26T18:52:35.097Z",
+      "timestamp": "2025-07-26T19:28:12.110Z",
       "message": "Loaded project state from TODO.json"
     },
     {
-      "timestamp": "2025-07-26T18:52:35.097Z",
+      "timestamp": "2025-07-26T19:28:12.110Z",
       "message": "Strike handling: continue - continue"
     },
     {
-      "timestamp": "2025-07-26T18:52:44.827Z",
+      "timestamp": "2025-07-26T19:28:21.462Z",
       "message": "Quality check results: Strike1=100%, Strike2=100%, Strike3=30%, Overall Ready=false"
     },
     {
-      "timestamp": "2025-07-26T18:52:44.827Z",
-      "message": "Quality issues detected - injecting quality improvement task"
+      "timestamp": "2025-07-26T19:28:21.462Z",
+      "message": "Quality improvement task already exists"
     },
     {
-      "timestamp": "2025-07-26T18:52:44.836Z",
-      "message": "Selected task: Fix Linter Errors - IMMEDIATE (linter_task_active)"
+      "timestamp": "2025-07-26T19:28:21.464Z",
+      "message": "Selected task: Fix Test Mocking Issues (quality_fix_mocking_issues)"
     },
     {
-      "timestamp": "2025-07-26T18:52:44.836Z",
-      "message": "Mode decision: DEVELOPMENT → TASK_CREATION (Every 4th execution: entering TASK_CREATION mode (count: 216))"
+      "timestamp": "2025-07-26T19:28:21.464Z",
+      "message": "Mode decision: DEVELOPMENT → DEVELOPMENT (Using task mode: DEVELOPMENT (execution 219))"
     },
     {
-      "timestamp": "2025-07-26T18:52:44.840Z",
-      "message": "Updated task linter_task_active status to in_progress"
+      "timestamp": "2025-07-26T19:28:21.467Z",
+      "message": "Updated task quality_fix_mocking_issues status to in_progress"
     },
     {
-      "timestamp": "2025-07-26T18:52:44.840Z",
+      "timestamp": "2025-07-26T19:28:21.467Z",
       "message": "Generated prompt for Claude"
     },
     {
-      "timestamp": "2025-07-26T18:52:44.840Z",
-      "message": "Exiting with code 2: Continuing with TASK_CREATION mode for task: Fix Linter Errors - IMMEDIATE"
+      "timestamp": "2025-07-26T19:28:21.468Z",
+      "message": "Exiting with code 2: Continuing with DEVELOPMENT mode for task: Fix Test Mocking Issues"
     }
   ],
   "output": {
-    "promptLength": 4097,
+    "promptLength": 3366,
     "additionalInstructionsLength": 0,
-    "totalLength": 4097,
-    "promptPreview": "# INFINITE CONTINUE HOOK - ACTIVE TASK\n\n┌─────────────────────────────────────────────────────────────────┐\n│ CURRENT TASK: Fix 0 errors and 0 warnings found in recently edited files: quality-improvement-plan.md │\n│ Mode: TASK_CREATION                                              │\n│ Task ID: linter_task_active                                      │\n│ Status: pending                                                  │\n│ Project: post-tool-stop-hook                                     │\n│ Progress...",
-    "timestamp": "2025-07-26T18:52:44.840Z",
+    "totalLength": 3366,
+    "promptPreview": "# INFINITE CONTINUE HOOK - ACTIVE TASK\n\n┌─────────────────────────────────────────────────────────────────┐\n│ CURRENT TASK: Repair mock setup to return correct values - getFileType() returning correct file types instead of unknown, fix file system path resolution mocks, ensure execution context mocking works correctly │\n│ Mode: DEVELOPMENT                                                │\n│ Task ID: quality_fix_mocking_issues                              │\n│ Status: pending                       ...",
+    "timestamp": "2025-07-26T19:28:21.467Z",
     "exitCode": 2,
-    "exitReason": "Continuing with TASK_CREATION mode for task: Fix Linter Errors - IMMEDIATE"
+    "exitReason": "Continuing with DEVELOPMENT mode for task: Fix Test Mocking Issues"
   },
   "errors": []
 }
