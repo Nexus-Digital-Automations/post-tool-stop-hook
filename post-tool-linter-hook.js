@@ -707,7 +707,7 @@ async function runJavaScriptProjectAutoFix(projectPath) {
     const quotedCommand = `"${eslintCommand}"`;
     // Add ignore patterns for skipExtensions
     const ignorePatterns = CONFIG.skipExtensions.map(ext => `--ignore-pattern "**/*${ext}"`).join(' ');
-    const fullCommand = `${quotedCommand} . --fix --no-warn-ignored ${ignorePatterns}`;
+    const fullCommand = `${quotedCommand} . --fix ${ignorePatterns}`;
     
     log(`Executing ESLint project auto-fix command: ${fullCommand}`);
     
@@ -816,7 +816,7 @@ async function runJavaScriptProjectLinter(projectPath) {
     const quotedCommand = `"${eslintCommand}"`;
     // Add ignore patterns for skipExtensions
     const ignorePatterns = CONFIG.skipExtensions.map(ext => `--ignore-pattern "**/*${ext}"`).join(' ');
-    const fullCommand = `${quotedCommand} . --format json --no-warn-ignored ${ignorePatterns}`;
+    const fullCommand = `${quotedCommand} . --format json ${ignorePatterns}`;
     
     log(`Executing ESLint project command: ${fullCommand}`);
     
@@ -1390,7 +1390,7 @@ async function runJavaScriptAutoFix(filePath, projectPath) {
     // Properly quote command and file path for cross-platform compatibility
     const quotedCommand = `"${eslintCommand}"`;
     const quotedFile = `"${filePath}"`;
-    const fullCommand = `${quotedCommand} ${quotedFile} --fix --no-warn-ignored`;
+    const fullCommand = `${quotedCommand} ${quotedFile} --fix`;
     
     log(`Executing ESLint auto-fix command: ${fullCommand}`);
     
@@ -1503,7 +1503,7 @@ async function runJavaScriptLinter(filePath, projectPath) {
     // Properly quote command and file path for cross-platform compatibility - always quote paths with spaces
     const quotedCommand = `"${eslintCommand}"`;
     const quotedFile = `"${filePath}"`;
-    const fullCommand = `${quotedCommand} ${quotedFile} --format json --no-warn-ignored`;
+    const fullCommand = `${quotedCommand} ${quotedFile} --format json`;
     
     log(`Executing ESLint command: ${fullCommand}`);
     
@@ -1934,18 +1934,18 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], _taskCreated
 
   // Generate ultra-urgent impossible-to-ignore prompt
   let prompt = `
-🚨🛑🚨 **STOP EVERYTHING RIGHT NOW** 🚨🛑🚨
-🔥🔥🔥 **LINTER ERRORS DETECTED** 🔥🔥🔥
-⛔⛔⛔ **DROP ALL OTHER WORK IMMEDIATELY** ⛔⛔⛔
+🚨🛑🚨 **ABSOLUTELY STOP ALL WORK NOW** 🚨🛑🚨
+🔥🔥🔥 **CRITICAL LINTER ERRORS DETECTED** 🔥🔥🔥
+⛔⛔⛔ **ABANDON ALL OTHER TASKS IMMEDIATELY** ⛔⛔⛔
 
-**🚨 CRITICAL: STOP WHAT YOU ARE DOING RIGHT NOW 🚨**
-**🛑 DO NOT CONTINUE WITH ANY OTHER TASK 🛑**
-**⚡ THIS IS YOUR HIGHEST PRIORITY ⚡**
+**🚨 MANDATORY: HALT EVERYTHING IMMEDIATELY 🚨**
+**🛑 ZERO TOLERANCE FOR OTHER WORK 🛑**
+**⚡ LINTER ERRORS = ABSOLUTE TOP PRIORITY ⚡**
 
 **FILES WITH ERRORS:** ${editedFilesSummary || 'None in edited files'}
 **PROJECT TOTALS:** ${totalViolations} issues (${errors.length} errors, ${warnings.length} warnings) across ${resultsWithViolations.length} files${autoFixSummary}
 
-**❌❌❌ MUST FIX IMMEDIATELY BEFORE DOING ANYTHING ELSE ❌❌❌**
+**❌❌❌ NON-NEGOTIABLE: FIX ALL ERRORS BEFORE ANY OTHER WORK ❌❌❌**
 
 `;
   
