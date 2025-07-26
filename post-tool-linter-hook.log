@@ -1,13 +1,13 @@
-[2025-07-26T03:34:54.613Z] === POST-TOOL LINTER HOOK LOG ===
-[2025-07-26T03:34:54.619Z] Date: 2025-07-26T03:34:54.619Z
-[2025-07-26T03:34:54.619Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
-[2025-07-26T03:34:54.619Z] Node Version: v23.9.0
-[2025-07-26T03:34:54.619Z] Platform: darwin
-[2025-07-26T03:34:54.619Z] 
-[2025-07-26T03:34:54.619Z] === HOOK EXECUTION START ===
-[2025-07-26T03:34:54.619Z] Tool: Bash
-[2025-07-26T03:34:54.619Z] Session ID: f697460d-0be4-4b4c-ade0-b05364c58f82
-[2025-07-26T03:34:54.619Z] Hook input:
+[2025-07-26T03:35:31.969Z] === POST-TOOL LINTER HOOK LOG ===
+[2025-07-26T03:35:31.970Z] Date: 2025-07-26T03:35:31.970Z
+[2025-07-26T03:35:31.970Z] Project: /Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook
+[2025-07-26T03:35:31.970Z] Node Version: v23.9.0
+[2025-07-26T03:35:31.970Z] Platform: darwin
+[2025-07-26T03:35:31.970Z] 
+[2025-07-26T03:35:31.970Z] === HOOK EXECUTION START ===
+[2025-07-26T03:35:31.970Z] Tool: Bash
+[2025-07-26T03:35:31.970Z] Session ID: f697460d-0be4-4b4c-ade0-b05364c58f82
+[2025-07-26T03:35:31.970Z] Hook input:
   Data: {
   "session_id": "f697460d-0be4-4b4c-ade0-b05364c58f82",
   "transcript_path": "/Users/jeremyparker/.claude/projects/-Users-jeremyparker-Desktop-Claude-Coding-Projects-post-tool-stop-hook/f697460d-0be4-4b4c-ade0-b05364c58f82.jsonl",
@@ -16,13 +16,13 @@
   "tool_name": "Bash",
   "tool_input": {
     "command": "git status",
-    "description": "Verify commit succeeded"
+    "description": "Verify clean working directory"
   },
   "tool_response": {
-    "stdout": "On branch main\nYour branch is ahead of 'origin/main' by 19 commits.\n  (use \"git push\" to publish your local commits)\n\nChanges not staged for commit:\n  (use \"git add <file>...\" to update what will be committed)\n  (use \"git restore <file>...\" to discard changes in working directory)\n\tmodified:   post-tool-linter-hook.log\n\nUntracked files:\n  (use \"git add <file>...\" to include in what will be committed)\n\t.hook-debug-1753481718092.json\n\nno changes added to commit (use \"git add\" and/or \"git commit -a\")",
+    "stdout": "On branch main\nYour branch is ahead of 'origin/main' by 21 commits.\n  (use \"git push\" to publish your local commits)\n\nChanges not staged for commit:\n  (use \"git add <file>...\" to update what will be committed)\n  (use \"git restore <file>...\" to discard changes in working directory)\n\tmodified:   post-tool-linter-hook.log\n\nno changes added to commit (use \"git add\" and/or \"git commit -a\")",
     "stderr": "",
     "interrupted": false,
     "isImage": false
   }
 }
-[2025-07-26T03:34:54.619Z] Tool Bash is not in enabled tools list, skipping
+[2025-07-26T03:35:31.970Z] Tool Bash is not in enabled tools list, skipping
