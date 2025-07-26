@@ -1171,4 +1171,10 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { HookPackager, CONFIG };
+module.exports = { 
+  HookPackager, 
+  CONFIG,
+  parseArgs,
+  showHelp,
+  main
+};

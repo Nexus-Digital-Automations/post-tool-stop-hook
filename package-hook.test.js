@@ -19,7 +19,7 @@ jest.mock('crypto');
 jest.mock('child_process');
 
 // Import the package hook system
-const { HookPackager, CONFIG } = require('./package-hook.js');
+const { HookPackager, CONFIG, parseArgs, showHelp, main } = require('./package-hook.js');
 
 describe('Package Hook Distribution System', () => {
   let mockFs, mockPath, mockCrypto, mockExecSync;
@@ -490,6 +490,281 @@ describe('Package Hook Distribution System', () => {
       
       expect(consoleSpy).not.toHaveBeenCalled();
       consoleSpy.mockRestore();
+    });
+  });
+
+  describe('CLI interface methods', () => {
+    let originalArgv;
+    let originalExit;
+    let mockExit;
+
+    beforeEach(() => {
+      originalArgv = process.argv;
+      originalExit = process.exit;
+      mockExit = jest.fn();
+      process.exit = mockExit;
+    });
+
+    afterEach(() => {
+      process.argv = originalArgv;
+      process.exit = originalExit;
+    });
+
+    describe('parseArgs method', () => {
+      test('should parse basic arguments correctly', () => {
+        process.argv = ['node', 'package-hook.js', '--output', './test-output', '--version', '2.0.0'];
+        
+        const packager = new HookPackager();
+        const options = packager.parseArgs();
+        
+        expect(options.output).toBe('./test-output');
+        expect(options.version).toBe('2.0.0');
+      });
+
+      test('should parse format argument with validation', () => {
+        process.argv = ['node', 'package-hook.js', '--format', 'tar.gz'];
+        
+        const packager = new HookPackager();
+        const options = packager.parseArgs();
+        
+        expect(options.format).toBe('tar.gz');
+      });
+
+      test('should handle boolean flags correctly', () => {
+        process.argv = ['node', 'package-hook.js', '--clean', '--verbose'];
+        
+        const packager = new HookPackager();
+        const options = packager.parseArgs();
+        
+        expect(options.clean).toBe(true);
+        expect(options.verbose).toBe(true);
+      });
+
+      test('should handle no-validate flag correctly', () => {
+        process.argv = ['node', 'package-hook.js', '--no-validate'];
+        
+        const packager = new HookPackager();
+        const options = packager.parseArgs();
+        
+        expect(options.validate).toBe(false);
+      });
+
+      test('should exit with error for invalid format', () => {
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+        process.argv = ['node', 'package-hook.js', '--format', 'invalid'];
+        
+        const packager = new HookPackager();
+        packager.parseArgs();
+        
+        expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Unsupported format'));
+        expect(mockExit).toHaveBeenCalledWith(1);
+        
+        consoleErrorSpy.mockRestore();
+      });
+
+      test('should exit with error for unknown option', () => {
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+        process.argv = ['node', 'package-hook.js', '--unknown'];
+        
+        const packager = new HookPackager();
+        packager.parseArgs();
+        
+        expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Unknown option'));
+        expect(mockExit).toHaveBeenCalledWith(1);
+        
+        consoleErrorSpy.mockRestore();
+      });
+
+      test('should call showHelp and exit for help flag', () => {
+        const showHelpSpy = jest.spyOn(HookPackager.prototype, 'showHelp').mockImplementation();
+        process.argv = ['node', 'package-hook.js', '--help'];
+        
+        const packager = new HookPackager();
+        packager.parseArgs();
+        
+        expect(showHelpSpy).toHaveBeenCalled();
+        expect(mockExit).toHaveBeenCalledWith(0);
+        
+        showHelpSpy.mockRestore();
+      });
+    });
+
+    describe('showHelp method', () => {
+      test('should display help information', () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        
+        const packager = new HookPackager();
+        packager.showHelp();
+        
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Claude Code Post-Tool Linter Hook Distribution Packager'));
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Usage: node package-hook.js'));
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('--output'));
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('--version'));
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('--format'));
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Supported formats:'));
+        
+        consoleLogSpy.mockRestore();
+      });
+    });
+
+    describe('main method', () => {
+      test('should execute full workflow successfully', async () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        const parseArgsSpy = jest.spyOn(HookPackager.prototype, 'parseArgs').mockReturnValue({
+          output: './test-output',
+          format: 'zip',
+          verbose: false
+        });
+        const createPackageSpy = jest.spyOn(HookPackager.prototype, 'createPackage').mockResolvedValue({
+          packagePath: './test-output/package.zip',
+          duration: 1.23
+        });
+        
+        const packager = new HookPackager();
+        await packager.main();
+        
+        expect(parseArgsSpy).toHaveBeenCalled();
+        expect(createPackageSpy).toHaveBeenCalled();
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('🎉 Packaging completed successfully!'));
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('📦 Package:'));
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('⏱️  Duration:'));
+        // Note: HookPackager.main() doesn't call process.exit(0) on success, only standalone main() does
+        expect(mockExit).not.toHaveBeenCalledWith(0);
+        
+        parseArgsSpy.mockRestore();
+        createPackageSpy.mockRestore();
+        consoleLogSpy.mockRestore();
+      });
+
+      test('should handle main workflow errors gracefully', async () => {
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+        const parseArgsSpy = jest.spyOn(HookPackager.prototype, 'parseArgs').mockReturnValue({});
+        const createPackageSpy = jest.spyOn(HookPackager.prototype, 'createPackage').mockRejectedValue(
+          new Error('Packaging failed for testing')
+        );
+        
+        const packager = new HookPackager();
+        await packager.main();
+        
+        expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Packaging failed:'));
+        expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('Packaging failed for testing'));
+        expect(mockExit).toHaveBeenCalledWith(1);
+        
+        parseArgsSpy.mockRestore();
+        createPackageSpy.mockRestore();
+        consoleErrorSpy.mockRestore();
+      });
+    });
+  });
+
+  describe('method availability', () => {
+    test('should have all required methods available', () => {
+      const packager = new HookPackager();
+      
+      // Test parseArgs method exists and is callable
+      expect(typeof packager.parseArgs).toBe('function');
+      
+      // Test showHelp method exists and is callable  
+      expect(typeof packager.showHelp).toBe('function');
+      
+      // Test main method exists and is callable
+      expect(typeof packager.main).toBe('function');
+    });
+  });
+
+  describe('standalone CLI functions', () => {
+    let originalArgv;
+    let originalExit;
+    let mockExit;
+
+    beforeEach(() => {
+      originalArgv = process.argv;
+      originalExit = process.exit;
+      mockExit = jest.fn();
+      process.exit = mockExit;
+    });
+
+    afterEach(() => {
+      process.argv = originalArgv;
+      process.exit = originalExit;
+    });
+
+    describe('standalone parseArgs function', () => {
+      test('should parse arguments correctly', () => {
+        process.argv = ['node', 'package-hook.js', '--output', './test', '--verbose'];
+        
+        const options = parseArgs();
+        
+        expect(options.output).toBe('./test');
+        expect(options.verbose).toBe(true);
+      });
+
+      test('should handle help flag', () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        process.argv = ['node', 'package-hook.js', '--help'];
+        
+        parseArgs();
+        
+        expect(consoleLogSpy).toHaveBeenCalled();
+        expect(mockExit).toHaveBeenCalledWith(0);
+        
+        consoleLogSpy.mockRestore();
+      });
+    });
+
+    describe('standalone showHelp function', () => {
+      test('should display help information', () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        
+        showHelp();
+        
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('Claude Code Post-Tool Linter Hook Distribution Packager'));
+        
+        consoleLogSpy.mockRestore();
+      });
+    });
+
+    describe('standalone main function', () => {
+      test('should execute successfully', async () => {
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+        process.argv = ['node', 'package-hook.js', '--verbose'];
+        
+        // Mock the createPackage to avoid actual file operations
+        const originalCreate = HookPackager.prototype.createPackage;
+        HookPackager.prototype.createPackage = jest.fn().mockResolvedValue({
+          packagePath: './test-package.zip',
+          duration: 1.5
+        });
+        
+        await main();
+        
+        expect(consoleLogSpy).toHaveBeenCalledWith(expect.stringContaining('🎉 Packaging completed successfully!'));
+        expect(mockExit).toHaveBeenCalledWith(0);
+        
+        // Restore original method
+        HookPackager.prototype.createPackage = originalCreate;
+        consoleLogSpy.mockRestore();
+      });
+
+      test('should handle errors gracefully', async () => {
+        const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+        process.argv = ['node', 'package-hook.js'];
+        
+        // Mock createPackage to throw error
+        const originalCreate = HookPackager.prototype.createPackage;
+        HookPackager.prototype.createPackage = jest.fn().mockRejectedValue(
+          new Error('Test error for main function')
+        );
+        
+        await main();
+        
+        expect(consoleErrorSpy).toHaveBeenCalledWith(expect.stringContaining('❌ Packaging failed:'));
+        expect(mockExit).toHaveBeenCalledWith(1);
+        
+        // Restore original method
+        HookPackager.prototype.createPackage = originalCreate;
+        consoleErrorSpy.mockRestore();
+      });
     });
   });
 });

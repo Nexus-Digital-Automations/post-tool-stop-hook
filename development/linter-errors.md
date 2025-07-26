@@ -1,15 +1,19 @@
 # Linter Errors Report
 
-**Generated:** 2025-07-26T18:41:30.133Z
-**Total Issues:** 1 (0 errors, 1 warnings)
+**Generated:** 2025-07-26T19:41:56.158Z
+**Total Issues:** 3 (0 errors, 3 warnings)
 **Files:** 1
 
-## post-tool-linter-hook.test.js (eslint)
+## package-hook.test.js (eslint)
 
-**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/post-tool-linter-hook.test.js`
-**Issues:** 1
+**File Path:** `/Users/jeremyparker/Desktop/Claude Coding Projects/post-tool-stop-hook/package-hook.test.js`
+**Issues:** 3
 
-⚠️ **Line 2754:20** - 'error' is defined but never used. `[no-unused-vars]`
+⚠️ **Line 22:31** - 'parseArgs' is assigned a value but never used. `[no-unused-vars]`
+
+⚠️ **Line 22:42** - 'showHelp' is assigned a value but never used. `[no-unused-vars]`
+
+⚠️ **Line 22:52** - 'main' is assigned a value but never used. `[no-unused-vars]`
 
 ---
 
