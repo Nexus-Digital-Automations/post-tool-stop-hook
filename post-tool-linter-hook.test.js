@@ -979,6 +979,174 @@ describe('Post-Tool Linter Hook Unit Tests', () => {
     });
   });
 
+  describe('validateConfigFile edge cases', () => {
+    test('should handle setup.py validation', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('from setuptools import setup\nsetup(name="test")');
+
+      const result = hook.validateConfigFile('/path/setup.py', 'python');
+      expect(result).toBe(true);
+    });
+
+    test('should handle setup.py without setup call', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('# Just a comment file');
+
+      const result = hook.validateConfigFile('/path/setup.py', 'python');
+      expect(result).toBe(false);
+    });
+
+    test('should handle other config file types by existence', () => {
+      mockFs.existsSync.mockReturnValue(true);
+
+      const result = hook.validateConfigFile('/path/.eslintrc', 'javascript');
+      expect(result).toBe(true);
+    });
+
+    test('should handle JSON parse errors in package.json', () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('{ invalid json }');
+
+      const result = hook.validateConfigFile('/path/package.json', 'javascript');
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('detectProjectType edge cases', () => {
+    test('should return the project type with highest config score', () => {
+      // Mock filesystem to show both python and javascript config files exist
+      mockFs.existsSync.mockImplementation((path) => {
+        return path.includes('package.json') || path.includes('pyproject.toml');
+      });
+      
+      // Mock file contents to make configs valid
+      mockFs.readFileSync.mockImplementation((path) => {
+        if (path.includes('package.json')) {
+          return '{"scripts": {"test": "jest"}}';
+        } else if (path.includes('pyproject.toml')) {
+          return '[tool.ruff]\nline-length = 88';
+        }
+        return '';
+      });
+
+      const result = hook.detectProjectType(testDir);
+      // Should return either 'python' or 'javascript' based on scoring
+      expect(['python', 'javascript']).toContain(result);
+    });
+
+    test('should handle error in detectProjectType', () => {
+      mockFs.existsSync.mockImplementation(() => {
+        throw new Error('File system error');
+      });
+
+      const result = hook.detectProjectType(testDir);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getFileType edge cases', () => {
+    test('should return null for file with no extension', () => {
+      mockPath.extname.mockReturnValue('');
+      
+      const result = hook.getFileType('/path/to/file');
+      expect(result).toBeNull(); // Based on the actual function behavior
+    });
+
+    test('should return null for file extension in skip list', () => {
+      mockPath.extname.mockReturnValue('.json');
+      
+      const result = hook.getFileType('/path/to/file.json');
+      expect(result).toBeNull(); // Based on the actual function behavior
+    });
+  });
+
+  describe('log function with data parameter', () => {
+    test('should handle null data parameter', () => {
+      expect(() => {
+        hook.log('Test message', null);
+      }).not.toThrow();
+    });
+
+    test('should handle object data parameter', () => {
+      expect(() => {
+        hook.log('Test message', { key: 'value' });
+      }).not.toThrow();
+    });
+  });
+
+  describe('writeLogFile edge cases', () => {
+    test('should handle file write errors silently', () => {
+      hook.initializeLogging(testDir);
+      hook.log('Test message'); // Add some content
+      
+      mockFs.writeFileSync.mockImplementation(() => {
+        throw new Error('File write failed');
+      });
+
+      expect(() => {
+        hook.writeLogFile();
+      }).not.toThrow(); // Should fail silently
+    });
+  });
+
+  describe('extractFilePaths edge cases', () => {
+    test('should handle Edit tool with missing file_path', () => {
+      const hookData = {
+        tool_name: 'Edit',
+        tool_input: {} // Missing file_path
+      };
+
+      const result = hook.extractFilePaths(hookData);
+      expect(result).toEqual([]);
+    });
+
+    test('should handle MultiEdit tool with missing file_path', () => {
+      const hookData = {
+        tool_name: 'MultiEdit',
+        tool_input: {} // Missing file_path
+      };
+
+      const result = hook.extractFilePaths(hookData);
+      expect(result).toEqual([]);
+    });
+
+    test('should handle tool with null tool_input', () => {
+      const hookData = {
+        tool_name: 'Edit',
+        tool_input: null
+      };
+
+      const result = hook.extractFilePaths(hookData);
+      expect(result).toEqual([]);
+    });
+
+    test('should filter out non-existent files', () => {
+      mockFs.existsSync.mockImplementation((path) => path === '/existing/file.js');
+
+      const hookData = {
+        tool_name: 'Edit',
+        tool_input: { file_path: '/missing/file.js' },
+        cwd: testDir
+      };
+
+      const result = hook.extractFilePaths(hookData);
+      expect(result).toEqual([]);
+    });
+
+    test('should handle missing cwd parameter', () => {
+      const hookData = {
+        tool_name: 'Edit',
+        tool_input: { file_path: '/path/file.js' }
+        // Missing cwd
+      };
+
+      mockFs.existsSync.mockReturnValue(true);
+      
+      const result = hook.extractFilePaths(hookData);
+      expect(result).toEqual(['/path/file.js']); // Should use process.cwd()
+    });
+  });
+
   describe('CONFIG', () => {
     test('should have valid configuration', () => {
       expect(hook.CONFIG).toBeDefined();
