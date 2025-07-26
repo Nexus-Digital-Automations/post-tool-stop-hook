@@ -678,6 +678,307 @@ describe('Post-Tool Linter Hook Unit Tests', () => {
     });
   });
 
+  describe('runPythonAutoFix', () => {
+    test('should run ruff auto-fix successfully', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockExecSync.mockReturnValue('Fixed 2 violations');
+
+      const result = await hook.runPythonAutoFix('/path/to/file.py', testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.linter).toBe('ruff');
+      expect(result.file).toBe('/path/to/file.py');
+      expect(result.fixed).toBe(true);
+      expect(result.output).toBe('Fixed 2 violations');
+      expect(mockExecSync).toHaveBeenCalledWith(
+        'ruff check "/path/to/file.py" --fix --respect-gitignore',
+        expect.objectContaining({
+          cwd: testDir,
+          encoding: 'utf8',
+          timeout: expect.any(Number)
+        })
+      );
+    });
+
+    test('should handle exit code 1 as success (fixes applied)', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      const error = new Error('Command failed');
+      error.status = 1;
+      error.stdout = 'Applied fixes';
+      mockExecSync.mockImplementation(() => { throw error; });
+
+      const result = await hook.runPythonAutoFix('/path/to/file.py', testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.fixed).toBe(true);
+      expect(result.output).toBe('Applied fixes');
+    });
+
+    test('should handle missing file', async () => {
+      mockFs.existsSync.mockReturnValue(false);
+
+      const result = await hook.runPythonAutoFix('/path/to/missing.py', testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.fixed).toBe(false);
+      expect(result.error).toBe('File does not exist');
+    });
+
+    test('should handle disabled auto-fix configuration', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      const originalAutoFix = hook.CONFIG.autoFix;
+      hook.CONFIG.autoFix = false;
+
+      const result = await hook.runPythonAutoFix('/path/to/file.py', testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.fixed).toBe(false);
+      expect(result.skipped).toBe(true);
+      expect(result.reason).toBe('Auto-fix disabled in configuration');
+      
+      hook.CONFIG.autoFix = originalAutoFix; // Restore
+    });
+
+    test('should handle missing ruff dependency', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      const error = new Error('command not found: ruff');
+      mockExecSync.mockImplementation(() => { throw error; });
+
+      const result = await hook.runPythonAutoFix('/path/to/file.py', testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.executionFailure).toBe(true);
+      expect(result.failureType).toBe('missing_dependency');
+      expect(result.message).toBe('Ruff linter is not installed');
+      expect(result.suggestion).toBe('Install ruff: pip install ruff');
+    });
+
+    test('should handle timeout error', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      const error = new Error('timeout');
+      error.code = 'ETIMEDOUT';
+      mockExecSync.mockImplementation(() => { throw error; });
+
+      const result = await hook.runPythonAutoFix('/path/to/file.py', testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.executionFailure).toBe(true);
+      expect(result.failureType).toBe('timeout');
+      expect(result.message).toContain('timed out');
+    });
+
+    test('should handle general execution error', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      const error = new Error('Unexpected error');
+      error.status = 2;
+      error.stderr = 'Syntax error in file';
+      mockExecSync.mockImplementation(() => { throw error; });
+
+      const result = await hook.runPythonAutoFix('/path/to/file.py', testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.executionFailure).toBe(true);
+      expect(result.failureType).toBe('execution_error');
+      expect(result.message).toContain('Unexpected error');
+    });
+  });
+
+  describe('runJavaScriptAutoFix', () => {
+    test('should run eslint auto-fix successfully', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      mockExecSync.mockReturnValue('');
+
+      const result = await hook.runJavaScriptAutoFix('/path/to/file.js', testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.linter).toBe('eslint');
+      expect(result.file).toBe('/path/to/file.js');
+      expect(result.fixed).toBe(true);
+      expect(mockExecSync).toHaveBeenCalledWith(
+        '"/test/project/node_modules/.bin/eslint" "/path/to/file.js" --fix --no-warn-ignored',
+        expect.objectContaining({
+          cwd: testDir,
+          encoding: 'utf8',
+          timeout: expect.any(Number)
+        })
+      );
+    });
+
+    test('should handle exit code 1 as success (fixes applied)', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      const error = new Error('Command failed');
+      error.status = 1;
+      error.stdout = 'Fixed lint issues';
+      mockExecSync.mockImplementation(() => { throw error; });
+
+      const result = await hook.runJavaScriptAutoFix('/path/to/file.js', testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.fixed).toBe(true);
+      expect(result.output).toBe('Fixed lint issues');
+    });
+
+    test('should handle missing file', async () => {
+      mockFs.existsSync.mockReturnValue(false);
+
+      const result = await hook.runJavaScriptAutoFix('/path/to/missing.js', testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.fixed).toBe(false);
+      expect(result.error).toBe('File does not exist');
+    });
+
+    test('should handle disabled auto-fix configuration', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      const originalAutoFix = hook.CONFIG.linters.javascript.autoFix;
+      hook.CONFIG.linters.javascript.autoFix = false;
+
+      const result = await hook.runJavaScriptAutoFix('/path/to/file.js', testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.fixed).toBe(false);
+      expect(result.skipped).toBe(true);
+      expect(result.reason).toBe('Auto-fix disabled in configuration');
+      
+      hook.CONFIG.linters.javascript.autoFix = originalAutoFix; // Restore
+    });
+
+    test('should handle missing eslint dependency', async () => {
+      mockFs.existsSync.mockReturnValue(true);
+      const error = new Error('eslint not recognized as a command');
+      mockExecSync.mockImplementation(() => { throw error; });
+
+      const result = await hook.runJavaScriptAutoFix('/path/to/file.js', testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.executionFailure).toBe(true);
+      expect(result.failureType).toBe('missing_dependency');
+      expect(result.message).toBe('ESLint is not installed or not found');
+      expect(result.suggestion).toBe('Install ESLint: npm install eslint');
+    });
+  });
+
+  describe('runPythonProjectAutoFix', () => {
+    test('should run project-wide ruff auto-fix successfully', async () => {
+      mockExecSync.mockReturnValue('Fixed project issues');
+
+      const result = await hook.runPythonProjectAutoFix(testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.linter).toBe('ruff');
+      expect(result.file).toBe(testDir);
+      expect(result.fixed).toBe(true);
+      expect(result.projectWide).toBe(true);
+      expect(mockExecSync).toHaveBeenCalledWith(
+        'ruff check . --fix --respect-gitignore',
+        expect.objectContaining({
+          cwd: testDir,
+          encoding: 'utf8',
+          timeout: expect.any(Number)
+        })
+      );
+    });
+
+    test('should handle disabled project auto-fix', async () => {
+      const originalAutoFix = hook.CONFIG.autoFix;
+      hook.CONFIG.autoFix = false;
+
+      const result = await hook.runPythonProjectAutoFix(testDir);
+      
+      expect(result.success).toBe(true);
+      expect(result.fixed).toBe(false);
+      expect(result.skipped).toBe(true);
+      expect(result.projectWide).toBe(true);
+      expect(result.reason).toBe('Auto-fix disabled in configuration');
+      
+      hook.CONFIG.autoFix = originalAutoFix; // Restore
+    });
+
+    test('should handle project auto-fix timeout', async () => {
+      const error = new Error('timeout exceeded');
+      error.code = 'ETIMEDOUT';
+      mockExecSync.mockImplementation(() => { throw error; });
+
+      const result = await hook.runPythonProjectAutoFix(testDir);
+      
+      expect(result.success).toBe(false);
+      expect(result.executionFailure).toBe(true);
+      expect(result.failureType).toBe('timeout');
+      expect(result.projectWide).toBe(true);
+    });
+  });
+
+  describe('autoFixProject', () => {
+    test('should auto-fix multiple linter types', async () => {
+      const result = await hook.autoFixProject(testDir, ['python', 'javascript']);
+      
+      expect(result).toHaveLength(2);
+      expect(result[0].linter).toBe('ruff');
+      expect(result[1].linter).toBe('eslint');
+    });
+
+    test('should handle invalid linter types', async () => {
+      const result = await hook.autoFixProject(testDir, ['invalid_type']);
+      
+      expect(result).toHaveLength(0); // Invalid types are ignored with a log message
+    });
+  });
+
+  describe('autoFixFiles', () => {
+    test('should auto-fix Python files', async () => {
+      // Mock the file type detection to return 'python'
+      const originalGetFileType = hook.getFileType;
+      const originalDetectProjectType = hook.detectProjectType;
+      hook.getFileType = jest.fn().mockReturnValue('python');
+      hook.detectProjectType = jest.fn().mockReturnValue('python');
+
+      const result = await hook.autoFixFiles(['/path/file.py'], testDir);
+      
+      expect(result).toHaveLength(1);
+      expect(result[0].linter).toBe('ruff');
+      
+      // Restore original functions
+      hook.getFileType = originalGetFileType;
+      hook.detectProjectType = originalDetectProjectType;
+    });
+
+    test('should auto-fix JavaScript files', async () => {
+      // Mock the file type detection to return 'javascript'
+      const originalGetFileType = hook.getFileType;
+      const originalDetectProjectType = hook.detectProjectType;
+      hook.getFileType = jest.fn().mockReturnValue('javascript');
+      hook.detectProjectType = jest.fn().mockReturnValue('javascript');
+
+      const result = await hook.autoFixFiles(['/path/file.js'], testDir);
+      
+      expect(result).toHaveLength(1);
+      expect(result[0].linter).toBe('eslint');
+      
+      // Restore original functions
+      hook.getFileType = originalGetFileType;
+      hook.detectProjectType = originalDetectProjectType;
+    });
+
+    test('should skip unsupported file types', async () => {
+      // Mock the file type detection to return null (unsupported)
+      const originalGetFileType = hook.getFileType;
+      const originalDetectProjectType = hook.detectProjectType;
+      hook.getFileType = jest.fn().mockReturnValue(null);
+      hook.detectProjectType = jest.fn().mockReturnValue(null);
+
+      const result = await hook.autoFixFiles(['/path/file.txt'], testDir);
+      
+      expect(result).toHaveLength(1);
+      expect(result[0].success).toBe(true);
+      expect(result[0].skipped).toBe(true);
+      expect(result[0].reason).toBe('Unsupported file type');
+      
+      // Restore original functions
+      hook.getFileType = originalGetFileType;
+      hook.detectProjectType = originalDetectProjectType;
+    });
+  });
+
   describe('CONFIG', () => {
     test('should have valid configuration', () => {
       expect(hook.CONFIG).toBeDefined();
