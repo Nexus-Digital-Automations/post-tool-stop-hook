@@ -59,20 +59,27 @@ const CONFIG = {
   lintingMode: 'hybrid', // 'files-only', 'project-wide', 'hybrid'
   maxFilesForFileMode: 3, // Switch to project-wide if more than this many files
   respectIgnoreFiles: true,
+  autoFix: true, // Enable automatic fixing before linting
   linters: {
     python: {
       command: 'ruff check --output-format json',
       projectCommand: 'ruff check . --output-format json',
+      fixCommand: 'ruff check --fix',
+      projectFixCommand: 'ruff check . --fix',
       fileExtensions: ['.py', '.pyi', '.pyx'],
       configFiles: ['pyproject.toml', 'setup.py', 'requirements.txt', '.python-version', 'Pipfile'],
-      ignoreFiles: ['.ruffignore', '.gitignore']
+      ignoreFiles: ['.ruffignore', '.gitignore'],
+      autoFix: true
     },
     javascript: {
       command: 'eslint --format json',
       projectCommand: 'eslint . --format json',
+      fixCommand: 'eslint --fix',
+      projectFixCommand: 'eslint . --fix',
       fileExtensions: ['.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs'],
       configFiles: ['package.json', 'tsconfig.json', '.eslintrc.json', '.eslintrc.js'],
-      ignoreFiles: ['.eslintignore', '.gitignore']
+      ignoreFiles: ['.eslintignore', '.gitignore'],
+      autoFix: true
     }
   },
   skipExtensions: ['.json', '.md', '.txt', '.yml', '.yaml', '.xml', '.csv', '.log']
@@ -417,6 +424,111 @@ function detectProjectTypes(projectPath) {
   return foundTypes;
 }
 
+async function runPythonProjectAutoFix(projectPath) {
+  log(`Running Python project auto-fix (ruff --fix) on: ${projectPath}`);
+  
+  // Check if auto-fix is disabled
+  if (!CONFIG.autoFix || !CONFIG.linters.python.autoFix) {
+    log('Python project auto-fix is disabled in configuration');
+    return {
+      success: true,
+      linter: 'ruff',
+      file: projectPath,
+      fixed: false,
+      skipped: true,
+      projectWide: true,
+      reason: 'Auto-fix disabled in configuration'
+    };
+  }
+  
+  try {
+    const command = 'ruff check . --fix --respect-gitignore';
+    log(`Executing project auto-fix command: ${command}`);
+    
+    const result = execSync(command, {
+      cwd: projectPath,
+      encoding: 'utf8',
+      timeout: CONFIG.timeout * 3, // Allow more time for project-wide auto-fix
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    
+    log(`Ruff project auto-fix executed successfully`);
+    return {
+      success: true,
+      linter: 'ruff',
+      file: projectPath,
+      fixed: true,
+      projectWide: true,
+      output: result
+    };
+  } catch (error) {
+    log(`Ruff project auto-fix execution failed with status: ${error.status}`);
+    
+    // Ruff returns non-zero exit code when violations found/fixed
+    if (error.status === 1) {
+      log(`Ruff project auto-fix completed (exit code 1 is normal when fixes are applied)`);
+      return {
+        success: true,
+        linter: 'ruff',
+        file: projectPath,
+        fixed: true,
+        projectWide: true,
+        output: error.stdout || ''
+      };
+    }
+    
+    // Check if ruff is installed
+    if (error.message.includes('command not found') || error.message.includes('not recognized')) {
+      log('ERROR: Ruff is not installed');
+      return { 
+        success: false, 
+        linter: 'ruff', 
+        file: projectPath, 
+        fixed: false,
+        projectWide: true,
+        executionFailure: true,
+        failureType: 'missing_dependency',
+        message: 'Ruff linter is not installed',
+        suggestion: 'Install ruff: pip install ruff'
+      };
+    }
+    
+    // Handle timeout errors
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      log('ERROR: Ruff project auto-fix execution timed out');
+      return {
+        success: false,
+        linter: 'ruff',
+        file: projectPath,
+        fixed: false,
+        projectWide: true,
+        executionFailure: true,
+        failureType: 'timeout',
+        message: `Ruff project auto-fix execution timed out (>${CONFIG.timeout * 3}ms)`,
+        suggestion: 'Reduce project size or increase timeout in hook configuration'
+      };
+    }
+    
+    // Log stderr for debugging
+    if (error.stderr) {
+      log(`Ruff project auto-fix stderr: ${error.stderr}`);
+    }
+    
+    log(`Unexpected error running ruff project auto-fix: ${error.message}`);
+    return { 
+      success: false, 
+      linter: 'ruff', 
+      file: projectPath, 
+      fixed: false,
+      projectWide: true,
+      executionFailure: true,
+      failureType: 'execution_error',
+      message: `Ruff project auto-fix execution failed: ${error.message}`,
+      suggestion: 'Check the log file for detailed error information'
+    };
+  }
+}
+
 async function runPythonProjectLinter(projectPath) {
   log(`Running Python project linter (ruff) on: ${projectPath}`);
   
@@ -555,6 +667,129 @@ async function runPythonProjectLinter(projectPath) {
       message: `Ruff project execution failed: ${error.message}`,
       suggestion: 'Check the log file for detailed error information'
     }];
+  }
+}
+
+async function runJavaScriptProjectAutoFix(projectPath) {
+  log(`Running JavaScript project auto-fix (eslint --fix) on: ${projectPath}`);
+  
+  // Check if auto-fix is disabled
+  if (!CONFIG.autoFix || !CONFIG.linters.javascript.autoFix) {
+    log('JavaScript project auto-fix is disabled in configuration');
+    return {
+      success: true,
+      linter: 'eslint',
+      file: projectPath,
+      fixed: false,
+      skipped: true,
+      projectWide: true,
+      reason: 'Auto-fix disabled in configuration'
+    };
+  }
+  
+  try {
+    // Try to find eslint in multiple locations
+    let eslintCommand = 'eslint';
+    const localEslint = path.join(projectPath, 'node_modules', '.bin', 'eslint');
+    const localEslintCmd = path.join(projectPath, 'node_modules', '.bin', 'eslint.cmd');
+    
+    if (fs.existsSync(localEslint)) {
+      eslintCommand = localEslint;
+    } else if (fs.existsSync(localEslintCmd)) {
+      eslintCommand = localEslintCmd;
+    }
+    
+    // Properly quote command for cross-platform compatibility
+    const quotedCommand = `"${eslintCommand}"`;
+    // Add ignore patterns for skipExtensions
+    const ignorePatterns = CONFIG.skipExtensions.map(ext => `--ignore-pattern "**/*${ext}"`).join(' ');
+    const fullCommand = `${quotedCommand} . --fix --no-warn-ignored ${ignorePatterns}`;
+    
+    log(`Executing ESLint project auto-fix command: ${fullCommand}`);
+    
+    const result = execSync(fullCommand, {
+      cwd: projectPath,
+      encoding: 'utf8',
+      timeout: CONFIG.timeout * 3, // Allow more time for project-wide auto-fix
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    
+    log(`ESLint project auto-fix executed successfully`);
+    return {
+      success: true,
+      linter: 'eslint',
+      file: projectPath,
+      fixed: true,
+      projectWide: true,
+      output: result
+    };
+  } catch (error) {
+    log(`ESLint project auto-fix execution failed: ${error.message}`);
+    
+    // ESLint returns non-zero when fixes are applied or violations remain
+    if (error.status === 1) {
+      log(`ESLint project auto-fix completed (exit code 1 is normal when fixes are applied)`);
+      return {
+        success: true,
+        linter: 'eslint',
+        file: projectPath,
+        fixed: true,
+        projectWide: true,
+        output: error.stdout || ''
+      };
+    }
+    
+    // Check if eslint is installed
+    if (error.message.includes('command not found') || 
+        error.message.includes('not recognized') ||
+        error.message.includes('ENOENT')) {
+      log('ESLint not found - marking project auto-fix as failed');
+      return { 
+        success: false, 
+        linter: 'eslint', 
+        file: projectPath, 
+        fixed: false,
+        projectWide: true,
+        executionFailure: true,
+        failureType: 'missing_dependency',
+        message: 'ESLint is not installed or not found',
+        suggestion: 'Install ESLint: npm install eslint'
+      };
+    }
+    
+    // Handle timeout errors
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      log('ERROR: ESLint project auto-fix execution timed out');
+      return {
+        success: false,
+        linter: 'eslint',
+        file: projectPath,
+        fixed: false,
+        projectWide: true,
+        executionFailure: true,
+        failureType: 'timeout',
+        message: `ESLint project auto-fix execution timed out (>${CONFIG.timeout * 3}ms)`,
+        suggestion: 'Reduce project size or increase timeout in hook configuration'
+      };
+    }
+    
+    // Log stderr for debugging
+    if (error.stderr) {
+      log(`ESLint project auto-fix stderr: ${error.stderr}`);
+    }
+    
+    log(`Unexpected ESLint project auto-fix error: ${error.message}`);
+    return { 
+      success: false, 
+      linter: 'eslint', 
+      file: projectPath, 
+      fixed: false,
+      projectWide: true,
+      executionFailure: true,
+      failureType: 'execution_error',
+      message: `ESLint project auto-fix execution failed: ${error.message}`,
+      suggestion: 'Check the log file for detailed error information'
+    };
   }
 }
 
@@ -709,6 +944,83 @@ async function runJavaScriptProjectLinter(projectPath) {
   }
 }
 
+async function autoFixProject(projectPath, linterTypes) {
+  log(`\n--- Auto-fixing entire project: ${projectPath} ---`);
+  log(`Linter types: ${linterTypes.join(', ')}`);
+  
+  const allResults = [];
+  
+  for (const linterType of linterTypes) {
+    switch (linterType) {
+      case 'python':
+        const pythonResult = await runPythonProjectAutoFix(projectPath);
+        allResults.push(pythonResult);
+        break;
+      case 'javascript':
+        const jsResult = await runJavaScriptProjectAutoFix(projectPath);
+        allResults.push(jsResult);
+        break;
+      default:
+        log(`Unsupported project auto-fix type: ${linterType}`);
+        break;
+    }
+  }
+  
+  log(`Project auto-fix completed with ${allResults.length} result(s)`);
+  return allResults;
+}
+
+async function autoFixFiles(filePaths, projectPath) {
+  log(`\n--- Auto-fixing ${filePaths.length} files ---`);
+  
+  const allResults = await Promise.all(
+    filePaths.map(async (filePath) => {
+      const fileType = getFileType(filePath);
+      const projectType = detectProjectType(projectPath);
+      
+      // Determine which linter to use (same logic as lintFile)
+      let linterType;
+      if (fileType === null) {
+        linterType = null;
+      } else if (fileType) {
+        linterType = fileType;
+      } else {
+        linterType = projectType;
+      }
+      
+      if (!linterType) {
+        log(`No auto-fix available for ${path.basename(filePath)}`);
+        return { 
+          success: true, 
+          file: filePath, 
+          fixed: false, 
+          skipped: true,
+          reason: 'Unsupported file type' 
+        };
+      }
+      
+      switch (linterType) {
+        case 'python':
+          return await runPythonAutoFix(filePath, projectPath);
+        case 'javascript':
+          return await runJavaScriptAutoFix(filePath, projectPath);
+        default:
+          log(`Unsupported file auto-fix type: ${linterType}`);
+          return { 
+            success: true, 
+            file: filePath, 
+            fixed: false, 
+            skipped: true,
+            reason: 'Unsupported file type' 
+          };
+      }
+    })
+  );
+  
+  log(`File auto-fix completed with ${allResults.length} result(s)`);
+  return allResults;
+}
+
 async function lintProject(projectPath, linterTypes) {
   log(`\n--- Linting entire project: ${projectPath} ---`);
   log(`Linter types: ${linterTypes.join(', ')}`);
@@ -786,6 +1098,117 @@ function extractFilePaths(hookData) {
   
   log(`Total paths after ignore filtering: ${filteredPaths.length}`);
   return filteredPaths;
+}
+
+async function runPythonAutoFix(filePath, projectPath) {
+  log(`Running Python auto-fix (ruff --fix) on: ${filePath}`);
+  
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    log(`ERROR: File does not exist: ${filePath}`);
+    return {
+      success: false,
+      linter: 'ruff',
+      file: filePath,
+      fixed: false,
+      error: 'File does not exist'
+    };
+  }
+  
+  // Check if auto-fix is disabled
+  if (!CONFIG.autoFix || !CONFIG.linters.python.autoFix) {
+    log('Python auto-fix is disabled in configuration');
+    return {
+      success: true,
+      linter: 'ruff',
+      file: filePath,
+      fixed: false,
+      skipped: true,
+      reason: 'Auto-fix disabled in configuration'
+    };
+  }
+  
+  try {
+    const command = `ruff check "${filePath}" --fix --respect-gitignore`;
+    log(`Executing auto-fix command: ${command}`);
+    
+    const result = execSync(command, {
+      cwd: projectPath,
+      encoding: 'utf8',
+      timeout: CONFIG.timeout,
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    
+    log(`Ruff auto-fix executed successfully`);
+    return {
+      success: true,
+      linter: 'ruff',
+      file: filePath,
+      fixed: true,
+      output: result
+    };
+  } catch (error) {
+    log(`Ruff auto-fix execution failed with status: ${error.status}`);
+    
+    // Ruff returns non-zero exit code when violations found/fixed
+    if (error.status === 1) {
+      log(`Ruff auto-fix completed (exit code 1 is normal when fixes are applied)`);
+      return {
+        success: true,
+        linter: 'ruff',
+        file: filePath,
+        fixed: true,
+        output: error.stdout || ''
+      };
+    }
+    
+    // Check if ruff is installed
+    if (error.message.includes('command not found') || error.message.includes('not recognized')) {
+      log('ERROR: Ruff is not installed');
+      return { 
+        success: false, 
+        linter: 'ruff', 
+        file: filePath, 
+        fixed: false,
+        executionFailure: true,
+        failureType: 'missing_dependency',
+        message: 'Ruff linter is not installed',
+        suggestion: 'Install ruff: pip install ruff'
+      };
+    }
+    
+    // Handle timeout errors
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      log('ERROR: Ruff auto-fix execution timed out');
+      return {
+        success: false,
+        linter: 'ruff',
+        file: filePath,
+        fixed: false,
+        executionFailure: true,
+        failureType: 'timeout',
+        message: `Ruff auto-fix execution timed out (>${CONFIG.timeout}ms)`,
+        suggestion: 'Check file complexity or increase timeout in hook configuration'
+      };
+    }
+    
+    // Log stderr for debugging
+    if (error.stderr) {
+      log(`Ruff auto-fix stderr: ${error.stderr}`);
+    }
+    
+    log(`Unexpected error running ruff auto-fix: ${error.message}`);
+    return { 
+      success: false, 
+      linter: 'ruff', 
+      file: filePath, 
+      fixed: false,
+      executionFailure: true,
+      failureType: 'execution_error',
+      message: `Ruff auto-fix execution failed: ${error.message}`,
+      suggestion: 'Check the log file for detailed error information'
+    };
+  }
 }
 
 async function runPythonLinter(filePath, projectPath) {
@@ -915,6 +1338,134 @@ async function runPythonLinter(filePath, projectPath) {
       executionFailure: true,
       failureType: 'execution_error',
       message: `Ruff execution failed: ${error.message}`,
+      suggestion: 'Check the log file for detailed error information'
+    };
+  }
+}
+
+async function runJavaScriptAutoFix(filePath, projectPath) {
+  log(`Running JavaScript auto-fix (eslint --fix) on: ${filePath}`);
+  
+  // Check if file exists
+  if (!fs.existsSync(filePath)) {
+    log(`ERROR: File does not exist: ${filePath}`);
+    return {
+      success: false,
+      linter: 'eslint',
+      file: filePath,
+      fixed: false,
+      error: 'File does not exist'
+    };
+  }
+  
+  // Check if auto-fix is disabled
+  if (!CONFIG.autoFix || !CONFIG.linters.javascript.autoFix) {
+    log('JavaScript auto-fix is disabled in configuration');
+    return {
+      success: true,
+      linter: 'eslint',
+      file: filePath,
+      fixed: false,
+      skipped: true,
+      reason: 'Auto-fix disabled in configuration'
+    };
+  }
+  
+  try {
+    // Try to find eslint in multiple locations
+    let eslintCommand = 'eslint';
+    const localEslint = path.join(projectPath, 'node_modules', '.bin', 'eslint');
+    const localEslintCmd = path.join(projectPath, 'node_modules', '.bin', 'eslint.cmd');
+    
+    if (fs.existsSync(localEslint)) {
+      eslintCommand = localEslint;
+    } else if (fs.existsSync(localEslintCmd)) {
+      eslintCommand = localEslintCmd;
+    }
+    
+    // Properly quote command and file path for cross-platform compatibility
+    const quotedCommand = `"${eslintCommand}"`;
+    const quotedFile = `"${filePath}"`;
+    const fullCommand = `${quotedCommand} ${quotedFile} --fix --no-warn-ignored`;
+    
+    log(`Executing ESLint auto-fix command: ${fullCommand}`);
+    
+    const result = execSync(fullCommand, {
+      cwd: projectPath,
+      encoding: 'utf8',
+      timeout: CONFIG.timeout,
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    
+    log(`ESLint auto-fix executed successfully`);
+    return {
+      success: true,
+      linter: 'eslint',
+      file: filePath,
+      fixed: true,
+      output: result
+    };
+  } catch (error) {
+    log(`ESLint auto-fix execution failed: ${error.message}`);
+    
+    // ESLint returns non-zero when fixes are applied or violations remain
+    if (error.status === 1) {
+      log(`ESLint auto-fix completed (exit code 1 is normal when fixes are applied)`);
+      return {
+        success: true,
+        linter: 'eslint',
+        file: filePath,
+        fixed: true,
+        output: error.stdout || ''
+      };
+    }
+    
+    // Check if eslint is installed
+    if (error.message.includes('command not found') || 
+        error.message.includes('not recognized') ||
+        error.message.includes('ENOENT')) {
+      log('ESLint not found - marking auto-fix as failed');
+      return { 
+        success: false, 
+        linter: 'eslint', 
+        file: filePath, 
+        fixed: false,
+        executionFailure: true,
+        failureType: 'missing_dependency',
+        message: 'ESLint is not installed or not found',
+        suggestion: 'Install ESLint: npm install eslint'
+      };
+    }
+    
+    // Handle timeout errors
+    if (error.message.includes('timeout') || error.code === 'ETIMEDOUT') {
+      log('ERROR: ESLint auto-fix execution timed out');
+      return {
+        success: false,
+        linter: 'eslint',
+        file: filePath,
+        fixed: false,
+        executionFailure: true,
+        failureType: 'timeout',
+        message: `ESLint auto-fix execution timed out (>${CONFIG.timeout}ms)`,
+        suggestion: 'Check file complexity or increase timeout in hook configuration'
+      };
+    }
+    
+    // Log stderr for debugging
+    if (error.stderr) {
+      log(`ESLint auto-fix stderr: ${error.stderr}`);
+    }
+    
+    log(`Unexpected ESLint auto-fix error: ${error.message}`);
+    return { 
+      success: false, 
+      linter: 'eslint', 
+      file: filePath, 
+      fixed: false,
+      executionFailure: true,
+      failureType: 'execution_error',
+      message: `ESLint auto-fix execution failed: ${error.message}`,
       suggestion: 'Check the log file for detailed error information'
     };
   }
@@ -1340,6 +1891,12 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], _taskCreated
     r.violations.filter(v => v.severity === 'warning')
   );
   
+  // Extract auto-fix results for reporting
+  const autoFixResults = results.autoFixResults || [];
+  const fixedFiles = autoFixResults.filter(r => r.fixed).length;
+  const skippedAutoFix = autoFixResults.filter(r => r.skipped).length;
+  const failedAutoFix = autoFixResults.filter(r => r.executionFailure).length;
+  
   // Filter results for edited files - normalize paths for comparison
   const editedFilesWithViolations = resultsWithViolations.filter(r => 
     editedFiles.some(editedFile => {
@@ -1364,6 +1921,13 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], _taskCreated
     return `${fileName} (${parts.join(', ')})`;
   }).join(', ');
 
+  // Generate auto-fix summary
+  let autoFixSummary = '';
+  if (autoFixResults.length > 0) {
+    const totalAutoFix = autoFixResults.length;
+    autoFixSummary = `\n📋 **AUTO-FIX SUMMARY:** ${fixedFiles}/${totalAutoFix} files auto-fixed, ${skippedAutoFix} skipped, ${failedAutoFix} failed\n`;
+  }
+
   // Generate ultra-urgent impossible-to-ignore prompt
   let prompt = `
 🚨🛑🚨 **STOP EVERYTHING RIGHT NOW** 🚨🛑🚨
@@ -1375,7 +1939,7 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], _taskCreated
 **⚡ THIS IS YOUR HIGHEST PRIORITY ⚡**
 
 **FILES WITH ERRORS:** ${editedFilesSummary || 'None in edited files'}
-**PROJECT TOTALS:** ${totalViolations} issues (${errors.length} errors, ${warnings.length} warnings) across ${resultsWithViolations.length} files
+**PROJECT TOTALS:** ${totalViolations} issues (${errors.length} errors, ${warnings.length} warnings) across ${resultsWithViolations.length} files${autoFixSummary}
 
 **❌❌❌ MUST FIX IMMEDIATELY BEFORE DOING ANYTHING ELSE ❌❌❌**
 
@@ -1746,10 +2310,9 @@ async function main() {
         process.exit(0);
       }
       
-      log(`\nStarting linting for ${filePaths.length} file(s)...`);
+      log(`\nStarting auto-fix and linting for ${filePaths.length} file(s)...`);
       
       // Determine linting approach based on configuration and file count
-      let results = [];
       const allProjectTypes = detectProjectTypes(projectPath);
       
       // Improved hybrid mode logic: check if all edited files match project types
@@ -1772,6 +2335,35 @@ async function main() {
         shouldUseProjectWide = allFileTypesMatchProject || filePaths.length > CONFIG.maxFilesForFileMode;
       }
       
+      // Run auto-fix first if enabled
+      let autoFixResults = [];
+      if (CONFIG.autoFix) {
+        log('\n=== RUNNING AUTO-FIX BEFORE LINTING ===');
+        
+        if (shouldUseProjectWide && allProjectTypes.length > 0) {
+          log(`Using project-wide auto-fix mode (${filePaths.length} files, types: ${allProjectTypes.join(', ')})`);
+          autoFixResults = await autoFixProject(projectPath, allProjectTypes);
+        } else {
+          log(`Using file-by-file auto-fix mode (${filePaths.length} files)`);
+          autoFixResults = await autoFixFiles(filePaths, projectPath);
+        }
+        
+        // Log auto-fix results
+        log('\n=== AUTO-FIX RESULTS ===');
+        autoFixResults.forEach((result, index) => {
+          log(`Auto-fix ${index + 1}: ${result.file}`);
+          log(`  Success: ${result.success}`);
+          log(`  Fixed: ${result.fixed}`);
+          log(`  Linter: ${result.linter || 'none'}`);
+          if (result.skipped) log(`  SKIPPED: ${result.reason}`);
+          if (result.executionFailure) log(`  FAILED: ${result.message}`);
+        });
+      } else {
+        log('Auto-fix is disabled in configuration, skipping...');
+      }
+      
+      // Now run linting after auto-fix
+      let results = [];
       if (shouldUseProjectWide && allProjectTypes.length > 0) {
         log(`Using project-wide linting mode (${filePaths.length} files, types: ${allProjectTypes.join(', ')})`);
         results = await lintProject(projectPath, allProjectTypes);
@@ -1782,6 +2374,9 @@ async function main() {
           filePaths.map(fp => lintFile(fp, projectPath))
         );
       }
+      
+      // Attach auto-fix results to the final results for context
+      results.autoFixResults = autoFixResults;
       
       log('\n=== LINTING RESULTS ===');
       results.forEach((result, index) => {
@@ -1882,11 +2477,17 @@ if (require.main === module) {
     validateConfigFile,
     detectProjectType,
     detectProjectTypes,
+    runPythonProjectAutoFix,
+    runJavaScriptProjectAutoFix,
     runPythonProjectLinter,
     runJavaScriptProjectLinter,
+    autoFixProject,
+    autoFixFiles,
     lintProject,
     getFileType,
     extractFilePaths,
+    runPythonAutoFix,
+    runJavaScriptAutoFix,
     runPythonLinter,
     runJavaScriptLinter,
     lintFile,
