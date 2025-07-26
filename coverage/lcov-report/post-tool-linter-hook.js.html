@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">71.74% </span>
+                <span class="strong">72.21% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>754/1051</span>
+                <span class='fraction'>759/1051</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">58.93% </span>
+                <span class="strong">59.25% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>366/621</span>
+                <span class='fraction'>368/621</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">72.58% </span>
+                <span class="strong">73.08% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>720/992</span>
+                <span class='fraction'>725/992</span>
             </div>
         
             
@@ -2608,13 +2608,13 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1237x</span>
-<span class="cline-any cline-yes">1237x</span>
+<span class="cline-any cline-yes">1253x</span>
+<span class="cline-any cline-yes">1253x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1237x</span>
+<span class="cline-any cline-yes">1253x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1237x</span>
+<span class="cline-any cline-yes">1253x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -2666,35 +2666,35 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">28x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">20x</span>
-<span class="cline-any cline-yes">20x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">20x</span>
-<span class="cline-any cline-yes">20x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">24x</span>
-<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-yes">28x</span>
+<span class="cline-any cline-yes">28x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">22x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">27x</span>
+<span class="cline-any cline-yes">26x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">20x</span>
-<span class="cline-any cline-yes">20x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">59x</span>
+<span class="cline-any cline-yes">59x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">20x</span>
-<span class="cline-any cline-yes">20x</span>
+<span class="cline-any cline-yes">39x</span>
+<span class="cline-any cline-yes">10x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">29x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-yes">26x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -5183,9 +5183,9 @@ function readIgnoreFile(ignoreFilePath) {
   log(`Reading ignore file: ${ignoreFilePath}`);
   
   try {
-    <span class="missing-if-branch" title="if path not taken" >I</span>if (!fs.existsSync(ignoreFilePath)) {
-<span class="cstat-no" title="statement not covered" >      log(`Ignore file not found: ${ignoreFilePath}`);</span>
-<span class="cstat-no" title="statement not covered" >      return [];</span>
+    if (!fs.existsSync(ignoreFilePath)) {
+      log(`Ignore file not found: ${ignoreFilePath}`);
+      return [];
     }
     
     const content = fs.readFileSync(ignoreFilePath, 'utf8');
@@ -5198,17 +5198,17 @@ function readIgnoreFile(ignoreFilePath) {
         if (pattern.endsWith('/')) {
           return `${pattern}**`; // Directory patterns
         }
-        <span class="missing-if-branch" title="else path not taken" >E</span>if (!pattern.includes('/')) {
+        if (!pattern.includes('/')) {
           return `**/${pattern}`; // File patterns should match anywhere
         }
-<span class="cstat-no" title="statement not covered" >        return pattern;</span>
+        return pattern;
       });
     
     log(`Loaded ${patterns.length} ignore patterns from ${ignoreFilePath}`);
     return patterns;
   } catch (error) {
-<span class="cstat-no" title="statement not covered" >    log(`Failed to read ignore file ${ignoreFilePath}: ${error.message}`);</span>
-<span class="cstat-no" title="statement not covered" >    return [];</span>
+    log(`Failed to read ignore file ${ignoreFilePath}: ${error.message}`);
+    return [];
   }
 }
 &nbsp;
@@ -7612,7 +7612,7 @@ async function main() {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-26T06:04:53.039Z
+                at 2025-07-26T06:10:20.413Z
             </div>
         <script src="prettify.js"></script>
         <script>

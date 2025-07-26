@@ -66,6 +66,28 @@ describe('Post-Tool Linter Hook Unit Tests', () => {
     mockExecSync.mockReturnValue('');
   });
 
+  afterEach(() => {
+    // Comprehensive cleanup to prevent test interference
+    jest.clearAllMocks();
+    jest.restoreAllMocks();
+    
+    // Reset any global state that might have been modified
+    if (hook.logFile) {
+      delete hook.logFile;
+    }
+    
+    // Ensure no timers are left hanging
+    jest.clearAllTimers();
+    
+    // Reset console mocks if any
+    if (console.log.mockRestore) {
+      console.log.mockRestore();
+    }
+    if (console.error.mockRestore) {
+      console.error.mockRestore();
+    }
+  });
+
   describe('initializeLogging', () => {
     test('should initialize logging with correct project path', () => {
       const result = hook.initializeLogging(testDir);
@@ -1654,6 +1676,38 @@ coverage
   describe('Error Handling Tests', () => {
     beforeEach(() => {
       jest.clearAllMocks();
+      
+      // Restore essential mocks that other tests depend on
+      mockPath.join.mockImplementation((...args) => args.filter(a => a !== null && a !== undefined).join('/'));
+      mockPath.resolve.mockImplementation((...args) => '/' + args.filter(a => a !== null && a !== undefined).join('/'));
+      mockPath.dirname.mockImplementation((p) => {
+        if (!p || typeof p !== 'string') return '';
+        return p.split('/').slice(0, -1).join('/');
+      });
+      mockPath.basename.mockImplementation((p) => {
+        if (!p || typeof p !== 'string') return '';
+        return p.split('/').pop() || '';
+      });
+      mockPath.extname.mockImplementation((p) => {
+        if (!p || typeof p !== 'string') return '';
+        const parts = p.split('.');
+        return parts.length > 1 ? '.' + parts.pop() : '';
+      });
+      mockPath.relative.mockImplementation((from, to) => {
+        if (!from || !to || typeof from !== 'string' || typeof to !== 'string') return '';
+        return to.replace(from, '').replace(/^\//, '');
+      });
+
+      // Restore basic fs mocks
+      mockFs.existsSync.mockReturnValue(true);
+      mockFs.readFileSync.mockReturnValue('{}');
+      mockFs.writeFileSync.mockImplementation(() => {});
+      mockFs.mkdirSync.mockImplementation(() => {});
+      mockFs.readdirSync.mockReturnValue([]);
+      mockFs.statSync.mockReturnValue({ isDirectory: () => false });
+      
+      // Restore execSync mock
+      mockExecSync.mockReturnValue('');
     });
 
     describe('writeLinterErrorsFile error handling', () => {
@@ -1712,33 +1766,31 @@ coverage
     });
 
     describe('analyzeTodoState error handling', () => {
-      test('should handle missing TODO.json file', () => {
-        mockFs.readFileSync.mockImplementation(() => {
-          throw new Error('ENOENT: no such file or directory');
-        });
+      test('should handle missing TODO.json file', async () => {
+        mockFs.existsSync.mockReturnValue(false);
         mockPath.join.mockImplementation((...args) => args.join('/'));
 
-        const result = hook.analyzeTodoState('/test/project');
+        const result = await hook.analyzeTodoState('/test/project');
         
         expect(result).toEqual({
-          currentTaskIndex: -1,
-          totalTasks: 0,
-          hasActiveTasks: false,
-          todoExists: false
+          exists: false,
+          valid: false,
+          taskCount: 0,
+          currentTaskIndex: null
         });
       });
 
-      test('should handle malformed JSON in TODO.json', () => {
+      test('should handle malformed JSON in TODO.json', async () => {
         mockFs.readFileSync.mockReturnValue('{ invalid json }');
         mockPath.join.mockImplementation((...args) => args.join('/'));
 
-        const result = hook.analyzeTodoState('/test/project');
+        const result = await hook.analyzeTodoState('/test/project');
         
         expect(result).toEqual({
-          currentTaskIndex: -1,
-          totalTasks: 0,
-          hasActiveTasks: false,
-          todoExists: false
+          exists: true,
+          valid: false,
+          taskCount: 0,
+          currentTaskIndex: null
         });
       });
     });
