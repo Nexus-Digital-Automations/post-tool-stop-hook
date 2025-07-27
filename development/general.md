@@ -263,6 +263,59 @@ Safe refactoring approach:
 </refactoring_strategy>
 ```
 
+## 🔴 CRITICAL: Claude Code Execution Environment
+
+### **Claude Code Cannot Run Node.js Natively**
+
+**MANDATORY**: Claude Code operates in a bash-only environment. All Node.js operations must be executed using bash commands with proper wrappers.
+
+#### **Required Execution Patterns**
+
+**❌ WRONG - Cannot Execute:**
+```javascript
+const TaskManager = require('./lib/taskManager');
+const result = await taskManager.readTodo();
+```
+
+**✅ CORRECT - Must Use Bash:**
+```bash
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.readTodo().then(data => console.log(JSON.stringify(data, null, 2)));"
+```
+
+#### **Common TaskManager Operations**
+
+```bash
+# Basic task status update (most common)
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('task_id', 'completed').then(() => console.log('✅ Task updated'));"
+
+# Get current active task
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.getCurrentTask().then(task => console.log(task ? JSON.stringify(task, null, 2) : 'No active task'));"
+
+# Read full TODO.json data  
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.readTodo().then(data => console.log(JSON.stringify(data, null, 2)));"
+
+# Create new task with full properties
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.readTodo().then(async (data) => { const task = {id: 'task_' + Date.now(), title: 'New Task', description: 'Task description', mode: 'development', priority: 'high', status: 'pending', success_criteria: ['Criteria'], created_at: new Date().toISOString()}; data.tasks.push(task); await tm.writeTodo(data); console.log('✅ Task created:', task.id); });"
+```
+
+#### **Error Handling in Bash Commands**
+
+```bash
+# With error handling and logging
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('task_id', 'completed').then(() => console.log('✅ Success')).catch(err => console.error('❌ Error:', err.message));"
+
+# Validate before operations
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.validateTodoFile().then(isValid => { if (isValid) { console.log('✅ TODO.json is valid'); } else { console.error('❌ TODO.json has validation errors'); } });"
+```
+
+#### **Integration with Claude Code Workflow**
+
+1. **Always use bash commands** for TaskManager operations
+2. **Wrap in proper error handling** to catch failures
+3. **Log results** to console for visibility
+4. **Validate operations** before critical updates
+5. **Use JSON.stringify** for complex object output
+
 ## ADDER+ Protocol Integration
 
 ### Infinite Continue Hook System
@@ -312,15 +365,23 @@ node "/Users/jeremyparker/Desktop/Claude Coding Projects/infinite-continue-stop-
 ```
 
 **Task Management API:**
-```python
+
+#### **🔴 CRITICAL: Claude Code Bash Execution**
+
+**Claude Code cannot run Node.js natively** - all TaskManager operations must use bash commands with Node.js wrappers:
+
+```bash
 # Get current task
-current_task = config.get_todo_current_task()
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.getCurrentTask().then(task => console.log('Current task:', JSON.stringify(task, null, 2)));"
+
+# Update task status
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('task_id', 'completed').then(() => console.log('Task status updated'));"
 
 # Create new task
-task_id = config.create_todo_task(title, description, mode, priority, success_criteria)
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.readTodo().then(async (data) => { const newTask = {id: 'task_' + Date.now(), title: 'Task Title', description: 'Task Description', mode: 'development', priority: 'high', status: 'pending', success_criteria: ['Criteria 1', 'Criteria 2'], created_at: new Date().toISOString()}; data.tasks.push(newTask); await tm.writeTodo(data); console.log('Task created:', newTask.id); });"
 
-# Update status
-config.update_todo_task_status(task_id, "in_progress")  # or "completed"
+# Read all TODO data
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.readTodo().then(data => console.log('TODO data:', JSON.stringify(data, null, 2)));"
 ```
 
 ### Mode-Specific Operation
@@ -437,4 +498,56 @@ Update CLAUDE.md with:
 
 ---
 
-**Core Principle**: The hook system handles coordination automatically. Focus on delivering high-quality work meeting current mode objectives. Always read ABOUT.md files before editing code and implement universal quality practices (type safety, input validation, comprehensive error handling) in all code.
+## 🔴 CRITICAL: TASK COMPLETION REQUIRED
+
+**MANDATORY COMPLETION PROTOCOL**: At the end of EVERY task execution, you MUST mark tasks as completed when they are finished.
+
+### Task Completion API
+```bash
+# Initialize TaskManager and mark task as completed
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('task-1', 'completed').then(() => console.log('✅ Task marked as completed'));"
+
+# Alternative: Get current task and mark it completed
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.getCurrentTask().then(async (task) => { if (task) { await tm.updateTaskStatus(task.id, 'completed'); console.log('✅ Current task completed:', task.id); } else { console.log('No active task found'); } });"
+```
+
+### When to Mark Tasks Complete
+✅ **Mark as completed when:**
+- All success criteria are met
+- Implementation is working correctly
+- Tests pass (if applicable)
+- Code quality standards are met
+- Documentation is updated
+
+❌ **Do NOT mark as completed if:**
+- Any success criteria remain unmet
+- Implementation has known issues
+- Tests are failing
+- Code needs further refinement
+
+### Completion Checklist
+Before marking any task complete, verify:
+- [ ] All task success criteria verified
+- [ ] Code quality standards maintained (250/400 line limits)
+- [ ] Type safety implemented where supported
+- [ ] Input validation for user-facing functions
+- [ ] Comprehensive error handling with logging
+- [ ] Test coverage meets requirements
+- [ ] No regressions in existing functionality
+- [ ] Security considerations addressed
+
+### Current Task Information
+**The hook provides the current task ID in every prompt** - use this exact ID when calling `updateTaskStatus()`.
+
+**Example Completion:**
+```bash
+# At end of task execution
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('task-1', 'completed').then(() => console.log('✅ Task completed successfully'));"
+
+# Or with error handling
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('task-1', 'completed').then(() => console.log('✅ Task completed successfully')).catch(err => console.error('❌ Failed to update task:', err.message));"
+```
+
+---
+
+**Core Principle**: The hook system handles coordination automatically. Focus on delivering high-quality work meeting current mode objectives. Always read ABOUT.md files before editing code and implement universal quality practices (type safety, input validation, comprehensive error handling) in all code. **ALWAYS mark completed tasks using the TaskManager API.**

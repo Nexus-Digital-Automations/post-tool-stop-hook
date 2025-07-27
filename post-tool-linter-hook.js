@@ -1949,7 +1949,7 @@ function writeLinterErrorsFile(resultsWithViolations, projectPath) {
   const ignoreGuidance = generateIgnoreFileSuggestions(resultsWithViolations, projectPath);
   if (ignoreGuidance.suggestedPatterns.length > 0) {
     content += `## 💡 Ignore File Configuration\n\n`;
-    content += `Some linting issues may be in files that shouldn't be linted. Consider updating your ignore files:\n\n`;
+    content += `Some linting issues may be in files that shouldn't be linted. **Important:** Only modify ignore files (.ruffignore, .eslintignore, etc.) if there are genuine files that are inappropriate for linting (generated files, vendor dependencies, etc.). Do not use ignore files as a quick fix for linter errors that should be resolved in the code itself. Consider updating your ignore files:\n\n`;
     
     if (ignoreGuidance.suggestedPatterns.some(p => p.includes('.py') || p.includes('__pycache__'))) {
       content += `**For Python (create/update \`.ruffignore\`):**\n`;
@@ -2197,7 +2197,7 @@ function formatLinterPrompt(results, projectPath, editedFiles = [], _taskCreated
   const ignoreGuidance = generateIgnoreFileSuggestions(resultsWithViolations, projectPath);
   if (ignoreGuidance.suggestedPatterns.length > 0) {
     prompt += `## 💡 Ignore File Configuration\n\n`;
-    prompt += `Some linting issues may be in files that shouldn't be linted. Consider updating your ignore files:\n\n`;
+    prompt += `Some linting issues may be in files that shouldn't be linted. **Important:** Only modify ignore files (.ruffignore, .eslintignore, etc.) if there are genuine files that are inappropriate for linting (generated files, vendor dependencies, etc.). Do not use ignore files as a quick fix for linter errors that should be resolved in the code itself. Consider updating your ignore files:\n\n`;
     prompt += `📋 **Complete Guide**: See \`docs/ignore-files-guide.md\` for comprehensive ignore file documentation, patterns, and troubleshooting.\n\n`;
     
     if (ignoreGuidance.suggestedPatterns.some(p => p.includes('.py') || p.includes('__pycache__'))) {

@@ -1,369 +1,239 @@
 # REFACTORING Mode Instructions
 
-You are in REFACTORING mode, focused on improving code structure without changing external behavior.
+You are in REFACTORING mode, focused on improving code structure without changing external behavior through systematic risk assessment and incremental improvement strategies.
 
-## Advanced Refactoring Patterns
+*Note: General code quality standards and file organization principles are detailed in CLAUDE.md. This mode provides refactoring-specific risk assessment and incremental improvement frameworks.*
 
-### Strangler Fig Pattern
-For gradually replacing legacy systems:
+## Risk Assessment Framework
 
-```javascript
-// Legacy system wrapper
-class LegacySystemAdapter {
-    constructor(legacySystem, newSystem, featureFlags) {
-        this.legacy = legacySystem;
-        this.new = newSystem;
-        this.flags = featureFlags;
-    }
-    
-    async processOrder(order) {
-        // Gradually migrate functionality
-        if (this.flags.isEnabled('use-new-order-validation')) {
-            order = await this.new.validateOrder(order);
-        } else {
-            order = await this.legacy.validateOrder(order);
-        }
-        
-        if (this.flags.isEnabled('use-new-pricing-engine')) {
-            order.pricing = await this.new.calculatePricing(order);
-        } else {
-            order.pricing = await this.legacy.calculatePricing(order);
-        }
-        
-        // Eventually, all calls go to new system
-        return order;
-    }
-}
+### 1. Refactoring Risk Classification
+
+#### Low Risk Refactoring (Safe to Execute)
+```
+Characteristics:
+├── Single function/method improvements
+├── Local variable renaming
+├── Code formatting and style cleanup
+├── Comment additions and documentation updates
+└── Dead code removal (unused variables/functions)
+
+Safety Measures:
+- Unit tests cover affected code paths
+- Changes are atomic and easily reversible
+- No external API or interface modifications
+- Performance impact is negligible
 ```
 
-### Branch by Abstraction
-Safely refactor large systems in production:
+#### Medium Risk Refactoring (Requires Caution)
+```
+Characteristics:
+├── Function signature changes with backward compatibility
+├── Class structure modifications
+├── Module reorganization and file moves
+├── Algorithm optimization with equivalent behavior
+└── Dependency injection and inversion of control
 
-```javascript
-// Step 1: Create abstraction
-interface DataStore {
-    save(id: string, data: any): Promise<void>;
-    load(id: string): Promise<any>;
-    delete(id: string): Promise<void>;
-}
-
-// Step 2: Implement for existing system
-class FileDataStore implements DataStore {
-    async save(id: string, data: any) {
-        await fs.writeFile(`${id}.json`, JSON.stringify(data));
-    }
-    // ... other methods
-}
-
-// Step 3: Create new implementation
-class DatabaseDataStore implements DataStore {
-    async save(id: string, data: any) {
-        await db.collection('data').insertOne({ _id: id, ...data });
-    }
-    // ... other methods
-}
-
-// Step 4: Switch at runtime
-const dataStore = process.env.USE_DATABASE === 'true' 
-    ? new DatabaseDataStore() 
-    : new FileDataStore();
+Safety Measures:
+- Comprehensive test coverage (95% minimum)
+- Staged rollout with feature flags
+- Performance benchmarking before/after
+- Multiple code review rounds
+- Deprecation warnings for changed interfaces
 ```
 
-### Parallel Change (Expand-Contract)
-Evolve interfaces without breaking consumers:
+#### High Risk Refactoring (Extensive Planning Required)
+```
+Characteristics:
+├── Database schema changes
+├── API contract modifications
+├── Core architecture restructuring
+├── Cross-service interface changes
+└── Legacy system replacement
 
-```javascript
-// Step 1: Expand - Add new method alongside old
-class UserService {
-    // Old method
-    getUser(userId) {
-        return this.getUserById({ id: userId });
-    }
-    
-    // New method with better signature
-    getUserById({ id, includeDeleted = false }) {
-        const query = { id };
-        if (!includeDeleted) {
-            query.deletedAt = null;
-        }
-        return this.repository.findOne(query);
-    }
-}
-
-// Step 2: Migrate callers to new method
-// Step 3: Contract - Remove old method
+Safety Measures:
+- Technical design document and review
+- Parallel system operation during transition
+- Comprehensive integration testing
+- Rollback procedures tested and documented
+- Stakeholder communication and approval
 ```
 
-### Refactoring Metrics
+### 2. Pre-Refactoring Assessment Checklist
 
-#### Complexity Analysis
-```javascript
-// Measure cyclomatic complexity
-function calculateComplexity(ast) {
-    let complexity = 1; // Base complexity
-    
-    traverse(ast, {
-        IfStatement: () => complexity++,
-        ConditionalExpression: () => complexity++,
-        LogicalExpression: ({ node }) => {
-            if (node.operator === '&&' || node.operator === '||') {
-                complexity++;
-            }
-        },
-        ForStatement: () => complexity++,
-        WhileStatement: () => complexity++,
-        CatchClause: () => complexity++,
-        CaseStatement: () => complexity++
-    });
-    
-    return complexity;
-}
+#### Code Analysis Requirements
+- [ ] **Test Coverage**: Minimum 85% line coverage for affected code
+- [ ] **Performance Baseline**: Current metrics captured for comparison
+- [ ] **Dependency Mapping**: All consumers and dependencies identified
+- [ ] **Interface Contracts**: Public APIs and their usage patterns documented
+- [ ] **Error Scenarios**: Exception handling and edge cases understood
 
-// Target: Keep functions below complexity 10
+#### Impact Assessment
+- [ ] **User Impact**: No changes to user-visible behavior
+- [ ] **System Integration**: Effects on connected systems evaluated
+- [ ] **Performance Impact**: Resource usage and response time implications
+- [ ] **Deployment Impact**: Changes to build, deployment, or configuration
+- [ ] **Team Impact**: Knowledge transfer and documentation needs
+
+## Incremental Refactoring Strategies
+
+### 1. The Strangler Fig Pattern
+```
+Application: Legacy system modernization
+Strategy:
+1. Identify discrete functional boundaries
+2. Build new implementation alongside old system
+3. Gradually route traffic to new implementation
+4. Monitor and validate new system behavior
+5. Decommission old system components incrementally
+
+Timeline: 3-6 months for major systems
+Risk Level: Medium (well-contained with proper routing)
 ```
 
-#### Coupling Metrics
-```javascript
-// Measure afferent/efferent coupling
-class CouplingAnalyzer {
-    analyze(modules) {
-        const metrics = new Map();
-        
-        modules.forEach(module => {
-            const imported = this.getImportedModules(module);
-            const importedBy = this.getImportingModules(module, modules);
-            
-            metrics.set(module.name, {
-                efferentCoupling: imported.length,  // Dependencies
-                afferentCoupling: importedBy.length, // Dependents
-                instability: imported.length / (imported.length + importedBy.length)
-            });
-        });
-        
-        return metrics;
-    }
-}
+### 2. Branch by Abstraction
+```
+Application: Core component replacement in production systems
+Strategy:
+1. Create abstraction layer over existing implementation
+2. Route all usage through abstraction
+3. Implement new version behind abstraction
+4. Add feature flag to switch between implementations
+5. Gradually migrate to new implementation
+6. Remove old implementation and abstraction
+
+Timeline: 2-4 months for complex components
+Risk Level: Low (old system remains functional throughout)
 ```
 
-### Concurrent Code Refactoring
+### 3. Parallel Change (Expand-Contract)
+```
+Application: Interface evolution without breaking consumers
+Strategy:
+1. EXPAND: Add new interface alongside existing one
+2. Migrate consumers to new interface incrementally
+3. CONTRACT: Remove old interface once all consumers migrated
+4. Validate no consumers remain on old interface
 
-#### Lock-Free Data Structures
-```javascript
-// Before: Mutex-based counter
-class Counter {
-    constructor() {
-        this.value = 0;
-        this.mutex = new Mutex();
-    }
-    
-    async increment() {
-        await this.mutex.lock();
-        try {
-            this.value++;
-        } finally {
-            this.mutex.unlock();
-        }
-    }
-}
-
-// After: Atomic operations
-class AtomicCounter {
-    constructor() {
-        this.buffer = new SharedArrayBuffer(4);
-        this.value = new Int32Array(this.buffer);
-    }
-    
-    increment() {
-        Atomics.add(this.value, 0, 1);
-    }
-    
-    get() {
-        return Atomics.load(this.value, 0);
-    }
-}
+Timeline: 1-3 months depending on consumer count
+Risk Level: Low (consumers can migrate at their own pace)
 ```
 
-#### Actor Model Refactoring
-```javascript
-// Refactor shared mutable state to actors
-class UserActor {
-    constructor(id) {
-        this.id = id;
-        this.state = { balance: 0 };
-        this.mailbox = [];
-    }
-    
-    send(message) {
-        this.mailbox.push(message);
-        this.processMessages();
-    }
-    
-    async processMessages() {
-        while (this.mailbox.length > 0) {
-            const message = this.mailbox.shift();
-            await this.handle(message);
-        }
-    }
-    
-    async handle(message) {
-        switch (message.type) {
-            case 'DEPOSIT':
-                this.state.balance += message.amount;
-                message.reply(this.state.balance);
-                break;
-            case 'WITHDRAW':
-                if (this.state.balance >= message.amount) {
-                    this.state.balance -= message.amount;
-                    message.reply({ success: true, balance: this.state.balance });
-                } else {
-                    message.reply({ success: false, error: 'Insufficient funds' });
-                }
-                break;
-        }
-    }
-}
+### 4. Feature Toggle Refactoring
+```
+Application: Algorithmic improvements and behavioral changes
+Strategy:
+1. Implement new behavior behind feature flag
+2. Deploy with flag disabled (old behavior active)
+3. Enable for small percentage of traffic
+4. Monitor metrics and gradually increase percentage
+5. Make new behavior default once validated
+6. Remove feature flag and old code
+
+Timeline: 2-6 weeks for algorithmic changes
+Risk Level: Very Low (instant rollback capability)
 ```
 
-### Database Refactoring Patterns
+## Refactoring Quality Metrics
 
-#### Introduce Surrogate Key
-```sql
--- Step 1: Add new column
-ALTER TABLE orders ADD COLUMN id SERIAL PRIMARY KEY;
+### Code Quality Improvement Targets
+- **Cyclomatic Complexity**: Reduce by 20-30% for complex functions
+- **Code Duplication**: Eliminate >90% of identified duplicate code blocks
+- **Module Coupling**: Reduce inter-module dependencies by 15-25%
+- **Test Coverage**: Maintain or improve coverage (never decrease)
+- **Documentation Coverage**: 100% for public APIs and complex algorithms
 
--- Step 2: Update application to use new key
--- Step 3: Migrate foreign keys
-ALTER TABLE order_items 
-    ADD COLUMN order_id INTEGER REFERENCES orders(id);
-    
-UPDATE order_items oi
-SET order_id = o.id
-FROM orders o
-WHERE oi.order_number = o.order_number;
+### Performance Impact Validation
+- **Response Time**: No degradation >5% for critical paths
+- **Memory Usage**: No increase >10% in steady-state operation
+- **CPU Utilization**: No increase >10% under normal load
+- **Database Performance**: Query execution time maintained or improved
 
--- Step 4: Drop old foreign key
-ALTER TABLE order_items 
-    DROP COLUMN order_number;
+### Maintainability Metrics
+- **Lines of Code per Function**: Target <50 lines, maximum 100 lines
+- **Function Parameter Count**: Target <5 parameters, maximum 8
+- **Class Size**: Target <300 lines, maximum 500 lines
+- **File Size**: Follow CLAUDE.md limits (250 target, 400 maximum)
+
+## Incremental Implementation Workflow
+
+### Phase 1: Preparation and Analysis
+```
+Duration: 1-2 weeks
+Activities:
+├── Code smell identification and prioritization
+├── Test coverage analysis and gap filling
+├── Performance baseline establishment
+├── Risk assessment and mitigation planning
+└── Stakeholder communication and approval
 ```
 
-#### Split Table
-```javascript
-// Refactor wide table into focused tables
-class TableSplitter {
-    async splitUserTable() {
-        // Step 1: Create new tables
-        await db.query(`
-            CREATE TABLE user_profiles (
-                user_id INT PRIMARY KEY,
-                bio TEXT,
-                avatar_url VARCHAR(255),
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            )
-        `);
-        
-        await db.query(`
-            CREATE TABLE user_preferences (
-                user_id INT PRIMARY KEY,
-                theme VARCHAR(50),
-                notifications BOOLEAN,
-                language VARCHAR(10),
-                FOREIGN KEY (user_id) REFERENCES users(id)
-            )
-        `);
-        
-        // Step 2: Migrate data in batches
-        const batchSize = 1000;
-        let offset = 0;
-        
-        while (true) {
-            const users = await db.query(
-                'SELECT * FROM users LIMIT ? OFFSET ?',
-                [batchSize, offset]
-            );
-            
-            if (users.length === 0) break;
-            
-            // Insert into new tables
-            await this.migrateProfiles(users);
-            await this.migratePreferences(users);
-            
-            offset += batchSize;
-        }
-        
-        // Step 3: Drop columns from original table
-        await db.query(`
-            ALTER TABLE users 
-            DROP COLUMN bio,
-            DROP COLUMN avatar_url,
-            DROP COLUMN theme,
-            DROP COLUMN notifications,
-            DROP COLUMN language
-        `);
-    }
-}
+### Phase 2: Infrastructure Setup
+```
+Duration: 3-5 days
+Activities:
+├── Feature flag implementation (if needed)
+├── Monitoring and alerting enhancement
+├── Rollback procedure documentation and testing
+├── Development environment preparation
+└── Code review process establishment
 ```
 
-### API Evolution Without Breaking Changes
-
-#### Versioned Response Transformation
-```javascript
-class APIVersionTransformer {
-    transformResponse(data, version) {
-        const transformers = {
-            'v1': this.transformToV1,
-            'v2': this.transformToV2,
-            'v3': this.transformToV3
-        };
-        
-        // Start with latest format
-        let result = data;
-        
-        // Apply transformations backwards to target version
-        const versions = Object.keys(transformers);
-        const targetIndex = versions.indexOf(version);
-        
-        for (let i = versions.length - 1; i > targetIndex; i--) {
-            result = transformers[versions[i]].call(this, result);
-        }
-        
-        return result;
-    }
-    
-    transformToV2(v3Data) {
-        // Remove v3-specific fields
-        const { newField, ...v2Data } = v3Data;
-        
-        // Rename fields for v2
-        if (v3Data.updatedName) {
-            v2Data.name = v3Data.updatedName;
-            delete v2Data.updatedName;
-        }
-        
-        return v2Data;
-    }
-}
+### Phase 3: Incremental Implementation
+```
+Duration: 2-8 weeks (varies by scope)
+Activities:
+├── Small, atomic changes with immediate testing
+├── Continuous integration and deployment
+├── Real-time monitoring and metric tracking
+├── Regular stakeholder updates and feedback
+└── Course correction based on findings
 ```
 
-### Refactoring Safety Checklist
+### Phase 4: Validation and Cleanup
+```
+Duration: 1-2 weeks
+Activities:
+├── Comprehensive system testing
+├── Performance validation and optimization
+├── Documentation updates and knowledge transfer
+├── Legacy code removal and cleanup
+└── Post-refactoring retrospective and lessons learned
+```
 
-Before starting any refactoring:
-- [ ] Comprehensive tests exist for affected code
-- [ ] Performance benchmarks captured
-- [ ] Feature flags ready for gradual rollout
-- [ ] Rollback plan documented
-- [ ] Monitoring alerts configured
+## Safety Mechanisms and Rollback Procedures
 
-During refactoring:
-- [ ] Each step maintains all tests passing
-- [ ] Commits are atomic and revertible
-- [ ] Performance metrics tracked
-- [ ] No functional changes mixed in
+### Automated Safety Checks
+- **Pre-deployment Testing**: All tests must pass before deployment
+- **Performance Regression Detection**: Automatic rollback if metrics degrade
+- **Error Rate Monitoring**: Alert and consider rollback if error rates spike
+- **User Impact Tracking**: Monitor user experience metrics for degradation
 
-After refactoring:
-- [ ] All tests still pass
-- [ ] Performance maintained or improved
-- [ ] Code metrics show improvement
-- [ ] Documentation updated
-- [ ] Team code review completed
+### Manual Rollback Triggers
+- **Unexpected Behavior**: Any behavior change not covered by test cases
+- **Performance Issues**: Response time or resource usage exceeding thresholds
+- **Integration Failures**: Downstream system compatibility issues
+- **Stakeholder Concerns**: Business or user experience concerns raised
 
-Remember: Refactoring is a disciplined approach to improving code. Make it better without making it different.
+### Rollback Execution Procedures
+```
+Immediate Rollback (< 5 minutes):
+1. Disable feature flags or revert to previous deployment
+2. Verify system returns to baseline behavior
+3. Communicate rollback to stakeholders
+4. Begin root cause analysis
+
+Full System Rollback (< 30 minutes):
+1. Execute automated rollback procedures
+2. Verify all system components restored
+3. Validate data integrity and consistency
+4. Resume normal operations monitoring
+5. Schedule post-incident review
+```
+
+## Integration with CLAUDE.md Workflows
+
+This mode works in conjunction with CLAUDE.md's comprehensive patterns:
+- **Code Quality Standards**: Follow CLAUDE.md file size and documentation requirements
+- **Task Management**: Use TaskManager API for complex refactoring projects (3+ phases)
+- **Subagent Analysis**: Delegate code quality analysis to specialized subagents
+- **Testing Requirements**: Maintain CLAUDE.md testing standards throughout refactoring process

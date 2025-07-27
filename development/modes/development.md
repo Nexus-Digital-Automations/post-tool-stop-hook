@@ -1,349 +1,128 @@
 # DEVELOPMENT Mode Instructions
 
-You are in DEVELOPMENT mode, focused on implementing new features with production-ready patterns.
+You are in DEVELOPMENT mode, focused on implementing production-ready features with architectural decision-making frameworks.
 
-## Advanced Development Patterns
+*Note: Comprehensive development patterns, quality standards, and TaskManager workflows are detailed in CLAUDE.md. This mode provides development-specific decision frameworks.*
 
-### Feature Flag Implementation
+## Implementation Decision Tree
 
-#### Toggle Pattern
-```javascript
-// feature-flags.js
-class FeatureFlags {
-    constructor(config) {
-        this.flags = config.flags || {};
-        this.userOverrides = new Map();
-    }
-    
-    isEnabled(flagName, userId = null) {
-        // Check user-specific override first
-        if (userId && this.userOverrides.has(`${flagName}:${userId}`)) {
-            return this.userOverrides.get(`${flagName}:${userId}`);
-        }
-        
-        const flag = this.flags[flagName];
-        if (!flag) return false;
-        
-        // Percentage rollout
-        if (flag.percentage && userId) {
-            const hash = this.hashUserId(userId, flagName);
-            return hash < flag.percentage;
-        }
-        
-        return flag.enabled || false;
-    }
-    
-    hashUserId(userId, salt) {
-        // Consistent hash for gradual rollout
-        let hash = 0;
-        const str = `${userId}:${salt}`;
-        for (let i = 0; i < str.length; i++) {
-            hash = ((hash << 5) - hash) + str.charCodeAt(i);
-            hash = hash & hash;
-        }
-        return Math.abs(hash) % 100;
-    }
-}
+### 1. Feature Complexity Assessment
+```
+Simple Feature (1-2 files, <4 hours):
+├── Direct implementation with standard error handling
+├── Unit tests + integration test
+└── Documentation update
 
-// Usage in code
-if (featureFlags.isEnabled('new-checkout-flow', user.id)) {
-    return renderNewCheckout();
-} else {
-    return renderLegacyCheckout();
-}
+Moderate Feature (3-5 files, 4-8 hours):
+├── Architecture spike (1 hour research phase)
+├── Interface design before implementation
+├── Staged rollout with feature flags
+└── Comprehensive test suite
+
+Complex Feature (6+ files, 8+ hours):
+├── Technical design document
+├── Proof of concept implementation
+├── Security and performance review
+├── Gradual integration with circuit breakers
+└── Full observability instrumentation
 ```
 
-### API Versioning Strategies
+### 2. Architectural Pattern Selection
 
-#### URL Versioning
-```javascript
-// routes/v1/users.js
-router.get('/api/v1/users/:id', getUserV1);
-router.get('/api/v2/users/:id', getUserV2);
+#### When to Use Each Pattern
+**Adapter Pattern**: 
+- Integrating with external APIs or legacy systems
+- API versioning and backward compatibility needs
+- Third-party service abstractions
 
-// Deprecation headers
-function getUserV1(req, res) {
-    res.set('Sunset', 'Sat, 31 Dec 2024 23:59:59 GMT');
-    res.set('Deprecation', 'true');
-    res.set('Link', '</api/v2/users>; rel="successor-version"');
-    // ... v1 logic
-}
-```
+**Facade Pattern**:
+- Complex subsystems with multiple interaction points  
+- Simplifying client interfaces to internal complexity
+- Cross-cutting concerns (logging, validation, caching)
 
-#### Header Versioning
-```javascript
-// middleware/api-version.js
-function apiVersion(req, res, next) {
-    const version = req.headers['api-version'] || 'v1';
-    req.apiVersion = version;
-    
-    // Route to appropriate handler
-    const handler = versionHandlers[req.path]?.[version];
-    if (!handler) {
-        return res.status(400).json({ 
-            error: `API version ${version} not supported for this endpoint` 
-        });
-    }
-    
-    handler(req, res, next);
-}
-```
+**Event-Driven Architecture**:
+- Microservice communication
+- Decoupling high-frequency operations
+- Real-time data processing pipelines
 
-### Database Migration Patterns
+**Repository Pattern**:
+- Data access abstraction
+- Testing with mock data sources
+- Multiple data storage backends
 
-#### Safe Migration Strategy
-```javascript
-// migrations/20240101_add_user_preferences.js
-module.exports = {
-    up: async (queryInterface, Sequelize) => {
-        // Step 1: Add column with default
-        await queryInterface.addColumn('users', 'preferences', {
-            type: Sequelize.JSON,
-            defaultValue: {},
-            allowNull: false
-        });
-        
-        // Step 2: Backfill existing records in batches
-        const batchSize = 1000;
-        let offset = 0;
-        let hasMore = true;
-        
-        while (hasMore) {
-            const [updated] = await queryInterface.sequelize.query(`
-                UPDATE users 
-                SET preferences = '{"theme": "light", "notifications": true}'
-                WHERE id IN (
-                    SELECT id FROM users 
-                    WHERE preferences = '{}'
-                    LIMIT ${batchSize} OFFSET ${offset}
-                )
-            `);
-            
-            hasMore = updated > 0;
-            offset += batchSize;
-            
-            // Prevent overwhelming the database
-            await new Promise(resolve => setTimeout(resolve, 100));
-        }
-    },
-    
-    down: async (queryInterface) => {
-        // Ensure backward compatibility
-        await queryInterface.removeColumn('users', 'preferences');
-    }
-};
-```
+### 3. Development Quality Gates
 
-### Dependency Injection Patterns
+#### Pre-Implementation Checklist
+- [ ] **Context Assessment**: Current system architecture understood
+- [ ] **Impact Analysis**: Downstream effects identified and documented
+- [ ] **Resource Planning**: Dependencies, APIs, and data requirements mapped
+- [ ] **Security Review**: Authentication, authorization, and data protection considered
+- [ ] **Performance Baseline**: Current metrics captured for comparison
 
-```javascript
-// container.js
-class DIContainer {
-    constructor() {
-        this.services = new Map();
-        this.singletons = new Map();
-    }
-    
-    register(name, factory, options = {}) {
-        this.services.set(name, {
-            factory,
-            singleton: options.singleton || false
-        });
-    }
-    
-    get(name) {
-        const service = this.services.get(name);
-        if (!service) {
-            throw new Error(`Service ${name} not found`);
-        }
-        
-        if (service.singleton) {
-            if (!this.singletons.has(name)) {
-                this.singletons.set(name, service.factory(this));
-            }
-            return this.singletons.get(name);
-        }
-        
-        return service.factory(this);
-    }
-}
+#### During Implementation
+- [ ] **Interface First**: Public APIs defined before internal implementation
+- [ ] **Error Boundaries**: Failure modes identified and handled gracefully
+- [ ] **Incremental Integration**: Features built in testable, deployable increments
+- [ ] **Documentation as Code**: API documentation generated from implementation
+- [ ] **Observability Built-In**: Metrics, logs, and traces included from start
 
-// Setup
-const container = new DIContainer();
-container.register('database', () => new Database(config.db), { singleton: true });
-container.register('userRepository', (c) => new UserRepository(c.get('database')));
-container.register('userService', (c) => new UserService(c.get('userRepository')));
+#### Pre-Completion Validation
+- [ ] **Feature Completeness**: All acceptance criteria met and verified
+- [ ] **Integration Testing**: End-to-end workflows validated
+- [ ] **Performance Verification**: Response times and resource usage within targets
+- [ ] **Security Validation**: Vulnerability scanning and access control testing
+- [ ] **Rollback Readiness**: Deployment reversal strategy tested and documented
 
-// Usage
-const userService = container.get('userService');
-```
+## Context-Specific Implementation Strategies
 
-### Circuit Breaker Pattern
+### API Development
+- **Contract-First Design**: OpenAPI/GraphQL schema before implementation
+- **Versioning Strategy**: Semantic versioning with deprecation timelines
+- **Rate Limiting**: Built-in throttling and quota management
+- **Input Validation**: Schema-based validation with detailed error responses
 
-```javascript
-class CircuitBreaker {
-    constructor(asyncFunction, options = {}) {
-        this.asyncFunction = asyncFunction;
-        this.failureThreshold = options.failureThreshold || 5;
-        this.cooldownPeriod = options.cooldownPeriod || 60000;
-        this.requestTimeout = options.requestTimeout || 10000;
-        
-        this.state = 'CLOSED';
-        this.failureCount = 0;
-        this.nextAttempt = Date.now();
-    }
-    
-    async call(...args) {
-        if (this.state === 'OPEN') {
-            if (Date.now() < this.nextAttempt) {
-                throw new Error('Circuit breaker is OPEN');
-            }
-            this.state = 'HALF_OPEN';
-        }
-        
-        try {
-            const result = await this.timeout(this.asyncFunction(...args));
-            this.onSuccess();
-            return result;
-        } catch (error) {
-            this.onFailure();
-            throw error;
-        }
-    }
-    
-    timeout(promise) {
-        return Promise.race([
-            promise,
-            new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Request timeout')), this.requestTimeout)
-            )
-        ]);
-    }
-    
-    onSuccess() {
-        this.failureCount = 0;
-        this.state = 'CLOSED';
-    }
-    
-    onFailure() {
-        this.failureCount++;
-        if (this.failureCount >= this.failureThreshold) {
-            this.state = 'OPEN';
-            this.nextAttempt = Date.now() + this.cooldownPeriod;
-        }
-    }
-}
-```
+### Data Layer Implementation
+- **Transaction Boundaries**: Clear ACID compliance requirements
+- **Migration Strategy**: Backward-compatible schema changes with rollback plans
+- **Caching Layer**: Redis/in-memory caching for frequently accessed data
+- **Data Validation**: Input sanitization and business rule enforcement
 
-### Event-Driven Architecture
+### Frontend Integration
+- **Component Isolation**: Self-contained components with clear props interfaces
+- **State Management**: Predictable state updates with immutability patterns
+- **Error Boundaries**: Graceful degradation when components fail
+- **Accessibility**: WCAG compliance built into component design
 
-```javascript
-// Event Bus Implementation
-class EventBus {
-    constructor() {
-        this.events = new Map();
-        this.middlewares = [];
-    }
-    
-    use(middleware) {
-        this.middlewares.push(middleware);
-    }
-    
-    on(event, handler) {
-        if (!this.events.has(event)) {
-            this.events.set(event, []);
-        }
-        this.events.get(event).push(handler);
-    }
-    
-    async emit(event, data) {
-        // Run middlewares
-        for (const middleware of this.middlewares) {
-            data = await middleware(event, data);
-        }
-        
-        const handlers = this.events.get(event) || [];
-        
-        // Execute handlers concurrently
-        await Promise.all(
-            handlers.map(handler => 
-                handler(data).catch(error => 
-                    console.error(`Error in ${event} handler:`, error)
-                )
-            )
-        );
-    }
-}
+### Third-Party Integration
+- **Circuit Breakers**: Automatic failure detection and service isolation
+- **Retry Logic**: Exponential backoff with jitter for transient failures
+- **Timeout Configuration**: Request and connection timeouts for all external calls
+- **Fallback Strategies**: Graceful degradation when external services fail
 
-// Domain Events
-const eventBus = new EventBus();
+## Mode-Specific Success Criteria
 
-// Middleware for logging
-eventBus.use(async (event, data) => {
-    console.log(`Event: ${event}`, { timestamp: new Date(), data });
-    return data;
-});
+### Development Quality Metrics
+- **Code Coverage**: Minimum 80% line coverage with meaningful test scenarios
+- **Performance Benchmarks**: Response time <200ms for critical paths
+- **Error Rate**: <0.1% error rate in production after 48 hours
+- **Security Compliance**: Zero high/critical security vulnerabilities
 
-// Subscribe to events
-eventBus.on('user.created', async (user) => {
-    await sendWelcomeEmail(user);
-});
+### Implementation Excellence Indicators
+- **Architecture Consistency**: Follows established patterns and conventions
+- **Documentation Quality**: Clear setup, usage, and troubleshooting guides
+- **Deployment Readiness**: Zero-downtime deployment capability
+- **Monitoring Integration**: Comprehensive alerting and dashboard coverage
 
-eventBus.on('user.created', async (user) => {
-    await createInitialPreferences(user);
-});
+### Development Velocity Optimization
+- **Feature Flags**: Progressive rollout capability for all new features
+- **Automated Testing**: CI/CD pipeline with comprehensive test coverage
+- **Environment Parity**: Development, staging, and production consistency
+- **Rollback Capability**: Sub-minute rollback for any deployment
 
-// Emit events
-await eventBus.emit('user.created', newUser);
-```
+## Integration with CLAUDE.md Workflows
 
-### Microservices Communication Patterns
-
-#### Retry with Exponential Backoff
-```javascript
-async function callServiceWithRetry(serviceCall, options = {}) {
-    const maxRetries = options.maxRetries || 3;
-    const baseDelay = options.baseDelay || 1000;
-    const maxDelay = options.maxDelay || 30000;
-    
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-            return await serviceCall();
-        } catch (error) {
-            if (attempt === maxRetries) throw error;
-            
-            // Check if error is retryable
-            if (!isRetryable(error)) throw error;
-            
-            const delay = Math.min(
-                baseDelay * Math.pow(2, attempt) + Math.random() * 1000,
-                maxDelay
-            );
-            
-            await new Promise(resolve => setTimeout(resolve, delay));
-        }
-    }
-}
-
-function isRetryable(error) {
-    return error.code === 'ECONNRESET' || 
-           error.code === 'ETIMEDOUT' ||
-           (error.response && error.response.status >= 500);
-}
-```
-
-### Development Mode Best Practices
-
-#### Incremental Feature Development
-1. **Start with a spike**: Proof of concept to validate approach
-2. **Build the MVP**: Core functionality with basic error handling
-3. **Add resilience**: Retries, circuit breakers, timeouts
-4. **Implement monitoring**: Metrics, logs, traces
-5. **Optimize performance**: Only after functionality is complete
-
-#### Integration Strategies
-- **Adapter Pattern**: Wrap external dependencies
-- **Facade Pattern**: Simplify complex subsystems
-- **Anti-Corruption Layer**: Protect from external changes
-
-Remember: In development mode, focus on building robust, scalable features that can evolve with changing requirements.
+This mode works in conjunction with CLAUDE.md's comprehensive patterns:
+- **Task Management**: Use TaskManager API for complex feature development (3+ steps)
+- **Subagent Research**: Delegate architecture analysis to specialized subagents
+- **Thinking Escalation**: Apply "think hard" for features requiring architectural decisions
+- **Quality Standards**: Follow CLAUDE.md file size limits (250/400 lines) and documentation requirements

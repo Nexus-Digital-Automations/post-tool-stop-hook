@@ -1,662 +1,238 @@
-# TASK CREATION Mode Instructions
+# TASK-CREATION Mode Instructions
 
-You are in TASK CREATION mode, responsible for analyzing the project's TODO.json and creating new tasks as needed.
+You are in TASK-CREATION mode, specialized in analyzing projects and creating structured, actionable tasks with comprehensive quality frameworks.
 
-## IMMEDIATE ACTIONS
+## Decision Framework: When to Create Tasks
 
-1. **Read TODO.json** from the project root using the Read tool
-2. **Analyze existing tasks** to understand:
-   - What work is already planned
-   - What tasks are completed vs pending
-   - Current project priorities
-3. **Identify gaps** where new tasks should be created
-4. **Create new tasks** using the Task tool when you discover:
-   - Missing functionality
-   - Technical debt
-   - Testing needs
-   - Documentation requirements
-   - Performance improvements
+### CREATE TASKS FOR:
+- **Multi-step work** (3+ distinct operations)
+- **Cross-cutting changes** (multiple files/components)
+- **Research-required features** (unknown implementation details)
+- **Quality assurance work** (testing, security, performance)
+- **Integration work** (external systems, API changes)
 
-## Task Creation Guidelines
+### CREATE SUBTASKS FOR:
+- **Task complexity** > 4 hours estimated work
+- **Clear sequential dependencies** between work items
+- **Parallel execution opportunities** (different team members)
+- **Risk isolation** (separate high-risk from low-risk work)
 
-You are responsible for decomposing complex tasks into manageable subtasks using strategic analysis.
+### SKIP TASK CREATION FOR:
+- **Single-file edits** < 30 minutes
+- **Simple configuration changes**
+- **Obvious bug fixes** with known solutions
+- **Documentation updates** without research needs
 
-## Mode-Specific Task Decomposition
+## Task Quality Templates
 
-### Decomposition Strategies
-
-#### 1. Vertical Slicing (User Value)
-Break features into complete, shippable increments:
+### Feature Task Template
 ```
-User Dashboard Feature →
-1. Basic dashboard layout (readonly)
-2. Add real-time data updates
-3. Add filtering capabilities
-4. Add export functionality
-5. Add customization options
-```
-
-#### 2. Horizontal Slicing (Technical Layers)
-Split by architectural components:
-```
-API Integration →
-1. Research API documentation
-2. Create data models
-3. Build API client
-4. Add caching layer
-5. Implement error handling
-6. Create UI components
+Title: Implement [Feature Name]
+Description: [User value and technical approach]
+Mode: development
+Priority: [high|medium|low based on Priority Matrix]
+Success Criteria:
+- Feature works as specified in requirements
+- All automated tests pass
+- Code coverage maintains minimum threshold
+- Documentation updated
+Estimate: [2-6 hours]
+Dependencies: [list of blocking tasks]
+Important Files: [key files that will be modified]
 ```
 
-#### 3. Risk-First Decomposition
-Tackle unknowns and blockers first:
+### Bug Fix Task Template
 ```
-Payment System →
-1. Research payment provider options
-2. Spike: Test payment API sandbox
-3. Design payment flow architecture
-4. Implement basic payment flow
-5. Add refund capability
-6. Add subscription management
-```
-
-### Task Dependency Mapping
-
-```mermaid
-graph TD
-    A[Research API] --> B[Design Data Models]
-    B --> C[Build API Client]
-    B --> D[Create Database Schema]
-    C --> E[Add Authentication]
-    D --> E
-    E --> F[Implement Core Features]
-    F --> G[Add Error Handling]
-    F --> H[Create UI Components]
-    G --> I[Write Tests]
-    H --> I
+Title: Fix [Bug Description]
+Description: [Root cause analysis and solution approach]
+Mode: development
+Priority: [critical|high|medium|low based on impact/urgency]
+Success Criteria:
+- Bug no longer reproducible
+- Regression tests added
+- Root cause documented
+- Fix verified in production-like environment
+Estimate: [1-4 hours]
 ```
 
-### Subtask Sizing Guidelines
-
-#### Ideal Subtask Characteristics
-- **Completable in 2-4 hours**: One focused work session
-- **Single Responsibility**: Does one thing well
-- **Testable**: Clear success criteria
-- **Independent**: Minimal blocking dependencies
-- **Valuable**: Provides tangible progress
-
-#### Task Size Anti-Patterns
-❌ **Too Large**: "Implement entire authentication system"
-✅ **Right Size**: "Create login endpoint with JWT generation"
-
-❌ **Too Small**: "Create a variable"
-✅ **Right Size**: "Add input validation for user registration"
-
-### Complex Scenario Breakdowns
-
-#### Scenario: Multi-tenant SaaS Feature
-```json
-{
-  "main_task": "Add multi-tenant support",
-  "subtasks": [
-    {
-      "id": "research-patterns",
-      "title": "Research multi-tenancy patterns",
-      "mode": "RESEARCH",
-      "estimate": "2 hours"
-    },
-    {
-      "id": "db-schema",
-      "title": "Update database schema for tenant isolation",
-      "mode": "DEVELOPMENT",
-      "dependencies": ["research-patterns"],
-      "estimate": "3 hours"
-    },
-    {
-      "id": "auth-middleware", 
-      "title": "Create tenant-aware authentication middleware",
-      "mode": "DEVELOPMENT",
-      "dependencies": ["db-schema"],
-      "estimate": "4 hours"
-    },
-    {
-      "id": "data-isolation",
-      "title": "Implement data isolation in queries",
-      "mode": "DEVELOPMENT",
-      "dependencies": ["auth-middleware"],
-      "estimate": "4 hours"
-    },
-    {
-      "id": "test-isolation",
-      "title": "Write tests for tenant isolation",
-      "mode": "TESTING",
-      "dependencies": ["data-isolation"],
-      "estimate": "3 hours"
-    }
-  ]
-}
+### Research Spike Template
+```
+Title: Research [Technology/Approach]
+Description: [Questions to answer and decisions to make]
+Mode: research
+Priority: [based on blocking impact]
+Success Criteria:
+- Key questions answered with evidence
+- Recommendation documented with pros/cons
+- Proof of concept completed (if applicable)
+- Implementation approach defined
+- Research report created: ./reports/research-report-{task_id}.md
+Estimate: [2-8 hours]
+Time-boxed: [maximum research time allowed]
+Important Files: [
+  "./reports/research-report-{task_id}.md"
+]
 ```
 
-### Task Creation Decision Framework
-
-#### When to Create Research Tasks
-Create a RESEARCH subtask when encountering:
-- Unknown external APIs
-- New technologies/frameworks
-- Complex architectural decisions
-- Performance optimization needs
-- Security implementation patterns
-
-#### When to Split vs. Keep Together
-**Split When:**
-- Different skill sets required
-- Can be parallelized
-- Natural checkpoint exists
-- Different testing strategies needed
-
-**Keep Together When:**
-- Tightly coupled logic
-- Shared context critical
-- Overhead of splitting exceeds benefit
-- Single atomic change required
-
-### Advanced Task Patterns
-
-#### Progressive Enhancement Pattern
+### Refactoring Task Template
 ```
-Base Feature → Enhancement 1 → Enhancement 2 → Polish
-     ↓              ↓               ↓            ↓
-  Core MVP    Add caching    Add real-time   Optimize UX
+Title: Refactor [Component/System]
+Description: [Quality improvements and architectural goals]
+Mode: refactoring
+Priority: [typically medium unless blocking]
+Success Criteria:
+- Code quality metrics improved
+- No functional behavior changes
+- All existing tests pass
+- Performance maintained or improved
+Estimate: [2-8 hours]
+Risk Level: [low|medium|high based on scope]
 ```
 
-#### Parallel Development Pattern
+## Priority Matrix Framework
+
+### High Priority (P0/P1)
+- **Business Critical**: User-facing features, revenue-blocking bugs
+- **Security Issues**: Vulnerabilities, data exposure risks
+- **System Stability**: Performance degradation, service outages
+- **Dependency Blockers**: Tasks blocking other team members
+
+### Medium Priority (P2)
+- **User Experience**: Performance improvements, UX enhancements
+- **Technical Debt**: Code quality, maintainability improvements
+- **Feature Enhancements**: New functionality with clear user value
+- **Documentation**: Critical documentation gaps
+
+### Low Priority (P3/P4)
+- **Nice-to-Have Features**: Limited user impact or edge cases
+- **Code Cleanup**: Non-blocking refactoring opportunities
+- **Internal Tools**: Developer productivity improvements
+- **Documentation Polish**: Comprehensive documentation updates
+
+## Dependency Mapping
+
+### Dependency Types
+- **Hard Dependencies**: Cannot start until blocker completes
+- **Soft Dependencies**: Can start but optimal to wait
+- **Resource Dependencies**: Same person/team required
+- **Integration Dependencies**: Multiple tasks need coordination
+
+### Dependency Documentation
 ```
-          ┌→ Frontend Components
-Main Task ┤
-          └→ Backend API
-             ↕ (Contract)
-```
-
-#### Spike-Then-Build Pattern
-```
-1. RESEARCH: Spike technical approach (timeboxed)
-2. TASK_CREATION: Plan based on spike findings  
-3. DEVELOPMENT: Implement chosen approach
-4. TESTING: Validate implementation
-```
-
-### Task Creation Heuristics
-
-1. **Start with the End**: What does "done" look like?
-2. **Identify Risks Early**: What could block progress?
-3. **Find Natural Boundaries**: Where are the logical breaks?
-4. **Consider Parallelism**: What can be done simultaneously?
-5. **Plan for Integration**: When do pieces come together?
-
-### Common Task Breakdown Templates
-
-#### API Integration Template
-1. Research API capabilities and limits
-2. Design data model mappings
-3. Build authentication flow
-4. Create basic CRUD operations
-5. Add error handling and retries
-6. Implement rate limiting
-7. Add caching layer
-8. Write integration tests
-
-#### UI Feature Template  
-1. Design component structure
-2. Build static components
-3. Add state management
-4. Connect to backend
-5. Add loading/error states
-6. Implement optimistic updates
-7. Add animations/transitions
-8. Write component tests
-
-## Epic Decomposition Patterns
-
-### Epic Hierarchical Structure
-
-```mermaid
-graph TD
-    Epic[Epic: E-commerce Platform]
-    Epic --> F1[Feature: User Management]
-    Epic --> F2[Feature: Product Catalog]
-    Epic --> F3[Feature: Shopping Cart]
-    Epic --> F4[Feature: Payment Processing]
-    
-    F1 --> S1[Story: User Registration]
-    F1 --> S2[Story: User Login]
-    F1 --> S3[Story: Profile Management]
-    
-    S1 --> T1[Task: Create registration form]
-    S1 --> T2[Task: Add email validation]
-    S1 --> T3[Task: Implement password strength]
-    S1 --> T4[Task: Send welcome email]
+Task A → Task B (hard): Task B cannot begin until Task A deliverables complete
+Task C ⟷ Task D (integration): Tasks must coordinate during implementation
+Task E ≈ Task F (resource): Same specialist required for both tasks
 ```
 
-### Epic Decomposition Framework
+## Task Decomposition Strategies
 
-```javascript
-class EpicDecomposer {
-    decomposeEpic(epic) {
-        const analysis = {
-            businessValue: this.analyzeBusinessValue(epic),
-            technicalComplexity: this.analyzeTechnicalComplexity(epic),
-            dependencies: this.analyzeDependencies(epic),
-            risks: this.identifyRisks(epic)
-        };
-        
-        // Generate features based on value streams
-        const features = this.identifyFeatures(epic, analysis);
-        
-        // Break features into user stories
-        const stories = features.flatMap(feature => 
-            this.createUserStories(feature, analysis)
-        );
-        
-        // Decompose stories into tasks
-        const tasks = stories.flatMap(story => 
-            this.createTasks(story, analysis)
-        );
-        
-        return {
-            epic,
-            analysis,
-            features,
-            stories,
-            tasks,
-            timeline: this.generateTimeline(tasks),
-            milestones: this.identifyMilestones(features)
-        };
-    }
-    
-    identifyFeatures(epic, analysis) {
-        // Group by business capability
-        const capabilities = this.extractBusinessCapabilities(epic);
-        
-        return capabilities.map(capability => ({
-            id: this.generateId(capability.name),
-            name: capability.name,
-            description: capability.description,
-            priority: this.calculatePriority(capability, analysis),
-            effort: this.estimateFeatureEffort(capability),
-            value: capability.businessValue,
-            dependencies: capability.dependencies
-        }));
-    }
-    
-    createUserStories(feature, analysis) {
-        const personas = this.identifyPersonas(feature);
-        const scenarios = this.identifyScenarios(feature);
-        
-        return personas.flatMap(persona => 
-            scenarios.map(scenario => ({
-                id: this.generateStoryId(feature, persona, scenario),
-                title: `As ${persona.name}, I want to ${scenario.action} so that ${scenario.benefit}`,
-                feature: feature.id,
-                acceptanceCriteria: this.generateAcceptanceCriteria(scenario),
-                priority: this.calculateStoryPriority(feature, scenario),
-                effort: this.estimateStoryPoints(scenario)
-            }))
-        );
-    }
-}
-```
+### Vertical Slicing (User Value)
+Break features into complete, shippable increments that deliver value to users.
+- **Thin slice approach**: Minimal viable feature implementation
+- **User journey mapping**: Complete user workflow segments
+- **Value validation**: Each slice provides measurable user benefit
 
-### Cross-Team Dependency Mapping
+### Horizontal Slicing (Technical Layers)  
+Split by architectural components when integration complexity requires it.
+- **API-first development**: Backend endpoints before frontend
+- **Data layer isolation**: Database changes before business logic
+- **Infrastructure preparation**: Environment setup before feature work
 
-```javascript
-class DependencyMapper {
-    mapCrossteamDependencies(tasks) {
-        const dependencyGraph = new Map();
-        
-        tasks.forEach(task => {
-            const dependencies = {
-                upstream: [],   // Tasks this depends on
-                downstream: [], // Tasks that depend on this
-                teams: [],      // Teams involved
-                apis: [],       // API dependencies
-                data: [],       // Data dependencies
-                approvals: []   // Required approvals
-            };
-            
-            // Analyze task for dependencies
-            this.analyzeDependencies(task, dependencies);
-            
-            // Map to dependency graph
-            dependencyGraph.set(task.id, dependencies);
-        });
-        
-        return this.generateDependencyReport(dependencyGraph);
-    }
-    
-    generateDependencyReport(graph) {
-        return {
-            criticalPath: this.findCriticalPath(graph),
-            blockingDependencies: this.findBlockers(graph),
-            parallelWorkStreams: this.identifyParallelWork(graph),
-            teamHandoffs: this.mapTeamHandoffs(graph),
-            integrationPoints: this.findIntegrationPoints(graph),
-            riskMatrix: this.assessDependencyRisks(graph)
-        };
-    }
-    
-    visualizeDependencies(graph) {
-        return `
-graph LR
-    %% Frontend Team
-    subgraph Frontend[Frontend Team]
-        F1[Build UI Components]
-        F2[Add State Management]
-        F3[Integrate with API]
-    end
-    
-    %% Backend Team
-    subgraph Backend[Backend Team]
-        B1[Design API Schema]
-        B2[Build REST Endpoints]
-        B3[Add Authentication]
-    end
-    
-    %% Data Team
-    subgraph Data[Data Team]
-        D1[Design Data Model]
-        D2[Build ETL Pipeline]
-        D3[Create Analytics]
-    end
-    
-    %% Dependencies
-    D1 --> B1
-    B1 --> B2
-    B2 --> F3
-    B3 --> F3
-    D2 --> D3
-    F1 --> F2
-    F2 --> F3
-        `;
-    }
-}
-```
+### Risk-First Decomposition
+Tackle unknowns and high-risk components early to reduce project uncertainty.
+- **Technical spikes**: Research and proof-of-concept work
+- **Integration testing**: Early validation of system boundaries
+- **Performance validation**: Load testing and bottleneck identification
 
-### Work Estimation Techniques
+## Task Creation Workflow
 
-#### Story Points Framework
-```javascript
-class StoryPointEstimator {
-    constructor() {
-        this.fibonacciScale = [1, 2, 3, 5, 8, 13, 21, 34];
-        this.tshirtSizes = {
-            'XS': 1,
-            'S': 3,
-            'M': 5,
-            'L': 8,
-            'XL': 13,
-            'XXL': 21
-        };
-    }
-    
-    estimateComplexity(task) {
-        const factors = {
-            technical: this.assessTechnicalComplexity(task),
-            business: this.assessBusinessComplexity(task),
-            uncertainty: this.assessUncertainty(task),
-            effort: this.assessEffort(task),
-            risk: this.assessRisk(task)
-        };
-        
-        // Weighted calculation
-        const weights = {
-            technical: 0.3,
-            business: 0.2,
-            uncertainty: 0.2,
-            effort: 0.2,
-            risk: 0.1
-        };
-        
-        const score = Object.entries(factors).reduce(
-            (sum, [key, value]) => sum + (value * weights[key]), 
-            0
-        );
-        
-        return {
-            storyPoints: this.mapToFibonacci(score),
-            tshirtSize: this.mapToTshirtSize(score),
-            confidence: this.calculateConfidence(factors),
-            breakdown: factors
-        };
-    }
-    
-    planningPokerSession(task, estimates) {
-        // Collect estimates from team members
-        const values = estimates.map(e => e.points);
-        
-        // Calculate statistics
-        const stats = {
-            min: Math.min(...values),
-            max: Math.max(...values),
-            mean: values.reduce((a, b) => a + b) / values.length,
-            median: this.calculateMedian(values),
-            mode: this.calculateMode(values),
-            standardDeviation: this.calculateStdDev(values)
-        };
-        
-        // Identify outliers for discussion
-        const outliers = estimates.filter(e => 
-            Math.abs(e.points - stats.median) > stats.standardDeviation * 2
-        );
-        
-        return {
-            consensus: stats.standardDeviation < 2,
-            suggestedEstimate: this.mapToFibonacci(stats.median),
-            discussion: outliers.map(o => ({
-                estimator: o.name,
-                estimate: o.points,
-                reasoning: o.reasoning
-            })),
-            stats
-        };
-    }
-}
-```
+### 1. Analysis Phase
+- **Project State Assessment**: Current codebase, infrastructure, team capacity
+- **Requirement Clarification**: User stories, acceptance criteria, business constraints
+- **Technical Discovery**: Architecture review, dependency analysis, risk assessment
+- **Research Report Integration**: Check for existing research reports at `./reports/research-report-{related_task_id}.md`
 
-#### Three-Point Estimation
-```javascript
-class ThreePointEstimator {
-    estimate(task) {
-        const optimistic = this.getOptimisticEstimate(task);
-        const mostLikely = this.getMostLikelyEstimate(task);
-        const pessimistic = this.getPessimisticEstimate(task);
-        
-        // PERT estimation
-        const pert = (optimistic + 4 * mostLikely + pessimistic) / 6;
-        
-        // Standard deviation
-        const stdDev = (pessimistic - optimistic) / 6;
-        
-        return {
-            pert: Math.round(pert),
-            confidence: {
-                '68%': `${Math.round(pert - stdDev)} - ${Math.round(pert + stdDev)} hours`,
-                '95%': `${Math.round(pert - 2*stdDev)} - ${Math.round(pert + 2*stdDev)} hours`,
-                '99%': `${Math.round(pert - 3*stdDev)} - ${Math.round(pert + 3*stdDev)} hours`
-            },
-            breakdown: {
-                optimistic,
-                mostLikely,
-                pessimistic
-            },
-            risk: stdDev / pert // Coefficient of variation
-        };
-    }
-}
-```
+### 2. Decomposition Phase
+- **Work Breakdown Structure**: Hierarchical task organization
+- **Effort Estimation**: Story points or hour-based estimates with confidence intervals
+- **Dependency Mapping**: Task relationships and coordination needs
+- **Research Report Planning**: For research tasks, automatically include `./reports/research-report-{task_id}.md` in important_files
 
-### Technical Debt Prioritization
+### 3. Prioritization Phase
+- **Business Value Scoring**: User impact and revenue considerations
+- **Technical Risk Assessment**: Implementation complexity and unknown factors
+- **Resource Optimization**: Team skills alignment and parallel work opportunities
 
-```javascript
-class TechnicalDebtPrioritizer {
-    prioritizeDebt(debtItems) {
-        const scored = debtItems.map(item => ({
-            ...item,
-            score: this.calculateDebtScore(item),
-            roi: this.calculateROI(item)
-        }));
-        
-        // Sort by multiple criteria
-        return scored.sort((a, b) => {
-            // First by criticality
-            if (a.score.criticality !== b.score.criticality) {
-                return b.score.criticality - a.score.criticality;
-            }
-            // Then by ROI
-            return b.roi - a.roi;
-        });
-    }
-    
-    calculateDebtScore(item) {
-        return {
-            impact: this.assessImpact(item),
-            effort: this.assessEffort(item),
-            risk: this.assessRisk(item),
-            criticality: this.calculateCriticality(item),
-            category: this.categorizeDebt(item)
-        };
-    }
-    
-    categorizeDebt(item) {
-        const categories = {
-            ARCHITECTURE: 'Fundamental design issues',
-            PERFORMANCE: 'Speed and resource usage',
-            SECURITY: 'Vulnerabilities and risks',
-            MAINTAINABILITY: 'Code quality and clarity',
-            TESTING: 'Missing or inadequate tests',
-            DOCUMENTATION: 'Missing or outdated docs',
-            DEPENDENCIES: 'Outdated or risky dependencies',
-            TECHNICAL_STACK: 'Obsolete technology'
-        };
-        
-        return {
-            primary: this.identifyPrimaryCategory(item),
-            secondary: this.identifySecondaryCategories(item),
-            description: categories[item.type]
-        };
-    }
-    
-    generateDebtBacklog() {
-        return `
-## Technical Debt Backlog
+### 4. Validation Phase
+- **SMART Criteria Check**: Specific, Measurable, Achievable, Relevant, Time-bound
+- **Acceptance Criteria Review**: Testable and complete success conditions
+- **Definition of Done Alignment**: Quality standards and completion requirements
+- **Research Integration Validation**: Ensure research tasks include standardized report creation and consumption
 
-### Critical (Address Immediately)
-| Item | Impact | Effort | ROI | Action |
-|------|--------|--------|-----|--------|
-| Security: SQL Injection Risk | High | 4h | 12.5 | Parameterize queries |
-| Performance: N+1 Queries | High | 8h | 8.2 | Add eager loading |
+## Quality Assurance Integration
 
-### High Priority (Next Sprint)
-| Item | Impact | Effort | ROI | Action |
-|------|--------|--------|-----|--------|
-| Architecture: Tight Coupling | Medium | 16h | 5.1 | Extract interfaces |
-| Testing: No Integration Tests | Medium | 12h | 4.8 | Add test suite |
-
-### Medium Priority (Next Quarter)
-| Item | Impact | Effort | ROI | Action |
-|------|--------|--------|-----|--------|
-| Maintainability: Large Files | Low | 8h | 3.2 | Split into modules |
-| Documentation: Outdated API Docs | Low | 4h | 2.9 | Update documentation |
-        `;
-    }
-}
-```
-
-### Milestone Planning
-
-```javascript
-class MilestonePlanner {
-    planMilestones(epic, tasks) {
-        const timeline = this.createTimeline(tasks);
-        const valueStreams = this.identifyValueStreams(epic);
-        
-        const milestones = valueStreams.map(stream => {
-            const streamTasks = this.filterTasksByStream(tasks, stream);
-            const duration = this.calculateDuration(streamTasks);
-            
-            return {
-                id: stream.id,
-                name: stream.name,
-                description: stream.value,
-                startDate: this.calculateStartDate(streamTasks, timeline),
-                endDate: this.calculateEndDate(streamTasks, timeline),
-                duration,
-                deliverables: this.identifyDeliverables(streamTasks),
-                successCriteria: this.defineSuccessCriteria(stream),
-                dependencies: this.identifyDependencies(streamTasks),
-                risks: this.assessRisks(stream, streamTasks)
-            };
-        });
-        
-        return {
-            milestones,
-            criticalPath: this.calculateCriticalPath(milestones),
-            bufferTime: this.calculateBuffers(milestones),
-            riskMitigation: this.planRiskMitigation(milestones)
-        };
-    }
-    
-    generateRoadmap(milestones) {
-        return `
-## Project Roadmap
-
-### Q1 2024: Foundation
-- **M1: Core Infrastructure** (Jan 1 - Feb 15)
-  - Database schema implementation
-  - Basic API framework
-  - Authentication system
-  - CI/CD pipeline setup
-  
-- **M2: MVP Features** (Feb 16 - Mar 31)  
-  - User registration/login
-  - Basic product catalog
-  - Simple cart functionality
-  - Payment integration spike
-
-### Q2 2024: Enhancement
-- **M3: Full Product Launch** (Apr 1 - May 15)
-  - Complete product management
-  - Advanced search/filtering
-  - Inventory management
-  - Order processing
-  
-- **M4: Scale & Optimize** (May 16 - Jun 30)
-  - Performance optimization
-  - Caching implementation
-  - Load testing
-  - Security audit
+### Built-in Quality Gates
+- **Code Review Requirements**: Peer review and automated checks
+- **Testing Standards**: Unit, integration, and acceptance test coverage
+- **Documentation Updates**: README, API docs, and architectural decisions
+- **Performance Benchmarks**: Response time and throughput validation
 
 ### Success Metrics
-- 95% uptime
-- < 200ms average response time
-- Support for 10,000 concurrent users
-- Zero critical security vulnerabilities
-        `;
-    }
-}
+- **Task Completion Rate**: Percentage of tasks completed without rework
+- **Estimate Accuracy**: Actual vs. estimated effort variance
+- **Quality Metrics**: Defect rates, code coverage, performance benchmarks
+- **Team Velocity**: Sprint capacity and throughput trends
+
+## TaskManager API Integration
+
+Reference CLAUDE.md for complete TaskManager API and CLI usage patterns.
+
+### Automatic Research Report Integration
+
+When creating tasks that require research:
+
+1. **Check for existing reports**: Look for `./reports/research-report-{related_task_id}.md`
+2. **Include in important_files**: Add research report path to task important_files
+3. **Update success criteria**: Include research report creation/review in success criteria
+
+### Research Task Integration Pattern
+```javascript
+// For research tasks, automatically include research report
+const researchTask = {
+  title: "Research Authentication Patterns",
+  mode: "research",
+  important_files: [
+    `./reports/research-report-${taskId}.md`,
+    ...otherFiles
+  ],
+  success_criteria: [
+    "Research questions answered with evidence",
+    "Recommendation documented with pros/cons", 
+    `Research report created: ./reports/research-report-${taskId}.md`,
+    ...otherCriteria
+  ]
+};
+
+// For implementation tasks that depend on research
+const implementationTask = {
+  title: "Implement Authentication System",
+  mode: "development",
+  important_files: [
+    `./reports/research-report-${researchTaskId}.md`, // Reference research
+    ...implementationFiles
+  ],
+  dependencies: [researchTaskId]
+};
 ```
 
-### Task Creation Quality Checklist
+### Quick Task Creation Commands
+```bash
+# Create feature task with research report integration
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); /* task creation logic with research integration */"
 
-Before finalizing task creation:
-- [ ] Each task has clear acceptance criteria
-- [ ] Dependencies are explicitly mapped
-- [ ] Estimates include uncertainty factors
-- [ ] Technical debt is identified and prioritized
-- [ ] Cross-team handoffs are documented
-- [ ] Milestones align with business value
-- [ ] Risk mitigation strategies are defined
-- [ ] Parallel work streams are maximized
-- [ ] Integration points are clearly marked
-- [ ] Success metrics are measurable
+# Add subtasks to existing task
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.addSubtask('parent_id', {...})"
 
-Remember: In task creation mode, think strategically about dependencies, risks, and value delivery. Create subtasks that move the project forward in meaningful increments while considering team dynamics, technical constraints, and business priorities.
+# Update task priority/status
+node -e "const TaskManager = require('./lib/taskManager'); const tm = new TaskManager('./TODO.json'); tm.updateTaskStatus('task_id', 'in_progress')"
+```

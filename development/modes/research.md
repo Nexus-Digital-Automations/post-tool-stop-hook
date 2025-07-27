@@ -1,219 +1,265 @@
 # RESEARCH Mode Instructions
 
-You are in RESEARCH mode, focused on comprehensive evaluation and analysis using specialized subagents.
+You are in RESEARCH mode, focused on comprehensive evaluation and analysis with structured research methodologies.
 
-## MANDATORY SUBAGENT DELEGATION
+*Note: Subagent delegation patterns and parallel research execution are detailed in CLAUDE.md. This mode provides research question frameworks and evidence collection methodologies.*
 
-**CRITICAL**: ALL research tasks MUST delegate to specialized research subagents. You are the research coordinator, not the researcher.
+## Research Question Framework
 
-### Immediate Actions Required
+### 1. Research Type Classification
 
-1. **Extract Task Information**
-   - Get current task ID from the task context
-   - Identify the research topic/domain
-   - Determine the appropriate research specialist type
-
-2. **Spawn Specialized Research Subagent**
-   - Delegate ALL research work to domain-specific subagent
-   - Provide comprehensive context and requirements
-   - Specify deliverable format and success criteria
-
-3. **Create Task-Specific Documentation**
-   - Subagent creates file: `task-{ID}-{descriptive-name}.md`
-   - Store in `/development/tasks/` directory
-   - Use descriptive names based on research content
-
-4. **Update TODO.json for Next Task**
-   - Edit the next pending task's prompt
-   - Add instruction to read the research documentation
-   - Ensure seamless knowledge transfer
-
-## Research Subagent Specializations
-
-### Technology Evaluation Subagent
-**Use for**: Framework comparisons, library assessments, tool evaluations
-**File naming**: `task-{ID}-technology-evaluation.md`
-**Expertise**: Performance benchmarking, feature analysis, ecosystem evaluation
-
-### API Integration Analysis Subagent
-**Use for**: Third-party service evaluations, API assessments
-**File naming**: `task-{ID}-api-integration-analysis.md`
-**Expertise**: Authentication flows, rate limits, data mapping, integration complexity
-
-### Security Assessment Subagent
-**Use for**: Vulnerability analysis, compliance evaluation, security audits
-**File naming**: `task-{ID}-security-assessment.md`
-**Expertise**: Threat modeling, compliance standards, security best practices
-
-### Performance Research Subagent
-**Use for**: Load testing, optimization analysis, scalability evaluation
-**File naming**: `task-{ID}-performance-analysis.md`
-**Expertise**: Benchmarking, bottleneck identification, optimization strategies
-
-### Database Research Subagent
-**Use for**: Database selection, schema design, migration planning
-**File naming**: `task-{ID}-database-research.md`
-**Expertise**: Database comparison, query optimization, scaling strategies
-
-### User Experience Research Subagent
-**Use for**: UX analysis, accessibility evaluation, user journey mapping
-**File naming**: `task-{ID}-ux-research.md`
-**Expertise**: Usability testing, accessibility standards, user behavior analysis
-
-## Subagent Delegation Protocol
-
-### Step 1: Research Subagent Spawning
-```xml
-<subagent_delegation>
-Task ID: {CURRENT_TASK_ID}
-Research Domain: {SPECIFIC_DOMAIN}
-Delegate to: {SPECIALIST_TYPE} Research Subagent
-
-Context:
-- Project: {PROJECT_NAME}
-- Current Task: {TASK_DESCRIPTION}
-- Specific Research Question: {RESEARCH_FOCUS}
-- Business Requirements: {BUSINESS_CONTEXT}
-- Technical Constraints: {TECHNICAL_LIMITATIONS}
-
-Expected Deliverable:
-Create comprehensive research documentation in file:
-`./development/tasks/task-{ID}-{descriptive-name}.md`
+#### Technology Evaluation Research
+```
+Core Questions:
+├── What problems does this technology solve?
+├── How does it compare to existing solutions?
+├── What are the implementation requirements and constraints?
+├── What are the long-term maintenance and scaling implications?
+└── What are the security and compliance considerations?
 
 Success Criteria:
-- Thorough analysis with quantifiable metrics
-- Clear recommendations with pros/cons
-- Implementation guidance and next steps
-- Cost/time estimates where applicable
-- Risk assessment and mitigation strategies
-</subagent_delegation>
+- Technology comparison matrix with scoring criteria
+- Implementation feasibility assessment
+- Total cost of ownership analysis
+- Risk/benefit trade-off evaluation
 ```
 
-### Step 2: Documentation Requirements
-The research subagent MUST create a file with this structure:
+#### Architecture Decision Research
+```
+Core Questions:
+├── What architectural patterns best fit the requirements?
+├── How will this integrate with existing systems?
+├── What are the performance and scalability implications?
+├── What are the failure modes and recovery strategies?
+└── How will this evolve with future requirements?
 
+Success Criteria:
+- Architecture decision record (ADR) document
+- System integration diagram
+- Performance benchmark projections
+- Failure mode analysis and recovery procedures
+```
+
+#### Problem Investigation Research
+```
+Core Questions:
+├── What is the root cause of the issue?
+├── What are the contributing factors and dependencies?
+├── What are the potential solutions and their trade-offs?
+├── What is the impact of not addressing this issue?
+└── What are the testing and validation requirements?
+
+Success Criteria:
+- Root cause analysis with evidence
+- Solution options with implementation effort estimates
+- Impact assessment (users, systems, business)
+- Validation and testing strategy
+```
+
+### 2. Evidence Collection Methodology
+
+#### Quantitative Evidence Collection
+- **Performance Metrics**: Response times, throughput, resource utilization
+- **Usage Analytics**: User behavior patterns, feature adoption rates
+- **System Metrics**: Error rates, availability, capacity utilization
+- **Business Metrics**: Cost analysis, time-to-market, ROI projections
+
+#### Qualitative Evidence Collection
+- **Code Analysis**: Architecture patterns, code quality, maintainability
+- **Stakeholder Interviews**: User needs, business requirements, constraints
+- **Industry Research**: Best practices, case studies, expert opinions
+- **Competitive Analysis**: Feature comparisons, market positioning
+
+#### Evidence Validation Framework
+```
+Primary Sources (Highest Reliability):
+├── Direct measurement and testing
+├── Production system monitoring
+├── User feedback and analytics
+└── Official documentation and specifications
+
+Secondary Sources (Medium Reliability):
+├── Industry benchmarks and reports
+├── Peer code reviews and analysis
+├── Community discussions and forums
+└── Third-party evaluations and comparisons
+
+Tertiary Sources (Requires Validation):
+├── Marketing materials and vendor claims
+├── Unverified community content
+├── Outdated or deprecated information
+└── Anecdotal evidence without data support
+```
+
+## Research Decision Criteria
+
+### Technical Decision Framework
+- **Functionality**: Does it meet all functional requirements?
+- **Performance**: Does it meet performance and scalability needs?
+- **Maintainability**: Can it be maintained and extended efficiently?
+- **Integration**: How well does it integrate with existing systems?
+- **Security**: Does it meet security and compliance requirements?
+
+### Business Decision Framework
+- **Cost**: What are the total implementation and ongoing costs?
+- **Time**: How long will implementation and deployment take?
+- **Risk**: What are the technical and business risks?
+- **Strategic Alignment**: How well does it align with business goals?
+- **Vendor/Community**: What is the long-term viability and support?
+
+### Risk Assessment Matrix
+```
+High Impact, High Probability: AVOID - Find alternatives
+High Impact, Low Probability: MITIGATE - Plan contingencies
+Low Impact, High Probability: ACCEPT - Monitor and manage
+Low Impact, Low Probability: IGNORE - Document for awareness
+```
+
+## Research Execution Patterns
+
+### Parallel Research Strategy
+```
+Research Coordination Approach:
+1. Break complex research into domain-specific areas
+2. Delegate each area to specialized subagents simultaneously
+3. Define consistent evaluation criteria across all areas
+4. Synthesize findings into comprehensive analysis
+5. Make recommendations based on integrated evidence
+```
+
+### Research Documentation Standards
+
+#### Executive Summary Format
 ```markdown
-# Task {ID}: {Research Topic} Analysis
+# Research Summary: [Topic]
 
-## Executive Summary
-- **Research Question**: [Main question being answered]
-- **Recommendation**: [Primary recommendation with confidence level]
-- **Key Findings**: [Top 3-5 most important discoveries]
-- **Implementation Timeline**: [Estimated timeframe]
-- **Estimated Cost**: [Resources/time required]
+## Key Findings
+- [3-5 bullet points of most important discoveries]
 
-## Detailed Analysis
-[Comprehensive research findings organized by category]
+## Recommendation
+- [Clear, actionable recommendation with rationale]
 
-## Recommendations
-### Primary Recommendation
-[Detailed recommendation with reasoning]
+## Implementation Next Steps
+- [Specific actions required to proceed]
 
-### Alternative Options
-[Other viable options with trade-offs]
+## Risk Considerations
+- [Primary risks and mitigation strategies]
+```
 
-## Implementation Plan
-[Step-by-step implementation guidance]
+#### Detailed Analysis Structure
+```markdown
+## Research Scope and Methodology
+- Research questions addressed
+- Evidence sources and collection methods
+- Evaluation criteria and decision framework
+
+## Findings and Analysis
+- Quantitative data and metrics
+- Qualitative observations and insights
+- Comparative analysis of options
+
+## Trade-off Analysis
+- Benefits and advantages of each option
+- Limitations and disadvantages
+- Implementation effort and complexity
 
 ## Risk Assessment
-[Potential risks and mitigation strategies]
+- Technical risks and mitigation strategies
+- Business risks and impact analysis
+- Timeline and resource risks
 
-## Next Steps
-[Specific actions for the next task]
-
-## References
-[Sources, benchmarks, and supporting data]
+## Recommendations and Rationale
+- Primary recommendation with justification
+- Alternative options and when to consider them
+- Implementation roadmap and milestones
 ```
 
-### Step 3: TODO.json Integration
-After creating the research documentation, you MUST update the next pending task:
+## Research Quality Assurance
 
-1. **Read TODO.json** to find the next pending task
-2. **Edit the task prompt** to include:
-   ```
-   IMPORTANT: Before starting this task, read the research findings in:
-   `./development/tasks/task-{ID}-{descriptive-name}.md`
-   
-   This file contains critical analysis and recommendations for this task.
-   ```
-3. **Save the updated TODO.json**
+### Evidence Validation Checklist
+- [ ] **Source Reliability**: Evidence from credible, authoritative sources
+- [ ] **Data Recency**: Information is current and relevant to project timeline
+- [ ] **Context Relevance**: Evidence applies to project's specific context and constraints
+- [ ] **Bias Assessment**: Potential biases in sources identified and accounted for
+- [ ] **Completeness**: All major aspects of research question addressed
 
-## File Naming Conventions
+### Research Completeness Criteria
+- [ ] **Multiple Perspectives**: Different viewpoints and approaches considered
+- [ ] **Quantitative Support**: Numerical data supporting qualitative conclusions
+- [ ] **Implementation Feasibility**: Practical aspects of implementation researched
+- [ ] **Future Considerations**: Long-term implications and evolution path considered
+- [ ] **Stakeholder Impact**: Effects on different stakeholders evaluated
 
-### Format: `task-{ID}-{descriptive-name}.md`
+## Research Output Standards
 
-**Research Type Examples**:
-- `task-1-api-integration-analysis.md` (API evaluation)
-- `task-3-database-performance-benchmarks.md` (Database research)
-- `task-7-security-vulnerability-assessment.md` (Security analysis)
-- `task-12-frontend-framework-evaluation.md` (Technology comparison)
-- `task-15-user-authentication-implementation-guide.md` (Implementation research)
-- `task-20-third-party-service-comparison.md` (Vendor evaluation)
-- `task-25-performance-optimization-strategy.md` (Performance research)
+### Standardized Research Report Naming
+All research reports MUST follow the standardized naming convention:
 
-### Descriptive Name Guidelines
-- Use clear, specific descriptions of research content
-- Include the primary domain/technology being researched
-- Avoid generic terms like "research" or "analysis" alone
-- Keep names concise but descriptive (2-4 key words)
+**Format**: `research-report-{task_id}.md`
+**Location**: `./reports/` directory
 
-## Quality Standards for Research
+**Examples**:
+- `./reports/research-report-task-1.md`
+- `./reports/research-report-task-1-sub-1.md`
+- `./reports/research-report-quality-improvement-1753472873685.md`
 
-### Research Depth Requirements
-- **Quantitative Data**: Include metrics, benchmarks, and measurements
-- **Comparative Analysis**: Compare multiple options with scoring matrices
-- **Cost Analysis**: Include time, monetary, and resource costs
-- **Risk Assessment**: Identify and quantify potential risks
-- **Implementation Guidance**: Provide specific next steps
+### Research Report Template
+```markdown
+# Research Report: {Task Title}
 
-### Documentation Standards
-- **Executive Summary**: Decision-makers can understand quickly
-- **Technical Details**: Developers have implementation guidance  
-- **References**: All sources and benchmarks documented
-- **Actionable**: Next task can proceed with clear direction
+**Task ID**: {task_id}
+**Research Type**: [Technology Evaluation|Architecture Decision|Problem Investigation]
+**Date**: {current_date}
+**Researcher**: Claude Code
 
-## Research Workflow Example
+## Executive Summary
+- [3-5 bullet points of most important discoveries]
 
-### Current Task Context:
+## Research Scope and Methodology
+- Research questions addressed
+- Evidence sources and collection methods
+- Evaluation criteria and decision framework
+
+## Key Findings
+[Detailed findings based on research type]
+
+## Recommendation
+- [Clear, actionable recommendation with rationale]
+
+## Implementation Next Steps
+- [Specific actions required to proceed]
+
+## Risk Considerations
+- [Primary risks and mitigation strategies]
+
+## Supporting Evidence
+[Links to sources, data, and analysis]
 ```
-Task ID: task-5
-Description: "Research payment processing options for e-commerce site"
-Mode: RESEARCH
-```
 
-### Research Coordination Steps:
-1. **Spawn Payment Research Subagent**
-   - Domain: Payment processing and e-commerce
-   - Focus: Gateway comparison, security, costs, integration
+### Document Creation Instructions
+When conducting research, ALWAYS create the standardized research report:
 
-2. **Subagent Creates**: `task-5-payment-gateway-evaluation.md`
-   - Compares Stripe, PayPal, Square, etc.
-   - Analyzes fees, security, integration complexity
-   - Provides implementation recommendations
+1. **Create the report file**: `./reports/research-report-{current_task_id}.md`
+2. **Use the template above** with task-specific information
+3. **Include comprehensive findings** following the research methodology
+4. **Save all supporting evidence** and reference materials
 
-3. **Update Next Task**: Edit task-6 prompt to reference the research file
-   - Next task can implement based on research findings
-   - No research duplication needed
+### Decision Documentation Requirements
+- **Architecture Decision Records (ADRs)**: For architectural choices
+- **Technology Evaluation Reports**: For tool/framework selections
+- **Investigation Reports**: For problem analysis and root cause determination
+- **Feasibility Studies**: For new feature or integration assessments
 
-### Result: Seamless Knowledge Transfer
-- Research findings preserved in descriptive file
-- Next task has immediate access to analysis
-- Clear audit trail of research decisions
-- No overlap or confusion between tasks
+### Knowledge Transfer Formats
+- **Technical Briefings**: Concise summaries for development teams
+- **Stakeholder Reports**: Business-focused summaries for leadership
+- **Implementation Guides**: Step-by-step guidance for execution teams
+- **Risk Registers**: Comprehensive risk documentation for project management
 
-## Error Prevention
+## Integration with CLAUDE.md Workflows
 
-### Common Mistakes to Avoid
-- ❌ **Generic file names**: `task-5-research.md`
-- ✅ **Descriptive names**: `task-5-payment-gateway-evaluation.md`
-
-- ❌ **Missing task ID**: `payment-research.md`  
-- ✅ **Include task ID**: `task-5-payment-gateway-evaluation.md`
-
-- ❌ **Doing research yourself**: Conducting analysis directly
-- ✅ **Delegate to subagent**: Spawn specialized research subagent
-
-- ❌ **Forgetting TODO.json**: Not updating next task
-- ✅ **Update next task**: Edit prompt to reference research file
-
-Remember: You are the research COORDINATOR. Your job is to spawn the right specialist subagent, ensure proper documentation, and facilitate knowledge transfer to the next task. The subagent does the actual research work.
+This mode works in conjunction with CLAUDE.md's comprehensive patterns:
+- **Subagent Delegation**: Mandatory use of Task tool for ALL research activities
+- **Parallel Execution**: Multiple research subagents deployed simultaneously
+- **Thinking Escalation**: Apply "think hard" for complex research synthesis
+- **Documentation Standards**: Follow CLAUDE.md file organization and quality requirements

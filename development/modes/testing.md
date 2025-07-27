@@ -1,520 +1,197 @@
 # TESTING Mode Instructions
 
-You are in TESTING mode, focused on comprehensive test coverage and advanced testing strategies.
+You are in TESTING mode, focused on comprehensive test coverage and quality assurance with strategic testing frameworks.
 
-## Advanced Testing Patterns
+*Note: General testing workflows and TDD patterns are detailed in CLAUDE.md. This mode provides testing strategy selection and coverage decision frameworks.*
 
-### Chaos Engineering
+## Test Strategy Selection Matrix
 
-#### Fault Injection Testing
-```javascript
-class ChaosMonkey {
-    constructor(config) {
-        this.failureRate = config.failureRate || 0.1;
-        this.latencyMs = config.latencyMs || 5000;
-        this.scenarios = config.scenarios || ['latency', 'error', 'timeout'];
-    }
-    
-    async wrapService(service) {
-        return new Proxy(service, {
-            get: (target, prop) => {
-                if (typeof target[prop] !== 'function') {
-                    return target[prop];
-                }
-                
-                return async (...args) => {
-                    // Randomly inject failures
-                    if (Math.random() < this.failureRate) {
-                        const scenario = this.randomScenario();
-                        await this.injectFailure(scenario);
-                    }
-                    
-                    return target[prop](...args);
-                };
-            }
-        });
-    }
-    
-    async injectFailure(scenario) {
-        switch (scenario) {
-            case 'latency':
-                await new Promise(resolve => setTimeout(resolve, this.latencyMs));
-                break;
-            case 'error':
-                throw new Error('Chaos: Service temporarily unavailable');
-            case 'timeout':
-                await new Promise(resolve => setTimeout(resolve, 30000));
-                throw new Error('Chaos: Request timeout');
-            case 'partial':
-                // Return incomplete data
-                throw new Error('Chaos: Partial response');
-        }
-    }
-}
+### 1. Component Type-Based Testing Strategy
 
-// Use in tests
-describe('Order Service Resilience', () => {
-    it('should handle payment service failures gracefully', async () => {
-        const chaosPaymentService = await new ChaosMonkey({
-            failureRate: 0.5,
-            scenarios: ['error', 'timeout']
-        }).wrapService(paymentService);
-        
-        const orderService = new OrderService(chaosPaymentService);
-        
-        // Test 100 orders, expect graceful degradation
-        const results = await Promise.allSettled(
-            Array(100).fill(null).map(() => 
-                orderService.processOrder(generateOrder())
-            )
-        );
-        
-        const successful = results.filter(r => r.status === 'fulfilled');
-        expect(successful.length).toBeGreaterThan(30); // Some should succeed
-        
-        const failed = results.filter(r => r.status === 'rejected');
-        failed.forEach(result => {
-            expect(result.reason).toMatch(/Payment processing failed|Retry later/);
-        });
-    });
-});
+#### API/Service Components
+```
+Coverage Requirement: 95% minimum
+Test Types Required:
+├── Unit Tests (90%): Business logic, validation, error handling
+├── Integration Tests (85%): Database operations, external service calls
+├── Contract Tests (100%): API schema compliance and backward compatibility
+└── Performance Tests: Response time <200ms, throughput benchmarks
 ```
 
-### Security Testing Patterns
-
-#### SQL Injection Testing
-```javascript
-const sqlInjectionPayloads = [
-    "' OR '1'='1",
-    "'; DROP TABLE users; --",
-    "1' UNION SELECT * FROM users--",
-    "' OR 1=1--",
-    "admin'--",
-    "') OR ('1'='1'--"
-];
-
-describe('SQL Injection Prevention', () => {
-    sqlInjectionPayloads.forEach(payload => {
-        it(`should safely handle payload: ${payload}`, async () => {
-            const response = await request(app)
-                .post('/api/login')
-                .send({ 
-                    username: payload, 
-                    password: payload 
-                });
-            
-            expect(response.status).toBe(401);
-            expect(response.body).not.toContain('SQL');
-            expect(response.body).not.toContain('syntax');
-            
-            // Verify database wasn't affected
-            const userCount = await db.query('SELECT COUNT(*) FROM users');
-            expect(userCount).toBeGreaterThan(0);
-        });
-    });
-});
+#### Frontend Components
+```
+Coverage Requirement: 85% minimum
+Test Types Required:
+├── Unit Tests (80%): Component logic, state management, utility functions
+├── Integration Tests (70%): Component interaction, data flow, routing
+├── Visual Regression Tests: UI consistency across browsers/devices
+└── E2E Tests: Critical user journeys (login, checkout, core workflows)
 ```
 
-#### XSS Prevention Testing
-```javascript
-const xssPayloads = [
-    '<script>alert("XSS")</script>',
-    '<img src=x onerror=alert("XSS")>',
-    '<svg onload=alert("XSS")>',
-    'javascript:alert("XSS")',
-    '<iframe src="javascript:alert(\'XSS\')">',
-    '<<SCRIPT>alert("XSS");//<</SCRIPT>'
-];
-
-describe('XSS Prevention', () => {
-    xssPayloads.forEach(payload => {
-        it(`should sanitize payload: ${payload.substring(0, 20)}...`, async () => {
-            const response = await request(app)
-                .post('/api/comments')
-                .send({ content: payload });
-            
-            expect(response.status).toBe(201);
-            
-            // Fetch the comment
-            const comment = await request(app)
-                .get(`/api/comments/${response.body.id}`);
-            
-            // Verify script tags are escaped/removed
-            expect(comment.body.content).not.toContain('<script>');
-            expect(comment.body.content).not.toContain('javascript:');
-            expect(comment.body.content).not.toContain('onerror=');
-        });
-    });
-});
+#### Data Layer Components
+```
+Coverage Requirement: 100% minimum
+Test Types Required:
+├── Unit Tests (100%): Query logic, data transformations, validation
+├── Integration Tests (95%): Database transactions, migration safety
+├── Performance Tests: Query execution time, connection pooling
+└── Data Integrity Tests: Constraint validation, referential integrity
 ```
 
-#### Authentication Testing
-```javascript
-describe('Authentication Security', () => {
-    describe('Brute Force Protection', () => {
-        it('should lock account after failed attempts', async () => {
-            const username = 'testuser@example.com';
-            
-            // Make 5 failed login attempts
-            for (let i = 0; i < 5; i++) {
-                await request(app)
-                    .post('/api/login')
-                    .send({ username, password: 'wrongpassword' });
-            }
-            
-            // 6th attempt should be blocked
-            const response = await request(app)
-                .post('/api/login')
-                .send({ username, password: 'correctpassword' });
-            
-            expect(response.status).toBe(429);
-            expect(response.body.error).toContain('locked');
-            expect(response.body.retryAfter).toBeGreaterThan(0);
-        });
-    });
-    
-    describe('Session Security', () => {
-        it('should invalidate session on password change', async () => {
-            const session = await loginUser();
-            
-            // Change password
-            await request(app)
-                .post('/api/change-password')
-                .set('Authorization', `Bearer ${session.token}`)
-                .send({ 
-                    oldPassword: 'old',
-                    newPassword: 'new'
-                });
-            
-            // Old session should be invalid
-            const response = await request(app)
-                .get('/api/profile')
-                .set('Authorization', `Bearer ${session.token}`);
-            
-            expect(response.status).toBe(401);
-        });
-    });
-});
+#### Infrastructure/DevOps Components
+```
+Coverage Requirement: 90% minimum
+Test Types Required:
+├── Infrastructure Tests: Configuration validation, resource provisioning
+├── Security Tests: Vulnerability scanning, penetration testing
+├── Deployment Tests: Blue-green deployment, rollback procedures
+└── Chaos Engineering: Fault injection, disaster recovery validation
 ```
 
-### Load and Performance Testing
+### 2. Testing Approach Decision Framework
 
-#### Stress Testing Pattern
-```javascript
-class StressTest {
-    constructor(config) {
-        this.concurrent = config.concurrent || 100;
-        this.duration = config.duration || 60000;
-        this.rampUp = config.rampUp || 10000;
-    }
-    
-    async run(testFunction) {
-        const results = {
-            successful: 0,
-            failed: 0,
-            latencies: [],
-            errors: []
-        };
-        
-        const startTime = Date.now();
-        const workers = [];
-        
-        // Ramp up workers
-        for (let i = 0; i < this.concurrent; i++) {
-            await new Promise(resolve => 
-                setTimeout(resolve, this.rampUp / this.concurrent)
-            );
-            
-            workers.push(this.worker(testFunction, results, startTime));
-        }
-        
-        await Promise.all(workers);
-        
-        return {
-            ...results,
-            avgLatency: results.latencies.reduce((a, b) => a + b, 0) / results.latencies.length,
-            p95Latency: this.percentile(results.latencies, 0.95),
-            p99Latency: this.percentile(results.latencies, 0.99),
-            successRate: results.successful / (results.successful + results.failed)
-        };
-    }
-    
-    async worker(testFunction, results, startTime) {
-        while (Date.now() - startTime < this.duration) {
-            const start = Date.now();
-            
-            try {
-                await testFunction();
-                results.successful++;
-                results.latencies.push(Date.now() - start);
-            } catch (error) {
-                results.failed++;
-                results.errors.push(error.message);
-            }
-        }
-    }
-    
-    percentile(arr, p) {
-        const sorted = arr.sort((a, b) => a - b);
-        const index = Math.ceil(sorted.length * p) - 1;
-        return sorted[index];
-    }
-}
+#### Test-First Development (Complexity: High, Risk: High)
+```
+When to Use:
+- New feature development with unclear requirements
+- Critical business logic with complex edge cases
+- API development requiring contract validation
+- Legacy code modernization
 
-// Usage
-describe('Load Testing', () => {
-    it('should handle 100 concurrent users', async () => {
-        const stress = new StressTest({
-            concurrent: 100,
-            duration: 30000,
-            rampUp: 5000
-        });
-        
-        const results = await stress.run(async () => {
-            await request(app)
-                .get('/api/products')
-                .expect(200);
-        });
-        
-        expect(results.successRate).toBeGreaterThan(0.99);
-        expect(results.p95Latency).toBeLessThan(1000);
-        expect(results.p99Latency).toBeLessThan(2000);
-    });
-});
+Approach:
+1. Write failing tests based on acceptance criteria
+2. Implement minimal code to pass tests
+3. Refactor with confidence (tests as safety net)
+4. Expand test coverage for edge cases
 ```
 
-### Visual Regression Testing
+#### Test-Alongside Development (Complexity: Medium, Risk: Medium)
+```
+When to Use:
+- Feature enhancement of existing codebase
+- Bug fixes with well-understood scope
+- Integration work with established patterns
 
-```javascript
-class VisualRegressionTest {
-    constructor(config) {
-        this.threshold = config.threshold || 0.01; // 1% difference allowed
-        this.baselineDir = config.baselineDir || './visual-baselines';
-    }
-    
-    async compareScreenshots(testName, actualImage) {
-        const baselinePath = path.join(this.baselineDir, `${testName}.png`);
-        
-        if (!fs.existsSync(baselinePath)) {
-            // First run - save as baseline
-            await actualImage.write(baselinePath);
-            return { match: true, firstRun: true };
-        }
-        
-        const baseline = await Jimp.read(baselinePath);
-        const diff = Jimp.diff(baseline, actualImage);
-        
-        if (diff.percent > this.threshold) {
-            // Save diff image for debugging
-            await diff.image.write(`./visual-diffs/${testName}-diff.png`);
-            await actualImage.write(`./visual-diffs/${testName}-actual.png`);
-            
-            return {
-                match: false,
-                difference: diff.percent,
-                diffPath: `./visual-diffs/${testName}-diff.png`
-            };
-        }
-        
-        return { match: true, difference: diff.percent };
-    }
-}
-
-describe('Visual Regression', () => {
-    const visualTest = new VisualRegressionTest({ threshold: 0.02 });
-    
-    it('should match homepage appearance', async () => {
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-        
-        await page.goto('http://localhost:3000');
-        await page.waitForSelector('.content-loaded');
-        
-        const screenshot = await page.screenshot();
-        const image = await Jimp.read(screenshot);
-        
-        const result = await visualTest.compareScreenshots('homepage', image);
-        
-        expect(result.match).toBe(true);
-        if (!result.match) {
-            console.log(`Visual difference: ${result.difference * 100}%`);
-            console.log(`Diff saved to: ${result.diffPath}`);
-        }
-        
-        await browser.close();
-    });
-});
+Approach:
+1. Implement feature increment
+2. Write tests for new functionality
+3. Verify existing functionality not broken
+4. Add regression tests for discovered issues
 ```
 
-### Database Testing Strategies
+#### Test-After Development (Complexity: Low, Risk: Low)
+```
+When to Use:
+- Simple utility functions with clear inputs/outputs
+- Configuration changes with limited scope
+- Documentation and non-functional updates
 
-#### Transaction Rollback Testing
-```javascript
-describe('Database Transactions', () => {
-    it('should rollback on failure', async () => {
-        const initialCount = await db.query('SELECT COUNT(*) FROM orders');
-        
-        try {
-            await db.transaction(async (trx) => {
-                // Insert order
-                const order = await trx('orders').insert({
-                    user_id: 1,
-                    total: 100
-                }).returning('*');
-                
-                // Insert order items
-                await trx('order_items').insert({
-                    order_id: order[0].id,
-                    product_id: 999, // Non-existent product
-                    quantity: 1
-                });
-                
-                // This should fail due to foreign key constraint
-            });
-        } catch (error) {
-            // Expected to fail
-        }
-        
-        const finalCount = await db.query('SELECT COUNT(*) FROM orders');
-        expect(finalCount).toEqual(initialCount);
-    });
-});
+Approach:
+1. Complete implementation
+2. Add comprehensive test suite
+3. Validate edge cases and error conditions
+4. Ensure coverage meets minimum thresholds
 ```
 
-#### Migration Testing
-```javascript
-describe('Database Migrations', () => {
-    it('should be reversible', async () => {
-        const migrations = await getMigrationFiles();
-        
-        for (const migration of migrations) {
-            // Take snapshot
-            const snapshot = await db.snapshot();
-            
-            // Run up migration
-            await migration.up(db);
-            
-            // Verify changes
-            const upSchema = await db.getSchema();
-            
-            // Run down migration
-            await migration.down(db);
-            
-            // Verify rollback
-            const downSchema = await db.getSchema();
-            expect(downSchema).toEqual(snapshot.schema);
-        }
-    });
-});
-```
+## Coverage Requirements by Context
 
-### Contract Testing
+### Development Phase Coverage Targets
+- **Feature Development**: 80% minimum line coverage, 70% branch coverage
+- **Bug Fixes**: 95% minimum coverage for affected code paths
+- **Refactoring**: Maintain existing coverage levels, target 85% minimum
+- **Security Features**: 100% coverage required for authentication/authorization
 
-```javascript
-class ContractTest {
-    constructor(provider, consumer) {
-        this.provider = provider;
-        this.consumer = consumer;
-    }
-    
-    async verifyContract(contract) {
-        // Provider verification
-        describe(`${this.provider} meets contract`, () => {
-            contract.interactions.forEach(interaction => {
-                it(interaction.description, async () => {
-                    const response = await request(this.provider)
-                        [interaction.request.method.toLowerCase()](interaction.request.path)
-                        .send(interaction.request.body);
-                    
-                    expect(response.status).toBe(interaction.response.status);
-                    expect(response.body).toMatchSchema(interaction.response.schema);
-                });
-            });
-        });
-        
-        // Consumer verification
-        describe(`${this.consumer} follows contract`, () => {
-            contract.interactions.forEach(interaction => {
-                it(`correctly calls ${interaction.description}`, async () => {
-                    const mock = nock(this.provider)
-                        [interaction.request.method.toLowerCase()](interaction.request.path)
-                        .reply(interaction.response.status, interaction.response.body);
-                    
-                    await this.consumer.executeScenario(interaction.scenario);
-                    
-                    expect(mock.isDone()).toBe(true);
-                });
-            });
-        });
-    }
-}
-```
+### Component Criticality-Based Coverage
+- **Critical Path Components** (payments, authentication): 95% minimum
+- **Core Business Logic**: 90% minimum
+- **User Interface Components**: 80% minimum
+- **Utility/Helper Functions**: 85% minimum
+- **Configuration/Setup Code**: 70% minimum
 
-### Test Environment Management
+### Test Environment Requirements
 
-```javascript
-class TestEnvironment {
-    async setup() {
-        // Start test containers
-        this.postgres = await new PostgreSQLContainer()
-            .withDatabase('test')
-            .start();
-        
-        this.redis = await new GenericContainer('redis')
-            .withExposedPorts(6379)
-            .start();
-        
-        // Run migrations
-        await this.runMigrations();
-        
-        // Seed test data
-        await this.seedTestData();
-        
-        return {
-            database: this.postgres.getConnectionString(),
-            cache: `redis://${this.redis.getHost()}:${this.redis.getMappedPort(6379)}`
-        };
-    }
-    
-    async teardown() {
-        await this.postgres.stop();
-        await this.redis.stop();
-    }
-}
-```
+#### Unit Test Environment
+- **Isolation**: No external dependencies (APIs, databases, file system)
+- **Speed**: All tests complete in <30 seconds
+- **Deterministic**: Same inputs always produce same outputs
+- **Independent**: Tests can run in any order without side effects
 
-### Flaky Test Detection
+#### Integration Test Environment
+- **Realistic Data**: Sanitized production-like datasets
+- **Service Dependencies**: Test doubles or containerized services
+- **Network Conditions**: Simulate latency and failures
+- **Database State**: Clean, consistent state for each test run
 
-```javascript
-class FlakyTestDetector {
-    async detectFlaky(testSuite, runs = 10) {
-        const results = new Map();
-        
-        for (let i = 0; i < runs; i++) {
-            const runResults = await this.runTests(testSuite);
-            
-            runResults.forEach(test => {
-                if (!results.has(test.name)) {
-                    results.set(test.name, []);
-                }
-                results.get(test.name).push(test.passed);
-            });
-        }
-        
-        const flakyTests = [];
-        results.forEach((outcomes, testName) => {
-            const failures = outcomes.filter(passed => !passed).length;
-            if (failures > 0 && failures < runs) {
-                flakyTests.push({
-                    name: testName,
-                    failureRate: failures / runs
-                });
-            }
-        });
-        
-        return flakyTests;
-    }
-}
-```
+#### End-to-End Test Environment
+- **Production Parity**: Infrastructure matching production
+- **Real Data**: Anonymized production data or synthetic realistic data
+- **Complete Workflows**: Full user journeys without mocking
+- **Cross-Browser**: Multiple browser/device combinations
 
-Remember: In testing mode, think beyond basic coverage. Build resilient systems through comprehensive testing strategies.
+## Quality Gate Enforcement
+
+### Pre-Commit Quality Gates
+- [ ] **Unit Tests**: All tests pass, coverage meets minimum threshold
+- [ ] **Linting**: Code style and quality checks pass
+- [ ] **Security Scan**: No high/critical vulnerabilities introduced
+- [ ] **Performance**: No regression in critical path performance
+
+### Pre-Deployment Quality Gates
+- [ ] **Full Test Suite**: All test categories pass without failures
+- [ ] **Integration Tests**: External service interactions validated
+- [ ] **Security Testing**: Penetration testing for security-sensitive changes
+- [ ] **Performance Testing**: Load testing for performance-critical changes
+
+### Post-Deployment Monitoring
+- [ ] **Error Rate**: <0.1% error rate within 24 hours
+- [ ] **Performance**: Response times within established SLA
+- [ ] **User Impact**: No critical user journey disruptions
+- [ ] **Security**: No new security incidents or vulnerabilities
+
+## Testing Strategy by Feature Type
+
+### Data Processing Features
+- **Property-Based Testing**: Generate random inputs to test edge cases
+- **Snapshot Testing**: Verify consistent output formats over time
+- **Performance Testing**: Memory usage and processing time benchmarks
+- **Data Quality Testing**: Validation of data transformation accuracy
+
+### User Interface Features
+- **Visual Regression Testing**: Automated screenshot comparison
+- **Accessibility Testing**: WCAG compliance and screen reader compatibility
+- **Cross-Platform Testing**: Multiple browsers, devices, and screen sizes
+- **User Experience Testing**: Task completion time and error rate metrics
+
+### API/Service Features
+- **Contract Testing**: Producer/consumer contract validation
+- **Rate Limiting Testing**: Behavior under high load conditions
+- **Error Handling Testing**: Graceful degradation and recovery
+- **Security Testing**: Authentication, authorization, and input validation
+
+### Integration Features
+- **Circuit Breaker Testing**: Fault tolerance and recovery mechanisms
+- **Data Consistency Testing**: Transaction integrity across services
+- **Event Processing Testing**: Message ordering and delivery guarantees
+- **Rollback Testing**: System recovery after deployment failures
+
+## Test Data Management
+
+### Test Data Strategy
+- **Static Test Data**: Predictable, version-controlled datasets for consistent results
+- **Generated Test Data**: Programmatically created data for edge case testing
+- **Anonymized Production Data**: Real-world data patterns with privacy protection
+- **Synthetic Data**: AI-generated realistic data for comprehensive testing
+
+### Data Lifecycle Management
+- **Setup**: Automated test data provisioning before test execution
+- **Isolation**: Each test gets clean, independent data state
+- **Cleanup**: Automatic data removal after test completion
+- **Versioning**: Test data schema changes tracked with application versions
+
+## Integration with CLAUDE.md Workflows
+
+This mode works in conjunction with CLAUDE.md's comprehensive patterns:
+- **TDD Approach**: Follow CLAUDE.md TDD guidelines for test-first development
+- **Task Management**: Use TaskManager API for complex testing implementations (3+ test types)
+- **Subagent Research**: Delegate testing framework analysis to specialized subagents
+- **Quality Standards**: Follow CLAUDE.md file size limits and maintain comprehensive test documentation
