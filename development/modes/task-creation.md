@@ -66,11 +66,11 @@ Success Criteria:
 - Recommendation documented with pros/cons
 - Proof of concept completed (if applicable)
 - Implementation approach defined
-- Research report created: ./reports/research-report-{task_id}.md
+- Research report created: ./development/research-reports/research-report-{task_id}.md
 Estimate: [2-8 hours]
 Time-boxed: [maximum research time allowed]
 Important Files: [
-  "./reports/research-report-{task_id}.md"
+  "./development/research-reports/research-report-{task_id}.md"
 ]
 ```
 
@@ -150,13 +150,13 @@ Tackle unknowns and high-risk components early to reduce project uncertainty.
 - **Project State Assessment**: Current codebase, infrastructure, team capacity
 - **Requirement Clarification**: User stories, acceptance criteria, business constraints
 - **Technical Discovery**: Architecture review, dependency analysis, risk assessment
-- **Research Report Integration**: Check for existing research reports at `./reports/research-report-{related_task_id}.md`
+- **Research Report Integration**: Check for existing research reports at `./development/research-reports/research-report-{related_task_id}.md`
 
 ### 2. Decomposition Phase
 - **Work Breakdown Structure**: Hierarchical task organization
 - **Effort Estimation**: Story points or hour-based estimates with confidence intervals
 - **Dependency Mapping**: Task relationships and coordination needs
-- **Research Report Planning**: For research tasks, automatically include `./reports/research-report-{task_id}.md` in important_files
+- **Research Report Planning**: For research tasks, automatically include `./development/research-reports/research-report-{task_id}.md` in important_files
 
 ### 3. Prioritization Phase
 - **Business Value Scoring**: User impact and revenue considerations
@@ -191,7 +191,7 @@ Reference CLAUDE.md for complete TaskManager API and CLI usage patterns.
 
 When creating tasks that require research:
 
-1. **Check for existing reports**: Look for `./reports/research-report-{related_task_id}.md`
+1. **Check for existing reports**: Look for `./development/research-reports/research-report-{related_task_id}.md`
 2. **Include in important_files**: Add research report path to task important_files
 3. **Update success criteria**: Include research report creation/review in success criteria
 
@@ -202,13 +202,13 @@ const researchTask = {
   title: "Research Authentication Patterns",
   mode: "research",
   important_files: [
-    `./reports/research-report-${taskId}.md`,
+    `./development/research-reports/research-report-${taskId}.md`,
     ...otherFiles
   ],
   success_criteria: [
     "Research questions answered with evidence",
     "Recommendation documented with pros/cons", 
-    `Research report created: ./reports/research-report-${taskId}.md`,
+    `Research report created: ./development/research-reports/research-report-${taskId}.md`,
     ...otherCriteria
   ]
 };
@@ -218,7 +218,7 @@ const implementationTask = {
   title: "Implement Authentication System",
   mode: "development",
   important_files: [
-    `./reports/research-report-${researchTaskId}.md`, // Reference research
+    `./development/research-reports/research-report-${researchTaskId}.md`, // Reference research
     ...implementationFiles
   ],
   dependencies: [researchTaskId]

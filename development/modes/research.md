@@ -196,12 +196,12 @@ Research Coordination Approach:
 All research reports MUST follow the standardized naming convention:
 
 **Format**: `research-report-{task_id}.md`
-**Location**: `./reports/` directory
+**Location**: `./development/research-reports/` directory
 
 **Examples**:
-- `./reports/research-report-task-1.md`
-- `./reports/research-report-task-1-sub-1.md`
-- `./reports/research-report-quality-improvement-1753472873685.md`
+- `./development/research-reports/research-report-task-1.md`
+- `./development/research-reports/research-report-task-1-sub-1.md`
+- `./development/research-reports/research-report-quality-improvement-1753472873685.md`
 
 ### Research Report Template
 ```markdown
@@ -239,7 +239,7 @@ All research reports MUST follow the standardized naming convention:
 ### Document Creation Instructions
 When conducting research, ALWAYS create the standardized research report:
 
-1. **Create the report file**: `./reports/research-report-{current_task_id}.md`
+1. **Create the report file**: `./development/research-reports/research-report-{current_task_id}.md`
 2. **Use the template above** with task-specific information
 3. **Include comprehensive findings** following the research methodology
 4. **Save all supporting evidence** and reference materials
